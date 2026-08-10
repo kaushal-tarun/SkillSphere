@@ -1,4 +1,6 @@
+
 @import "tailwindcss";
+@plugin "daisyui";
 
 :root {
   --background: #ffffff;
@@ -24,3 +26,21 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes rotateY3D {
+  0% {
+    transform: rotateY(0deg) rotateX(4deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(-4deg) scale(1.05);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(4deg) scale(1);
+  }
+}
+
+.animate-rotate-3d {
+  animation: rotateY3D 10s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
