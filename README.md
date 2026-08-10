@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkillSphere ⚡
 
-## Getting Started
+> **Build. Compete. Rise.**  
+> The competitive showcase arena engineered for ambitious student developers.
 
-First, run the development server:
+SkillSphere is a platform where student developers present live side projects, compete for rank, earn XP and verified badges, and connect with teammates for hackathons and ambitious startups.
+
+---
+
+## ✨ Features
+
+- **Interactive 3D Core Logo**: Custom 3D Y-axis rotating brand showcase with hover-to-pause controls.
+- **Interactive "SS" Pixel Matrix**: Responsive hover-illuminated pixel grid matrix.
+- **Featured Student Showcase**: Video/screenshot carousel feed featuring real student projects (*KnowledgeVault*, *Nexa AI*, *CodeCollab*) with full-screen Lightbox image previews, creator credits, and interactive likes.
+- **Engineered Capabilities**: Bento-grid showcase highlighting Project Battles, Co-Founder Matchmaking, Proof-of-Work GitHub sync, and Verified Reputation.
+- **Monochromatic Dark UI**: Ultra-sleek black & silver design system built with custom glassmorphism and tailwind micro-animations.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
+- **Library**: [React 19](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Deployment**: Vercel ready
+
+---
+
+## 🚀 Getting Started
+
+First, install dependencies and run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Production Build
 
-## Learn More
+To test or generate the production build:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm run start
+```
