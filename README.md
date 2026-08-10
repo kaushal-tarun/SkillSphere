@@ -1,9 +1,9 @@
-# SkillSphere ⚡
-
-> **Build. Compete. Rise.**  
-> The competitive showcase arena engineered for ambitious student developers.
-
-SkillSphere is a platform where student developers present live side projects, compete for rank, earn XP and verified badges, and connect with teammates for hackathons and ambitious startups.
+<div align="center">
+  <img src="public/SSwhitey.png" alt="SkillSphere Logo" width="120" />
+  <h1>SkillSphere</h1>
+  <p><strong>Build. Compete. Rise.</strong></p>
+  <p>The competitive showcase arena engineered for ambitious student developers.</p>
+</div>
 
 ---
 
@@ -11,7 +11,7 @@ SkillSphere is a platform where student developers present live side projects, c
 
 - **Interactive 3D Core Logo**: Custom 3D Y-axis rotating brand showcase with hover-to-pause controls.
 - **Interactive "SS" Pixel Matrix**: Responsive hover-illuminated pixel grid matrix.
-- **Featured Student Showcase**: Video/screenshot carousel feed featuring real student projects (*KnowledgeVault*, *Nexa AI*, *CodeCollab*) with full-screen Lightbox image previews, creator credits, and interactive likes.
+- **Featured Student Showcase**: Screenshot carousel feed featuring real student projects (*KnowledgeVault*, *Nexa AI*, *CodeCollab*) with full-screen Lightbox image previews, creator credits, and interactive likes.
 - **Engineered Capabilities**: Bento-grid showcase highlighting Project Battles, Co-Founder Matchmaking, Proof-of-Work GitHub sync, and Verified Reputation.
 - **Monochromatic Dark UI**: Ultra-sleek black & silver design system built with custom glassmorphism and tailwind micro-animations.
 
