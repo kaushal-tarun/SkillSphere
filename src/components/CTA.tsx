@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function CTA() {
   return (
@@ -99,14 +100,17 @@ export default function CTA() {
             </div>
           </div>
 
-          {/* Single Get Started Money Button at End of Page */}
+          {/* Single Get Started Money Button at End of Page (Linking to /register) */}
           <div className="flex justify-center mt-2">
-            <button className="relative group px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-base shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:shadow-[0_0_45px_rgba(255,255,255,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
+            <Link
+              href="/register"
+              className="relative group px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-base shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:shadow-[0_0_45px_rgba(255,255,255,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden"
+            >
               <span className="relative z-10">Get Started</span>
               <svg className="w-5 h-5 relative z-10 text-zinc-700 group-hover:text-black group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
