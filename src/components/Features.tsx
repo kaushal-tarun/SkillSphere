@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Features() {
   const [activeFilter, setActiveFilter] = useState("all");
+
+  // Cute peeking pixel guy state
+  const [peekBoxIndex, setPeekBoxIndex] = useState<number | null>(null);
+  const [isWaving, setIsWaving] = useState(false);
 
   const features = [
     {
@@ -104,6 +108,35 @@ export default function Features() {
       ? features
       : features.filter((f) => f.category === activeFilter);
 
+  // Timer loop for cute pixel guy peeking behind feature boxes
+  useEffect(() => {
+    // Initial trigger after 1.2s
+    const initialTimeout = setTimeout(() => {
+      triggerPeek();
+    }, 1200);
+
+    const triggerPeek = () => {
+      const randomIndex = Math.floor(Math.random() * filteredFeatures.length);
+      setPeekBoxIndex(randomIndex);
+      setIsWaving(true);
+
+      // Hide after 2.8s of gentle waving
+      setTimeout(() => {
+        setIsWaving(false);
+        setTimeout(() => {
+          setPeekBoxIndex(null);
+        }, 700);
+      }, 2800);
+    };
+
+    const interval = setInterval(triggerPeek, 6500);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [filteredFeatures.length]);
+
   return (
     <section id="features" className="py-24 bg-black text-white relative overflow-hidden border-t border-zinc-900">
       {/* Subtle Background Glow */}
@@ -147,39 +180,86 @@ export default function Features() {
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredFeatures.map((item) => (
-            <div
-              key={item.id}
-              className="group relative rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-6 backdrop-blur-xl hover:border-zinc-700 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 shadow-xl shadow-black/60"
-            >
-              {/* Subtle top glow line on hover */}
-              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+          {filteredFeatures.map((item, index) => (
+            <div key={item.id} className="relative pt-3">
+              {/* Cute Waving & Jumping 8-Bit Pixel Guy Peeking BEHIND Box (z-0) */}
+              {peekBoxIndex === index && (
+                <div
+                  className={`absolute -top-3 right-8 z-0 pointer-events-none transition-all duration-700 transform ${
+                    isWaving
+                      ? "-translate-y-2 opacity-100 scale-100"
+                      : "translate-y-6 opacity-0 scale-90"
+                  }`}
+                >
+                  <div className="animate-cute-excitement">
+                    <svg
+                      className="w-12 h-12 text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style={{ shapeRendering: "crispEdges" }}
+                    >
+                      {/* Hair / Cap */}
+                      <rect x="5" y="4" width="12" height="3" fill="#ffffff" />
+                      {/* Head */}
+                      <rect x="6" y="6" width="10" height="9" fill="#ffffff" />
 
-              <div>
-                {/* Header icon & badge */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 group-hover:border-zinc-700 transition-colors">
-                    {item.icon}
+                      {/* Cute Eyes */}
+                      <rect x="8" y="9" width="2" height="2.5" fill="#000000" />
+                      <rect x="13" y="9" width="2" height="2.5" fill="#000000" />
+                      <rect x="9" y="9" width="1" height="1" fill="#ffffff" />
+                      <rect x="14" y="9" width="1" height="1" fill="#ffffff" />
+
+                      {/* Cute Smile */}
+                      <rect x="10" y="13" width="3" height="1" fill="#000000" />
+
+                      {/* Torso (Hidden behind card top edge) */}
+                      <rect x="7" y="15" width="8" height="8" fill="#e4e4e7" />
+
+                      {/* Left Hand Resting on Edge */}
+                      <rect x="4" y="15" width="3" height="2" fill="#ffffff" />
+
+                      {/* Right Waving Hand in High Excitement */}
+                      <g className="animate-cute-fast-wave">
+                        <rect x="15" y="11" width="4" height="2" fill="#ffffff" />
+                        <rect x="17" y="7" width="2" height="5" fill="#ffffff" />
+                        <rect x="16" y="5" width="4" height="3" fill="#ffffff" />
+                      </g>
+                    </svg>
                   </div>
-                  <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-[10px] font-mono text-zinc-400 border border-zinc-800">
-                    {item.badge}
-                  </span>
+                </div>
+              )}
+
+              {/* Main Bento Feature Card Container (Solid bg-zinc-950 sitting in FRONT at z-10) */}
+              <div className="group relative rounded-2xl border border-zinc-800/90 bg-zinc-950 p-6 backdrop-blur-xl hover:border-zinc-700 transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 shadow-xl shadow-black/80 z-10">
+                {/* Subtle top glow line on hover */}
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+
+                <div className="relative z-10">
+                  {/* Header icon & badge */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 group-hover:border-zinc-700 transition-colors">
+                      {item.icon}
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-[10px] font-mono text-zinc-400 border border-zinc-800">
+                      {item.badge}
+                    </span>
+                  </div>
+
+                  {/* Title & Desc */}
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-zinc-200 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-6">
+                    {item.desc}
+                  </p>
                 </div>
 
-                {/* Title & Desc */}
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-zinc-200 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-6">
-                  {item.desc}
-                </p>
-              </div>
-
-              {/* Bottom Feature Highlight */}
-              <div className="pt-4 border-t border-zinc-900 text-xs font-mono text-zinc-400 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                <span>{item.highlight}</span>
+                {/* Bottom Feature Highlight */}
+                <div className="pt-4 border-t border-zinc-900 text-xs font-mono text-zinc-400 flex items-center gap-2 relative z-10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                  <span>{item.highlight}</span>
+                </div>
               </div>
             </div>
           ))}

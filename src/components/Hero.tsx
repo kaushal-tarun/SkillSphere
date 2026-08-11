@@ -71,11 +71,110 @@ export default function Hero() {
         <div className="text-center max-w-4xl mx-auto space-y-6">
           {/* Main Headline */}
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05]">
-            <span className="block text-white">Build.</span>
-            <span className="block bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent py-1">
-              Compete.
+            <span className="inline-flex items-center justify-center text-white">
+              <span>Build.</span>
+              {/* 8-bit Pixel Hammering Animation (Matches Text Size & Smooth 60 FPS) */}
+              <span className="inline-flex items-center relative ml-3 sm:ml-5 -translate-y-1 sm:-translate-y-2 opacity-95 hover:opacity-100 transition-opacity shrink-0">
+                <svg
+                  className="w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-white"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style={{ shapeRendering: "crispEdges" }}
+                >
+                  {/* Pixel Anvil / Crafting Block */}
+                  <rect x="14" y="18" width="7" height="3" fill="#ffffff" />
+                  <rect x="15" y="16" width="5" height="2" fill="#d4d4d8" />
+
+                  {/* 8-bit Pixel Character Head & Body */}
+                  <rect x="2" y="7" width="5" height="5" fill="#ffffff" />
+                  <rect x="2" y="5" width="6" height="2" fill="#ffffff" />
+                  <rect x="3" y="12" width="5" height="8" fill="#e4e4e7" />
+
+                  {/* 8-bit Swinging Arm + Hammer */}
+                  <g className="animate-hammer-swing">
+                    {/* Arm */}
+                    <rect x="7" y="10" width="5" height="2" fill="#ffffff" />
+                    {/* Hammer Handle */}
+                    <rect x="12" y="5" width="2" height="7" fill="#a1a1aa" />
+                    {/* Hammer Head */}
+                    <rect x="10" y="3" width="6" height="4" fill="#ffffff" />
+                  </g>
+
+                  {/* Impact Spark Pixel */}
+                  <rect x="17" y="14" width="2" height="2" className="animate-spark-flash fill-white" />
+                </svg>
+              </span>
             </span>
-            <span className="block text-zinc-400">Rise.</span>
+            {/* Word 2: Compete + 8-bit Pixel Running Man Animation */}
+            <span className="inline-flex items-center justify-center bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent py-1">
+              <span>Compete.</span>
+              <span className="inline-flex items-center relative ml-3 sm:ml-5 -translate-y-1 sm:-translate-y-2 opacity-95 hover:opacity-100 transition-opacity shrink-0">
+                <svg
+                  className="w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-white"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style={{ shapeRendering: "crispEdges" }}
+                >
+                  {/* Ground Speed Lines */}
+                  <rect x="2" y="21" width="6" height="1" fill="#a1a1aa" />
+                  <rect x="10" y="21" width="8" height="1" fill="#e4e4e7" />
+
+                  {/* 8-bit Pixel Runner Head & Torso */}
+                  <rect x="11" y="4" width="5" height="5" fill="#ffffff" />
+                  <rect x="8" y="9" width="7" height="6" fill="#e4e4e7" />
+
+                  {/* Running Arms */}
+                  <rect x="4" y="10" width="5" height="2" fill="#ffffff" />
+                  <rect x="14" y="11" width="5" height="2" fill="#ffffff" />
+
+                  {/* Alternating Running Leg 1 */}
+                  <g className="animate-runner-leg1">
+                    <rect x="8" y="15" width="2" height="6" fill="#ffffff" />
+                    <rect x="6" y="19" width="3" height="2" fill="#ffffff" />
+                  </g>
+
+                  {/* Alternating Running Leg 2 */}
+                  <g className="animate-runner-leg2">
+                    <rect x="12" y="15" width="2" height="6" fill="#ffffff" />
+                    <rect x="13" y="19" width="3" height="2" fill="#ffffff" />
+                  </g>
+                </svg>
+              </span>
+            </span>
+
+            {/* Word 3: Rise + 8-bit Pixel Rising Sun Animation */}
+            <span className="inline-flex items-center justify-center text-zinc-400">
+              <span>Rise.</span>
+              <span className="inline-flex items-center relative ml-3 sm:ml-5 -translate-y-1 sm:-translate-y-2 opacity-95 hover:opacity-100 transition-opacity shrink-0">
+                <svg
+                  className="w-12 h-12 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-white animate-sun-rise"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style={{ shapeRendering: "crispEdges" }}
+                >
+                  {/* Horizon Line */}
+                  <rect x="1" y="19" width="22" height="2" fill="#71717a" />
+                  <rect x="4" y="21" width="16" height="1" fill="#52525b" />
+
+                  {/* Sun Center Core */}
+                  <rect x="8" y="8" width="8" height="8" fill="#ffffff" />
+                  <rect x="9" y="7" width="6" height="1" fill="#ffffff" />
+                  <rect x="9" y="16" width="6" height="1" fill="#ffffff" />
+
+                  {/* Rotating Sun Rays */}
+                  <g className="animate-sun-rays">
+                    <rect x="11" y="3" width="2" height="3" fill="#ffffff" />
+                    <rect x="11" y="18" width="2" height="1" fill="#ffffff" />
+                    <rect x="3" y="11" width="3" height="2" fill="#ffffff" />
+                    <rect x="18" y="11" width="3" height="2" fill="#ffffff" />
+                    <rect x="5" y="5" width="2" height="2" fill="#e4e4e7" />
+                    <rect x="17" y="5" width="2" height="2" fill="#e4e4e7" />
+                    <rect x="5" y="17" width="2" height="2" fill="#e4e4e7" />
+                    <rect x="17" y="17" width="2" height="2" fill="#e4e4e7" />
+                  </g>
+                </svg>
+              </span>
+            </span>
           </h1>
 
           {/* Subtitle / Supporting text */}
