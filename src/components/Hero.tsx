@@ -216,7 +216,7 @@ export default function Hero() {
               </div>
               <div className="text-center pt-2 z-10">
                 <h3 className="text-base sm:text-lg font-bold text-white tracking-widest uppercase">
-                  BUILD • CONNECT • RISE
+                  BUILD • COMPETE • RISE
                 </h3>
               </div>
             </div>
@@ -256,7 +256,7 @@ export default function Hero() {
 
               <div className="text-center pt-2 z-10">
                 <h3 className="text-base sm:text-lg font-bold text-white tracking-widest uppercase">
-                  BUILD • CONNECT • RISE
+                  BUILD • COMPETE • RISE
                 </h3>
               </div>
             </div>

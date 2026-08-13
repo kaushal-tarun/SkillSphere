@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SkillSphere | Student Developer Network",
-  description: "SkillSphere is the premier student developer network. Build side projects, showcase proof-of-work, connect with teammates, and grow your developer reputation.",
+  description: "SkillSphere is the premier student developer network. Build side projects, compete in community arena battles, showcase proof-of-work, and rise in your developer career.",
   icons: {
     icon: "/SSwhitey.png",
     shortcut: "/SSwhitey.png",
