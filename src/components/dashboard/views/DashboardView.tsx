@@ -39,54 +39,54 @@ export function DashboardView({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* WELCOME BANNER (Clean & Breathable Header) */}
-      <div className="border-b border-zinc-900/90 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* WELCOME BANNER */}
+      <div className="border-b border-zinc-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
             Welcome back, {user.name}
           </h1>
-          <p className="text-xs font-mono text-zinc-400">
-            Build. Compete. Rise. • <span className="text-zinc-300">@{user.username}</span> • {user.university}
+          <p className="text-xs font-mono text-zinc-500">
+            Build. Compete. Rise. • <span className="text-zinc-900 font-bold">@{user.username}</span> • {user.university}
           </p>
         </div>
 
         <button
           onClick={onNavigateToProfile}
-          className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-white hover:text-black border border-zinc-800 text-xs font-mono text-zinc-300 transition-all self-start sm:self-auto cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 text-xs font-mono font-bold transition-all shadow-sm self-start sm:self-auto cursor-pointer"
         >
           View Profile ➔
         </button>
       </div>
 
-      {/* STATS ROW (4 Soft Minimalist Cards) */}
+      {/* STATS ROW (4 Clean Airy Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1.5 hover:border-zinc-700 transition-all">
-          <div className="text-xs font-mono text-zinc-400">Projects Built</div>
-          <div className="text-2xl font-extrabold text-white tracking-tight">{projectsList.length}</div>
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+          <div className="text-xs font-mono text-zinc-500">Projects Built</div>
+          <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">{projectsList.length}</div>
           <div className="text-[11px] font-mono text-zinc-500">
-            <span className="text-white font-semibold">+2</span> this month
+            <span className="text-zinc-900 font-bold">+2</span> this month
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1.5 hover:border-zinc-700 transition-all">
-          <div className="text-xs font-mono text-zinc-400">Current Rank</div>
-          <div className="text-2xl font-extrabold text-white tracking-tight">#1 Campus</div>
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+          <div className="text-xs font-mono text-zinc-500">Current Rank</div>
+          <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">#1 Campus</div>
           <div className="text-[11px] font-mono text-zinc-500 truncate">
             {user.university}
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1.5 hover:border-zinc-700 transition-all">
-          <div className="text-xs font-mono text-zinc-400">Skill Points</div>
-          <div className="text-2xl font-extrabold text-white tracking-tight">14,250 <span className="text-xs font-mono text-zinc-400 font-normal">XP</span></div>
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+          <div className="text-xs font-mono text-zinc-500">Skill Points</div>
+          <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">14,250 <span className="text-xs font-mono text-zinc-500 font-normal">XP</span></div>
           <div className="text-[11px] font-mono text-zinc-500">
-            <span className="text-white font-semibold">+850 XP</span> this week
+            <span className="text-zinc-900 font-bold">+850 XP</span> this week
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-1.5 hover:border-zinc-700 transition-all">
-          <div className="text-xs font-mono text-zinc-400">Achievements</div>
-          <div className="text-2xl font-extrabold text-white tracking-tight">18 <span className="text-xs font-mono text-zinc-400 font-normal">Badges</span></div>
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+          <div className="text-xs font-mono text-zinc-500">Achievements</div>
+          <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">18 <span className="text-xs font-mono text-zinc-500 font-normal">Badges</span></div>
           <div className="text-[11px] font-mono text-zinc-500">
             Verified Proof-of-Work
           </div>
@@ -99,9 +99,9 @@ export function DashboardView({
         {/* LEFT 2 COLUMNS: CURRENT PROJECTS SECTION */}
         <div className="lg:col-span-2 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-base font-bold text-zinc-900 tracking-tight flex items-center gap-2">
               <span>Current Projects</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400">
+              <span className="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-xs font-mono text-zinc-600">
                 {projectsList.length}
               </span>
             </h2>
@@ -113,8 +113,8 @@ export function DashboardView({
                   onClick={() => setProjectFilter(filter)}
                   className={`px-2.5 py-1 rounded-lg capitalize transition-all cursor-pointer ${
                     projectFilter === filter
-                      ? "bg-white text-black font-bold"
-                      : "text-zinc-400 hover:text-white bg-zinc-950 border border-zinc-800"
+                      ? "bg-zinc-900 text-white font-bold shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-900 bg-white border border-zinc-200"
                   }`}
                 >
                   {filter}
@@ -129,33 +129,33 @@ export function DashboardView({
               .map((project) => (
                 <div
                   key={project.id}
-                  className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 transition-all space-y-3 group"
+                  className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm hover:border-zinc-300 transition-all space-y-3 group"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3
                           onClick={() => onSelectProject && onSelectProject(project)}
-                          className="text-base font-bold text-white group-hover:text-zinc-200 transition-colors hover:underline cursor-pointer truncate"
+                          className="text-base font-bold text-zinc-900 group-hover:text-black transition-colors hover:underline cursor-pointer truncate"
                         >
                           {project.name}
                         </h3>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-mono border shrink-0 ${
                           project.status === "Shipped"
-                            ? "bg-white text-black border-white font-bold"
-                            : "bg-black text-zinc-400 border-zinc-800"
+                            ? "bg-zinc-900 text-white border-zinc-900 font-bold"
+                            : "bg-zinc-100 text-zinc-700 border-zinc-200"
                         }`}>
                           ● {project.status}
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 line-clamp-1 font-normal">
+                      <p className="text-xs text-zinc-600 line-clamp-1 font-normal">
                         {project.description}
                       </p>
                     </div>
 
                     <button
                       onClick={() => onSelectProject && onSelectProject(project)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-white hover:text-black border border-zinc-800 text-zinc-300 text-xs font-mono transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 text-xs font-mono font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer"
                     >
                       <span>View</span>
                       <span>➔</span>
@@ -163,10 +163,10 @@ export function DashboardView({
                   </div>
 
                   {/* Progress Bar & Tech Tags */}
-                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-zinc-900/90 font-mono text-xs">
+                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-zinc-100 font-mono text-xs">
                     <div className="flex flex-wrap gap-1.5">
                       {project.tech.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-black border border-zinc-800 text-[10px] text-zinc-400">
+                        <span key={idx} className="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[10px] text-zinc-600 font-medium">
                           {t}
                         </span>
                       ))}
@@ -185,44 +185,44 @@ export function DashboardView({
         {/* RIGHT COLUMN: PROFILE SNAPSHOT & TOP 5 WIDGET */}
         <div className="lg:col-span-1 space-y-6">
           {/* PROFILE SNAPSHOT CARD */}
-          <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-4">
+          <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
                 {getInitials(user.name)}
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-white tracking-tight truncate">{user.name}</h3>
-                <div className="text-xs font-mono text-zinc-400 truncate">@{user.username}</div>
+                <h3 className="text-sm font-bold text-zinc-900 tracking-tight truncate">{user.name}</h3>
+                <div className="text-xs font-mono text-zinc-500 truncate">@{user.username}</div>
                 <div className="text-[10px] font-mono text-zinc-500 truncate">{user.university}</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 font-mono text-xs pt-2 border-t border-zinc-900">
-              <div className="p-2.5 rounded-xl bg-black border border-zinc-800/80">
+            <div className="grid grid-cols-2 gap-2 font-mono text-xs pt-2 border-t border-zinc-100">
+              <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
                 <div className="text-[10px] text-zinc-500">Skill Points</div>
-                <div className="text-white font-bold mt-0.5">14,250 XP</div>
+                <div className="text-zinc-900 font-bold mt-0.5">14,250 XP</div>
               </div>
-              <div className="p-2.5 rounded-xl bg-black border border-zinc-800/80">
+              <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
                 <div className="text-[10px] text-zinc-500">Current Streak</div>
-                <div className="text-white font-bold mt-0.5">14 Days</div>
+                <div className="text-zinc-900 font-bold mt-0.5">14 Days</div>
               </div>
             </div>
           </div>
 
           {/* LEADERBOARD TOP 5 PREVIEW */}
-          <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-3">
+          <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white tracking-tight">Top Builders</h3>
+              <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Top Builders</h3>
               <div className="flex gap-1 font-mono text-[10px]">
                 <button
                   onClick={() => setLeaderboardTab("global")}
-                  className={`px-2 py-0.5 rounded ${leaderboardTab === "global" ? "bg-white text-black font-bold" : "text-zinc-400"}`}
+                  className={`px-2 py-0.5 rounded ${leaderboardTab === "global" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
                 >
                   Global
                 </button>
                 <button
                   onClick={() => setLeaderboardTab("campus")}
-                  className={`px-2 py-0.5 rounded ${leaderboardTab === "campus" ? "bg-white text-black font-bold" : "text-zinc-400"}`}
+                  className={`px-2 py-0.5 rounded ${leaderboardTab === "campus" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
                 >
                   Campus
                 </button>
@@ -230,24 +230,27 @@ export function DashboardView({
             </div>
 
             <div className="space-y-2 font-mono text-xs">
-              {leaderboardTop5.map((usr) => (
+              {(leaderboardTab === "campus"
+                ? leaderboardTop5.filter((usr) => usr.campus.toLowerCase().includes(user.university.toLowerCase()) || usr.rank === 1)
+                : leaderboardTop5
+              ).map((usr, idx) => (
                 <div
                   key={usr.rank}
-                  className="flex items-center justify-between p-2 rounded-xl bg-black/60 border border-zinc-800/60 hover:border-zinc-700 transition-all"
+                  className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-all"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                      usr.rank === 1 ? "bg-white text-black font-extrabold" : "bg-zinc-900 text-zinc-400 border border-zinc-800"
+                      idx === 0 ? "bg-zinc-900 text-white font-extrabold" : "bg-zinc-200 text-zinc-700"
                     }`}>
-                      #{usr.rank}
+                      #{idx + 1}
                     </span>
                     <div className="min-w-0">
-                      <div className="text-white font-bold truncate text-xs">{usr.name}</div>
-                      <div className="text-[10px] text-zinc-500 truncate">@{usr.username}</div>
+                      <div className="text-zinc-900 font-bold truncate text-xs">{usr.name}</div>
+                      <div className="text-[10px] text-zinc-500 truncate">@{usr.username} • {usr.campus}</div>
                     </div>
                   </div>
 
-                  <div className="text-right shrink-0 font-bold text-xs text-white">
+                  <div className="text-right shrink-0 font-bold text-xs text-zinc-900">
                     {usr.points.toLocaleString()} XP
                   </div>
                 </div>

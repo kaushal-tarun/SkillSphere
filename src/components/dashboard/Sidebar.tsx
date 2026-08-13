@@ -83,12 +83,13 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
   ];
 
   return (
-    <aside className="w-60 bg-black border-r border-zinc-800/90 flex flex-col justify-between hidden md:flex sticky top-0 h-screen select-none z-30 shrink-0">
+    <>
+      <aside className="w-60 bg-white border-r border-zinc-200 flex flex-col justify-between hidden md:flex sticky top-0 h-screen select-none z-30 shrink-0">
       <div className="p-5 space-y-6">
         {/* Brand Header */}
         <Link href="/dashboard" onClick={() => setActiveNav("dashboard")} className="flex items-center gap-2.5 px-2 group">
-          <img src="/SSwhitey.png" alt="SkillSphere Logo" className="h-6 w-auto object-contain transition-transform group-hover:scale-105" />
-          <span className="text-sm font-bold text-white tracking-tight">SkillSphere</span>
+          <img src="/SSblacky.png" alt="SkillSphere Logo" className="h-6 w-auto object-contain shrink-0" />
+          <span className="text-sm font-bold text-zinc-900 tracking-tight">SkillSphere</span>
         </Link>
 
         {/* Navigation Item List */}
@@ -99,17 +100,17 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
               onClick={() => setActiveNav(item.id as NavTab)}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all font-mono cursor-pointer ${
                 activeNav === item.id
-                  ? "bg-white text-black font-extrabold"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-900/80"
+                  ? "bg-zinc-900 text-white font-extrabold shadow-sm"
+                  : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-zinc-400">{item.icon}</span>
+                <span className={activeNav === item.id ? "text-white" : "text-zinc-500"}>{item.icon}</span>
                 <span>{item.label}</span>
               </div>
               {item.badge !== undefined && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded ${
-                  activeNav === item.id ? "bg-black text-white font-bold" : "bg-zinc-900 text-zinc-500 border border-zinc-800"
+                  activeNav === item.id ? "bg-zinc-800 text-white font-bold" : "bg-zinc-100 text-zinc-600 border border-zinc-200"
                 }`}>
                   {item.badge}
                 </span>
@@ -120,20 +121,47 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
       </div>
 
       {/* Sidebar Bottom Profile Snippet */}
-      <div className="p-4 border-t border-zinc-900 bg-black">
-        <div
-          onClick={() => setActiveNav("profile")}
-          className="flex items-center gap-3 p-2 rounded-xl border border-zinc-800/80 bg-zinc-950 cursor-pointer hover:border-zinc-700 transition-all"
-        >
-          <div className="w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
-            {getInitials(user.name)}
+      <div className="p-4 border-t border-zinc-200 bg-zinc-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
+              {getInitials(user.name)}
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-zinc-900 truncate">{user.name}</div>
+              <div className="text-[10px] font-mono text-zinc-500 truncate">@{user.username}</div>
+            </div>
           </div>
-          <div className="min-w-0 flex-1 font-mono">
-            <div className="text-xs font-bold text-white truncate">{user.name}</div>
-            <div className="text-[10px] text-zinc-500 truncate">{user.university}</div>
-          </div>
+
+          <button
+            onClick={() => setActiveNav("settings")}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 transition-colors cursor-pointer"
+            title="Settings"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
         </div>
       </div>
     </aside>
+
+    {/* MOBILE BOTTOM NAVIGATION BAR FOR MOBILE SCREENS (<768px) */}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-zinc-200 px-2 py-1.5 flex items-center justify-around font-mono text-[10px] shadow-lg">
+      {navItems.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => setActiveNav(item.id as NavTab)}
+          className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition-all ${
+            activeNav === item.id ? "text-zinc-900 font-extrabold" : "text-zinc-400 hover:text-zinc-800"
+          }`}
+        >
+          <span className="text-sm">{item.icon}</span>
+          <span className="capitalize">{item.label}</span>
+        </button>
+      ))}
+    </div>
+    </>
   );
 }

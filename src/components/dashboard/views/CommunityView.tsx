@@ -30,7 +30,6 @@ interface PostItem {
 export function CommunityView({ user, onNavigateToProfile, onSelectProject }: CommunityViewProps) {
   const [activeTab, setActiveTab] = useState<"foryou" | "launches" | "campus">("foryou");
   const [newPostText, setNewPostText] = useState("");
-  const [newPostImage, setNewPostImage] = useState<string | undefined>(undefined);
 
   const getInitials = (name: string) => {
     if (!name) return "US";
@@ -41,7 +40,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     return name.slice(0, 2).toUpperCase();
   };
 
-  // Authentic Gen Z Builder Feed Posts
+  // Authentic Builder Feed Posts
   const [posts, setPosts] = useState<PostItem[]>([
     {
       id: "p1",
@@ -179,23 +178,23 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
       
-      {/* LEFT 2 COLUMNS: TWITTER/X STYLE FEED */}
+      {/* LEFT 2 COLUMNS: TWITTER/X STYLE FEED WITH PURE CLEAN WHITE CARDS */}
       <div className="lg:col-span-2 space-y-6">
         
         {/* FEED HEADER & TAB SWITCHER */}
-        <div className="border-b border-zinc-900/90 pb-4 space-y-4">
+        <div className="border-b border-zinc-200 pb-4 space-y-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Community</h1>
-            <p className="text-xs font-mono text-zinc-400 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Community</h1>
+            <p className="text-xs font-mono text-zinc-500 mt-1">
               Developer feed. Share project updates, ask for feedback, and connect with student builders.
             </p>
           </div>
 
-          <div className="flex gap-2 font-mono text-xs border-b border-zinc-900 pb-1">
+          <div className="flex gap-2 font-mono text-xs border-b border-zinc-200 pb-1">
             <button
               onClick={() => setActiveTab("foryou")}
               className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "foryou" ? "border-white text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                activeTab === "foryou" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
               For You 🔥
@@ -203,7 +202,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
             <button
               onClick={() => setActiveTab("launches")}
               className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "launches" ? "border-white text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                activeTab === "launches" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
               Project Launches 🚀
@@ -211,7 +210,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
             <button
               onClick={() => setActiveTab("campus")}
               className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "campus" ? "border-white text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                activeTab === "campus" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
               My Campus ({user.university}) 🏫
@@ -219,8 +218,8 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           </div>
         </div>
 
-        {/* POST COMPOSER ("What are you building today?") */}
-        <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-4">
+        {/* POST COMPOSER (Clean White Card) */}
+        <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-zinc-200 text-zinc-900 shadow-sm space-y-4">
           <div className="flex gap-3">
             <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
               {getInitials(user.name)}
@@ -230,19 +229,19 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
               onChange={(e) => setNewPostText(e.target.value)}
               placeholder="Hey! What are you building today? Share project updates, ask for code feedback..."
               rows={3}
-              className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none font-sans resize-none pt-2"
+              className="w-full bg-transparent text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none font-sans resize-none pt-2"
             />
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-zinc-900/90 font-mono text-xs">
-            <div className="flex items-center gap-3 text-zinc-400">
-              <button type="button" className="hover:text-white flex items-center gap-1 cursor-pointer">
+          <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs">
+            <div className="flex items-center gap-3 text-zinc-500">
+              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
                 <span>📷 Image</span>
               </button>
-              <button type="button" className="hover:text-white flex items-center gap-1 cursor-pointer">
+              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
                 <span>💻 Code Snippet</span>
               </button>
-              <button type="button" className="hover:text-white flex items-center gap-1 cursor-pointer">
+              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
                 <span>🚀 Tag Project</span>
               </button>
             </div>
@@ -252,8 +251,8 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
               disabled={!newPostText.trim()}
               className={`px-4 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                 newPostText.trim()
-                  ? "bg-white text-black shadow-sm"
-                  : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed"
+                  ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
+                  : "bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed"
               }`}
             >
               Ship Post 🚀
@@ -261,12 +260,12 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           </div>
         </form>
 
-        {/* FEED POSTS LIST */}
+        {/* FEED POSTS LIST (Clean White Post Cards) */}
         <div className="space-y-4">
           {posts.map((post) => (
             <div
               key={post.id}
-              className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 transition-all space-y-3.5 group"
+              className="p-5 sm:p-6 rounded-2xl bg-white border border-zinc-200 text-zinc-900 shadow-sm space-y-3.5 group"
             >
               {/* Post Author Info */}
               <div className="flex items-start justify-between">
@@ -276,7 +275,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-bold text-sm tracking-tight">{post.authorName}</span>
+                      <span className="text-zinc-900 font-bold text-sm tracking-tight">{post.authorName}</span>
                       <span className="text-xs font-mono text-zinc-500">@{post.authorHandle}</span>
                     </div>
                     <div className="text-[11px] font-mono text-zinc-500">
@@ -286,31 +285,31 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 </div>
 
                 {post.projectTag && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-300 font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-[10px] font-mono text-zinc-700 font-bold">
                     🚀 {post.projectTag}
                   </span>
                 )}
               </div>
 
               {/* Post Content */}
-              <p className="text-xs sm:text-sm text-zinc-200 font-sans leading-relaxed">
+              <p className="text-xs sm:text-sm text-zinc-800 font-sans leading-relaxed">
                 {post.content}
               </p>
 
               {/* Code Snippet Box (if present) */}
               {post.codeSnippet && (
-                <div className="p-3.5 rounded-xl bg-black border border-zinc-800/90 font-mono text-xs text-emerald-400 overflow-x-auto">
+                <div className="p-3.5 rounded-xl bg-zinc-900 text-emerald-400 font-mono text-xs overflow-x-auto">
                   <pre>{post.codeSnippet}</pre>
                 </div>
               )}
 
-              {/* Interactive Actions (Like, Repost, Reply, DM Builder) */}
-              <div className="flex items-center justify-between pt-3 border-t border-zinc-900/90 font-mono text-xs text-zinc-400">
+              {/* Interactive Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs text-zinc-500">
                 <div className="flex items-center gap-6">
                   <button
                     onClick={() => handleToggleLike(post.id)}
                     className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
-                      post.isLiked ? "text-rose-400 font-bold" : "hover:text-rose-400"
+                      post.isLiked ? "text-rose-600 font-bold" : "hover:text-rose-600"
                     }`}
                   >
                     <span>{post.isLiked ? "❤️" : "🤍"}</span>
@@ -320,14 +319,14 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   <button
                     onClick={() => handleToggleRepost(post.id)}
                     className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
-                      post.isReposted ? "text-emerald-400 font-bold" : "hover:text-emerald-400"
+                      post.isReposted ? "text-emerald-600 font-bold" : "hover:text-emerald-600"
                     }`}
                   >
                     <span>🔁</span>
                     <span>{post.reposts}</span>
                   </button>
 
-                  <button className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+                  <button className="flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer">
                     <span>💬</span>
                     <span>{post.replies}</span>
                   </button>
@@ -336,7 +335,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 {/* Direct Message Builder Button */}
                 <button
                   onClick={onNavigateToProfile}
-                  className="px-3 py-1 rounded-xl bg-zinc-900 hover:bg-white hover:text-black border border-zinc-800 text-zinc-300 text-xs transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                 >
                   <span>DM Builder</span>
                   <span>📩</span>
@@ -347,50 +346,50 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: TRENDING TOPICS & SUGGESTED BUILDERS */}
+      {/* RIGHT SIDEBAR: TRENDING TOPICS & SUGGESTED BUILDERS (Clean White Cards) */}
       <div className="lg:col-span-1 space-y-6">
         
         {/* TRENDING TECH HASHTAGS */}
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-3 font-mono text-xs">
-          <div className="text-sm font-bold text-white tracking-tight border-b border-zinc-900/90 pb-2">
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3 font-mono text-xs">
+          <div className="text-sm font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-2">
             Trending Tech Topics 🔥
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {trendingTopics.map((topic, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-black/60 border border-zinc-800/60 hover:border-zinc-700 transition-all cursor-pointer">
+              <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-all cursor-pointer">
                 <div>
-                  <div className="text-white font-bold">{topic.tag}</div>
+                  <div className="text-zinc-900 font-bold">{topic.tag}</div>
                   <div className="text-[10px] text-zinc-500">{topic.posts}</div>
                 </div>
-                <span className="text-zinc-600">➔</span>
+                <span className="text-zinc-400">➔</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* WHO TO FOLLOW / CONNECT */}
-        <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-3 font-mono text-xs">
-          <div className="text-sm font-bold text-white tracking-tight border-b border-zinc-900/90 pb-2">
+        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3 font-mono text-xs">
+          <div className="text-sm font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-2">
             Builders to Connect 👥
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {suggestedBuilders.map((b, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-black/60 border border-zinc-800/60">
+              <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase">
                     {b.avatar}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-white font-bold truncate text-xs">{b.name}</div>
+                    <div className="text-zinc-900 font-bold truncate text-xs">{b.name}</div>
                     <div className="text-[10px] text-zinc-500 truncate">@{b.handle} • {b.campus}</div>
                   </div>
                 </div>
 
                 <button
                   onClick={onNavigateToProfile}
-                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-black font-bold text-[11px] transition-all cursor-pointer shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white font-bold text-[11px] transition-all cursor-pointer shrink-0"
                 >
                   Connect
                 </button>

@@ -143,7 +143,7 @@ export default function DashboardPage() {
       views: 12,
       likes: 1,
       status: "Active",
-      tech: projectData.tech ? projectData.tech.split(",").map((t) => t.trim()) : ["TypeScript", "Next.js"],
+      tech: projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : ["TypeScript", "Next.js"],
       github: projectData.github || "https://github.com",
     };
 
@@ -170,7 +170,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-zinc-100 text-zinc-900 font-sans flex selection:bg-zinc-900 selection:text-white">
       {/* 1. SIDEBAR */}
       <Sidebar
         activeNav={activeNav}
@@ -221,6 +221,8 @@ export default function DashboardPage() {
               {activeNav === "discover" && (
                 <DiscoverView
                   user={user}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
                   onSelectProject={(proj) => setSelectedProject(proj)}
                   onNavigateToProfile={() => setActiveNav("profile")}
                 />
@@ -248,7 +250,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "friends" && (
-                <FriendsView user={user} />
+                <FriendsView user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
               )}
 
               {activeNav === "community" && (

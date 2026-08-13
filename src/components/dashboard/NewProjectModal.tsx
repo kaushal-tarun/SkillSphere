@@ -5,101 +5,103 @@ import React, { useState } from "react";
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (project: { name: string; description: string; tech: string; github: string }) => void;
+  onSubmit: (projectData: { name: string; description: string; tech: string; github: string }) => void;
 }
 
 export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    tech: "",
-    github: "",
-  });
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tech, setTech] = useState("");
+  const [github, setGithub] = useState("");
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name) return;
-    onSubmit(formData);
-    setFormData({ name: "", description: "", tech: "", github: "" });
+    if (!name.trim()) return;
+
+    onSubmit({ name, description, tech, github });
+    setName("");
+    setDescription("");
+    setTech("");
+    setGithub("");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden space-y-5">
-        <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 space-y-6 font-mono text-xs text-zinc-900">
+        <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h3 className="text-lg font-bold text-white">Create New Project</h3>
-            <p className="text-xs text-zinc-400 font-mono">Add a new repository to your SkillSphere showcase.</p>
+            <h2 className="text-lg font-bold text-zinc-900">Add New Project</h2>
+            <p className="text-xs text-zinc-500 font-sans mt-0.5">Publish your repository to your developer portfolio.</p>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-white text-sm font-mono cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-900 text-base transition-colors cursor-pointer"
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-zinc-400 mb-1">Project Name</label>
+            <label className="block text-zinc-600 mb-1">Project Name *</label>
             <input
               type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. SkillSphere"
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 font-sans"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. KnowledgeVault AI"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1">Description</label>
+            <label className="block text-zinc-600 mb-1">Tagline & Description</label>
             <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief summary of what your project solves..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Short description of what you built and how it works..."
               rows={3}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 font-sans resize-none"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1">GitHub Repository Link</label>
-            <input
-              type="url"
-              value={formData.github}
-              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-              placeholder="https://github.com/username/repo"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 font-sans"
-            />
-          </div>
-
-          <div>
-            <label className="block text-zinc-400 mb-1">Tech Stack Tags (Comma Separated)</label>
+            <label className="block text-zinc-600 mb-1">Tech Stack (comma separated)</label>
             <input
               type="text"
-              value={formData.tech}
-              onChange={(e) => setFormData({ ...formData, tech: e.target.value })}
-              placeholder="Next.js 16, TypeScript, PostgreSQL"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 font-sans"
+              value={tech}
+              onChange={(e) => setTech(e.target.value)}
+              placeholder="Next.js, TypeScript, PostgreSQL, Prisma"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
             />
           </div>
 
-          <div className="pt-3 flex gap-3">
+          <div>
+            <label className="block text-zinc-600 mb-1">GitHub Repository Link</label>
+            <input
+              type="text"
+              value={github}
+              onChange={(e) => setGithub(e.target.value)}
+              placeholder="https://github.com/username/project"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-100">
             <button
               type="button"
               onClick={onClose}
-              className="w-1/2 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-mono text-xs cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-1/2 py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-xs shadow-md transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-sm cursor-pointer"
             >
-              Create Project
+              Publish Project 🚀
             </button>
           </div>
         </form>
