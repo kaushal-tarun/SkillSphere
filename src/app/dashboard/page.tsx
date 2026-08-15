@@ -194,7 +194,7 @@ export default function DashboardPage() {
         />
 
         {/* DYNAMIC VIEW ROUTER */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
           {selectedProject ? (
             <ProjectDetailsView
               project={selectedProject}
