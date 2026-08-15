@@ -8,7 +8,7 @@ import StarterSplash from "@/components/StarterSplash";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-[#faf6f0] text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white">
       <StarterSplash />
       <Navbar />
       <Hero />

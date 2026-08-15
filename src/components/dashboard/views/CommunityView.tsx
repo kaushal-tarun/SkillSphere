@@ -40,7 +40,6 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     return name.slice(0, 2).toUpperCase();
   };
 
-  // Authentic Builder Feed Posts
   const [posts, setPosts] = useState<PostItem[]>([
     {
       id: "p1",
@@ -49,7 +48,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "BITS Pilani '25",
       avatar: "TK",
       time: "25m ago",
-      content: "just pushed Nexa Study Engine v2 at 3:45 AM cause sleeping is for people who aren't rewriting Notion sync algorithms 😭💀 how is the dark mode UI looking guys?? roast my code",
+      content: "Just pushed Nexa Study Engine v2 at 3:45 AM! Rewriting Notion sync algorithms for instant flashcard indexing.",
       projectTag: "Nexa Study Engine",
       likes: 84,
       reposts: 12,
@@ -62,7 +61,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "IIIT Hyderabad '26",
       avatar: "TS",
       time: "1h ago",
-      content: "rewrote our WebSockets AST parser in Rust and latency dropped from 140ms to 12ms... python bros in shambles rn 🦀🔥 who wants to test the realtime editor multiplayer with me?",
+      content: "Rewrote our WebSockets AST parser in Rust and latency dropped from 140ms to 12ms! Who wants to test the multiplayer editor?",
       projectTag: "CodeCollab",
       codeSnippet: "pub fn parse_ast(buffer: &[u8]) -> Result<ASTNode, ParseError> {\n    let lexer = Lexer::new(buffer);\n    lexer.tokenize_simd()\n}",
       likes: 142,
@@ -76,7 +75,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "IIT Bombay '26",
       avatar: "AD",
       time: "3h ago",
-      content: "hey guys! built KnowledgeVault AI over the weekend using Next.js 16 + pgvector. it indexes 500-page engineering PDFs and gives Q&A under 100ms with exact page citations 🚀 drop your hardest CS paper to test it!",
+      content: "Built KnowledgeVault AI using Next.js 16 + pgvector. It indexes 500-page engineering PDFs and gives instant Q&A with exact citations.",
       projectTag: "KnowledgeVault AI",
       likes: 210,
       reposts: 45,
@@ -89,23 +88,10 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "NIT Trichy '26",
       avatar: "RS",
       time: "5h ago",
-      content: "ETHIndia hackathon squad application is open! looking for 1 solid frontend dev who knows Next.js & Tailwind. we already built the Go OpenTelemetry telemetry pipeline 🛠️ DM me if you wanna win this year!!",
+      content: "ETHIndia hackathon squad application is open! Looking for 1 solid frontend dev who knows Next.js & Tailwind.",
       likes: 67,
       reposts: 15,
       replies: 22,
-    },
-    {
-      id: "p5",
-      authorName: "Ananya Vasisht",
-      authorHandle: "ananya_vasisht",
-      campus: "IISc Bangalore '25",
-      avatar: "AV",
-      time: "8h ago",
-      content: "browser WebAssembly sandbox is live on GitHub! running untrusted C++ / Rust code directly in client side JS with zero server overhead. Wasm is literally magic ✨",
-      projectTag: "Aura Kernel Wasm",
-      likes: 189,
-      reposts: 31,
-      replies: 27,
     },
   ]);
 
@@ -120,11 +106,10 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: user.university,
       avatar: getInitials(user.name),
       time: "Just now",
-      content: newPostText.trim(),
-      likes: 1,
+      content: newPostText,
+      likes: 0,
       reposts: 0,
       replies: 0,
-      isLiked: true,
     };
 
     setPosts([created, ...posts]);
@@ -178,11 +163,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
       
-      {/* LEFT 2 COLUMNS: TWITTER/X STYLE FEED WITH PURE CLEAN WHITE CARDS */}
+      {/* LEFT 2 COLUMNS: FEED */}
       <div className="lg:col-span-2 space-y-6">
         
         {/* FEED HEADER & TAB SWITCHER */}
-        <div className="border-b border-zinc-200 pb-4 space-y-4">
+        <div className="border-b border-[#e8e2d8] pb-4 space-y-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Community</h1>
             <p className="text-xs font-mono text-zinc-500 mt-1">
@@ -190,14 +175,14 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
             </p>
           </div>
 
-          <div className="flex gap-2 font-mono text-xs border-b border-zinc-200 pb-1">
+          <div className="flex gap-2 font-mono text-xs border-b border-[#e8e2d8] pb-1">
             <button
               onClick={() => setActiveTab("foryou")}
               className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
                 activeTab === "foryou" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
-              For You 🔥
+              For You
             </button>
             <button
               onClick={() => setActiveTab("launches")}
@@ -205,7 +190,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 activeTab === "launches" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
-              Project Launches 🚀
+              Project Launches
             </button>
             <button
               onClick={() => setActiveTab("campus")}
@@ -213,13 +198,13 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 activeTab === "campus" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
               }`}
             >
-              My Campus ({user.university}) 🏫
+              My Campus ({user.university})
             </button>
           </div>
         </div>
 
-        {/* POST COMPOSER (Clean White Card) */}
-        <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-zinc-200 text-zinc-900 shadow-sm space-y-4">
+        {/* POST COMPOSER */}
+        <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4">
           <div className="flex gap-3">
             <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
               {getInitials(user.name)}
@@ -236,168 +221,133 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs">
             <div className="flex items-center gap-3 text-zinc-500">
               <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>📷 Image</span>
+                <span>Image</span>
               </button>
               <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>💻 Code Snippet</span>
+                <span>Code Snippet</span>
               </button>
               <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>🚀 Tag Project</span>
+                <span>Tag Project</span>
               </button>
             </div>
 
             <button
               type="submit"
               disabled={!newPostText.trim()}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all cursor-pointer ${
                 newPostText.trim()
                   ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
-                  : "bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed"
+                  : "bg-zinc-100 text-zinc-400 border border-[#e8e2d8]"
               }`}
             >
-              Ship Post 🚀
+              Post Update
             </button>
           </div>
         </form>
 
-        {/* FEED POSTS LIST (Clean White Post Cards) */}
+        {/* POSTS FEED */}
         <div className="space-y-4">
           {posts.map((post) => (
             <div
               key={post.id}
-              className="p-5 sm:p-6 rounded-2xl bg-white border border-zinc-200 text-zinc-900 shadow-sm space-y-3.5 group"
+              className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-3.5 hover:border-zinc-400 transition-all"
             >
-              {/* Post Author Info */}
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
                     {post.avatar}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-zinc-900 font-bold text-sm tracking-tight">{post.authorName}</span>
+                      <span className="text-sm font-bold text-zinc-900">{post.authorName}</span>
                       <span className="text-xs font-mono text-zinc-500">@{post.authorHandle}</span>
                     </div>
-                    <div className="text-[11px] font-mono text-zinc-500">
+                    <div className="text-[10px] font-mono text-zinc-500">
                       {post.campus} • {post.time}
                     </div>
                   </div>
                 </div>
 
                 {post.projectTag && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-[10px] font-mono text-zinc-700 font-bold">
-                    🚀 {post.projectTag}
+                  <span className="px-2.5 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] font-mono text-zinc-800 font-bold">
+                    {post.projectTag}
                   </span>
                 )}
               </div>
 
-              {/* Post Content */}
               <p className="text-xs sm:text-sm text-zinc-800 font-sans leading-relaxed">
                 {post.content}
               </p>
 
-              {/* Code Snippet Box (if present) */}
               {post.codeSnippet && (
-                <div className="p-3.5 rounded-xl bg-zinc-900 text-emerald-400 font-mono text-xs overflow-x-auto">
+                <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] font-mono text-[11px] text-zinc-900 overflow-x-auto shadow-inner">
                   <pre>{post.codeSnippet}</pre>
                 </div>
               )}
 
-              {/* Interactive Actions */}
               <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs text-zinc-500">
-                <div className="flex items-center gap-6">
-                  <button
-                    onClick={() => handleToggleLike(post.id)}
-                    className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
-                      post.isLiked ? "text-rose-600 font-bold" : "hover:text-rose-600"
-                    }`}
-                  >
-                    <span>{post.isLiked ? "❤️" : "🤍"}</span>
-                    <span>{post.likes}</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleToggleRepost(post.id)}
-                    className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
-                      post.isReposted ? "text-emerald-600 font-bold" : "hover:text-emerald-600"
-                    }`}
-                  >
-                    <span>🔁</span>
-                    <span>{post.reposts}</span>
-                  </button>
-
-                  <button className="flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer">
-                    <span>💬</span>
-                    <span>{post.replies}</span>
-                  </button>
-                </div>
-
-                {/* Direct Message Builder Button */}
                 <button
-                  onClick={onNavigateToProfile}
-                  className="px-3 py-1 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  onClick={() => handleToggleLike(post.id)}
+                  className={`flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer ${
+                    post.isLiked ? "text-zinc-900 font-bold" : ""
+                  }`}
                 >
-                  <span>DM Builder</span>
-                  <span>📩</span>
+                  <span>{post.likes} Likes</span>
                 </button>
+
+                <button
+                  onClick={() => handleToggleRepost(post.id)}
+                  className={`flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer ${
+                    post.isReposted ? "text-zinc-900 font-bold" : ""
+                  }`}
+                >
+                  <span>{post.reposts} Reposts</span>
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  <span>{post.replies} Replies</span>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: TRENDING TOPICS & SUGGESTED BUILDERS (Clean White Cards) */}
+      {/* RIGHT SIDEBAR: TRENDING & BUILDERS */}
       <div className="lg:col-span-1 space-y-6">
-        
-        {/* TRENDING TECH HASHTAGS */}
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3 font-mono text-xs">
-          <div className="text-sm font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-2">
-            Trending Tech Topics 🔥
-          </div>
-
-          <div className="space-y-2">
-            {trendingTopics.map((topic, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-all cursor-pointer">
-                <div>
-                  <div className="text-zinc-900 font-bold">{topic.tag}</div>
-                  <div className="text-[10px] text-zinc-500">{topic.posts}</div>
-                </div>
-                <span className="text-zinc-400">➔</span>
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4 font-mono text-xs">
+          <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Trending Topics</h3>
+          <div className="space-y-3">
+            {trendingTopics.map((topic) => (
+              <div key={topic.tag} className="flex items-center justify-between p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                <span className="font-bold text-zinc-900">{topic.tag}</span>
+                <span className="text-[10px] text-zinc-500">{topic.posts}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* WHO TO FOLLOW / CONNECT */}
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3 font-mono text-xs">
-          <div className="text-sm font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-2">
-            Builders to Connect 👥
-          </div>
-
-          <div className="space-y-2.5">
-            {suggestedBuilders.map((b, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase">
-                    {b.avatar}
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4 font-mono text-xs">
+          <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Suggested Builders</h3>
+          <div className="space-y-3">
+            {suggestedBuilders.map((builder) => (
+              <div key={builder.handle} className="flex items-center justify-between p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center">
+                    {builder.avatar}
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-zinc-900 font-bold truncate text-xs">{b.name}</div>
-                    <div className="text-[10px] text-zinc-500 truncate">@{b.handle} • {b.campus}</div>
+                  <div>
+                    <div className="font-bold text-zinc-900">{builder.name}</div>
+                    <div className="text-[10px] text-zinc-500">@{builder.handle} • {builder.campus}</div>
                   </div>
                 </div>
-
-                <button
-                  onClick={onNavigateToProfile}
-                  className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white font-bold text-[11px] transition-all cursor-pointer shrink-0"
-                >
-                  Connect
+                <button className="px-2.5 py-1 rounded bg-zinc-900 text-white text-[10px] font-bold hover:bg-black transition-all cursor-pointer">
+                  Follow
                 </button>
               </div>
             ))}
           </div>
         </div>
-
       </div>
 
     </div>

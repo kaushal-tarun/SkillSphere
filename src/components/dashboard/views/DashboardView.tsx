@@ -40,7 +40,7 @@ export function DashboardView({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* WELCOME BANNER */}
-      <div className="border-b border-zinc-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-[#e8e2d8] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
             Welcome back, {user.name}
@@ -52,15 +52,15 @@ export function DashboardView({
 
         <button
           onClick={onNavigateToProfile}
-          className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 text-xs font-mono font-bold transition-all shadow-sm self-start sm:self-auto cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-[#e8e2d8] text-xs font-mono font-bold transition-all shadow-sm self-start sm:self-auto cursor-pointer"
         >
           View Profile ➔
         </button>
       </div>
 
-      {/* STATS ROW (4 Clean Airy Cards) */}
+      {/* STATS ROW (4 Clean Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] space-y-1.5 shadow-sm hover:border-zinc-400 transition-all">
           <div className="text-xs font-mono text-zinc-500">Projects Built</div>
           <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">{projectsList.length}</div>
           <div className="text-[11px] font-mono text-zinc-500">
@@ -68,7 +68,7 @@ export function DashboardView({
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] space-y-1.5 shadow-sm hover:border-zinc-400 transition-all">
           <div className="text-xs font-mono text-zinc-500">Current Rank</div>
           <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">#1 Campus</div>
           <div className="text-[11px] font-mono text-zinc-500 truncate">
@@ -76,7 +76,7 @@ export function DashboardView({
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] space-y-1.5 shadow-sm hover:border-zinc-400 transition-all">
           <div className="text-xs font-mono text-zinc-500">Skill Points</div>
           <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">14,250 <span className="text-xs font-mono text-zinc-500 font-normal">XP</span></div>
           <div className="text-[11px] font-mono text-zinc-500">
@@ -84,7 +84,7 @@ export function DashboardView({
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-zinc-200 space-y-1.5 shadow-sm hover:border-zinc-300 transition-all">
+        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] space-y-1.5 shadow-sm hover:border-zinc-400 transition-all">
           <div className="text-xs font-mono text-zinc-500">Achievements</div>
           <div className="text-2xl font-extrabold text-zinc-900 tracking-tight">18 <span className="text-xs font-mono text-zinc-500 font-normal">Badges</span></div>
           <div className="text-[11px] font-mono text-zinc-500">
@@ -101,7 +101,7 @@ export function DashboardView({
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-zinc-900 tracking-tight flex items-center gap-2">
               <span>Current Projects</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-xs font-mono text-zinc-600">
+              <span className="px-2 py-0.5 rounded bg-white border border-[#e8e2d8] text-xs font-mono text-zinc-600 shadow-xs">
                 {projectsList.length}
               </span>
             </h2>
@@ -114,7 +114,7 @@ export function DashboardView({
                   className={`px-2.5 py-1 rounded-lg capitalize transition-all cursor-pointer ${
                     projectFilter === filter
                       ? "bg-zinc-900 text-white font-bold shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-900 bg-white border border-zinc-200"
+                      : "text-zinc-700 hover:text-zinc-900 bg-white border border-[#e8e2d8]"
                   }`}
                 >
                   {filter}
@@ -129,7 +129,7 @@ export function DashboardView({
               .map((project) => (
                 <div
                   key={project.id}
-                  className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm hover:border-zinc-300 transition-all space-y-3 group"
+                  className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 transition-all space-y-3 group"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1 min-w-0">
@@ -143,7 +143,7 @@ export function DashboardView({
                         <span className={`px-2 py-0.5 rounded text-[10px] font-mono border shrink-0 ${
                           project.status === "Shipped"
                             ? "bg-zinc-900 text-white border-zinc-900 font-bold"
-                            : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                            : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd]"
                         }`}>
                           ● {project.status}
                         </span>
@@ -155,18 +155,18 @@ export function DashboardView({
 
                     <button
                       onClick={() => onSelectProject && onSelectProject(project)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 text-xs font-mono font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-900 hover:text-white border border-[#e8e2d8] text-zinc-800 text-xs font-mono font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer"
                     >
                       <span>View</span>
                       <span>➔</span>
                     </button>
                   </div>
 
-                  {/* Progress Bar & Tech Tags */}
+                  {/* Tech Tags */}
                   <div className="flex items-center justify-between gap-4 pt-2 border-t border-zinc-100 font-mono text-xs">
                     <div className="flex flex-wrap gap-1.5">
                       {project.tech.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-[10px] text-zinc-600 font-medium">
+                        <span key={idx} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] text-zinc-800 font-medium">
                           {t}
                         </span>
                       ))}
@@ -185,7 +185,7 @@ export function DashboardView({
         {/* RIGHT COLUMN: PROFILE SNAPSHOT & TOP 5 WIDGET */}
         <div className="lg:col-span-1 space-y-6">
           {/* PROFILE SNAPSHOT CARD */}
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
                 {getInitials(user.name)}
@@ -198,11 +198,11 @@ export function DashboardView({
             </div>
 
             <div className="grid grid-cols-2 gap-2 font-mono text-xs pt-2 border-t border-zinc-100">
-              <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
+              <div className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
                 <div className="text-[10px] text-zinc-500">Skill Points</div>
                 <div className="text-zinc-900 font-bold mt-0.5">14,250 XP</div>
               </div>
-              <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
+              <div className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
                 <div className="text-[10px] text-zinc-500">Current Streak</div>
                 <div className="text-zinc-900 font-bold mt-0.5">14 Days</div>
               </div>
@@ -210,19 +210,19 @@ export function DashboardView({
           </div>
 
           {/* LEADERBOARD TOP 5 PREVIEW */}
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3">
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Top Builders</h3>
               <div className="flex gap-1 font-mono text-[10px]">
                 <button
                   onClick={() => setLeaderboardTab("global")}
-                  className={`px-2 py-0.5 rounded ${leaderboardTab === "global" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
+                  className={`px-2 py-0.5 rounded cursor-pointer ${leaderboardTab === "global" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
                 >
                   Global
                 </button>
                 <button
                   onClick={() => setLeaderboardTab("campus")}
-                  className={`px-2 py-0.5 rounded ${leaderboardTab === "campus" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
+                  className={`px-2 py-0.5 rounded cursor-pointer ${leaderboardTab === "campus" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"}`}
                 >
                   Campus
                 </button>
@@ -236,11 +236,11 @@ export function DashboardView({
               ).map((usr, idx) => (
                 <div
                   key={usr.rank}
-                  className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-all"
+                  className="flex items-center justify-between p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] hover:border-zinc-400 transition-all"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                      idx === 0 ? "bg-zinc-900 text-white font-extrabold" : "bg-zinc-200 text-zinc-700"
+                      idx === 0 ? "bg-zinc-900 text-white font-extrabold" : "bg-zinc-200 text-zinc-800"
                     }`}>
                       #{idx + 1}
                     </span>

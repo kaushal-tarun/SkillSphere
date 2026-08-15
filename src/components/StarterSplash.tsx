@@ -4,13 +4,6 @@ import React, { useState, useEffect } from "react";
 
 export default function StarterSplash({ onComplete }: { onComplete?: () => void }) {
   const [step, setStep] = useState(0); 
-  // Step 0: Initial state
-  // Step 1: Logo visible
-  // Step 2: "SkillSphere" title visible
-  // Step 3: "Showcase" visible
-  // Step 4: "Connect" visible
-  // Step 5: "Build & Grow" visible
-  // Step 6: Automatic zoom-in transition out
 
   const [isDone, setIsDone] = useState(false);
 
@@ -51,20 +44,20 @@ export default function StarterSplash({ onComplete }: { onComplete?: () => void 
   return (
     <div
       onClick={handleSkip}
-      className={`fixed inset-0 z-50 bg-black flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden transition-all duration-700 ease-in-out ${
+      className={`fixed inset-0 z-50 bg-[#faf6f0] flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden transition-all duration-700 ease-in-out ${
         step === 6 ? "scale-150 opacity-0 pointer-events-none" : "scale-100 opacity-100"
       }`}
     >
       {/* Ambient Glow behind Logo */}
       <div
-        className={`absolute w-96 h-96 rounded-full bg-white/10 blur-[130px] pointer-events-none transition-all duration-1000 ${
+        className={`absolute w-96 h-96 rounded-full bg-amber-200/20 blur-[130px] pointer-events-none transition-all duration-1000 ${
           step >= 1 ? "opacity-100 scale-110" : "opacity-0 scale-50"
         }`}
       />
 
-      {/* Main Content Container (Shifted slightly upward) */}
+      {/* Main Content Container */}
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-lg -translate-y-8 sm:-translate-y-14">
-        {/* Step 1: Starter Logo (Black Logo, Clean Transparent, No Box) */}
+        {/* Step 1: Starter Logo */}
         <div
           className={`relative transition-all duration-700 ease-out mb-6 ${
             step >= 1 ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-75 translate-y-4"
@@ -73,74 +66,65 @@ export default function StarterSplash({ onComplete }: { onComplete?: () => void 
           <img
             src="/SSblacky.png"
             alt="SkillSphere Starter Logo"
-            className="w-32 h-32 sm:w-44 sm:h-44 object-contain drop-shadow-[0_10px_25px_rgba(255,255,255,0.15)]"
+            className="w-32 h-32 sm:w-44 sm:h-44 object-contain"
           />
         </div>
 
         {/* Step 2: Main Brand Title */}
         <h1
-          className={`text-4xl sm:text-6xl font-extrabold tracking-tight text-white transition-all duration-700 ease-out mb-6 ${
+          className={`text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-900 transition-all duration-700 ease-out mb-6 ${
             step >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
           SkillSphere
         </h1>
 
-        {/* Step 3, 4, 5: One-by-One Phrase Sequence */}
+        {/* Step 3, 4, 5: Phrase Sequence */}
         <div className="flex flex-wrap items-center justify-center gap-3 text-base sm:text-xl font-medium tracking-wide">
-          {/* Word 1: Compete & Rank */}
           <span
-            className={`px-4 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-200 transition-all duration-500 ease-out ${
+            className={`px-4 py-1.5 rounded-full bg-white border border-[#e2dacd] text-zinc-800 shadow-sm transition-all duration-500 ease-out ${
               step >= 3 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-90"
             }`}
           >
             Compete & Rank
           </span>
 
-          {/* Dot divider 1 */}
           <span
-            className={`text-zinc-600 transition-opacity duration-300 ${
+            className={`text-zinc-400 font-bold transition-all duration-500 ${
               step >= 4 ? "opacity-100" : "opacity-0"
             }`}
           >
             •
           </span>
 
-          {/* Word 2: Earn XP & Badges */}
           <span
-            className={`px-4 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-200 transition-all duration-500 ease-out ${
+            className={`px-4 py-1.5 rounded-full bg-white border border-[#e2dacd] text-zinc-800 shadow-sm transition-all duration-500 ease-out ${
               step >= 4 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-90"
             }`}
           >
-            Earn XP & Badges
+            Connect Builders
           </span>
 
-          {/* Dot divider 2 */}
           <span
-            className={`text-zinc-600 transition-opacity duration-300 ${
+            className={`text-zinc-400 font-bold transition-all duration-500 ${
               step >= 5 ? "opacity-100" : "opacity-0"
             }`}
           >
             •
           </span>
 
-          {/* Word 3: Connect & Rise */}
           <span
-            className={`px-4 py-1.5 rounded-full bg-white text-black font-semibold shadow-lg shadow-white/10 transition-all duration-500 ease-out ${
+            className={`px-4 py-1.5 rounded-full bg-white border border-[#e2dacd] text-zinc-800 shadow-sm transition-all duration-500 ease-out ${
               step >= 5 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-90"
             }`}
           >
-            Connect & Rise
+            Build & Grow
           </span>
         </div>
       </div>
 
-      {/* Skip Hint */}
-      <div
-        className={`absolute bottom-8 text-xs font-mono text-zinc-500 transition-opacity duration-500 ${
-          step >= 2 ? "opacity-70" : "opacity-0"
-        }`}
-      >
+      {/* Skip Prompt */}
+      <div className="absolute bottom-8 text-xs font-mono text-zinc-500 animate-pulse">
         Click anywhere to skip
       </div>
     </div>

@@ -28,8 +28,8 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 space-y-6 font-mono text-xs text-zinc-900">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-white border border-[#e8e2d8] rounded-2xl shadow-xl p-6 space-y-6 font-mono text-xs text-zinc-900">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <div>
             <h2 className="text-lg font-bold text-zinc-900">Add New Project</h2>
@@ -52,7 +52,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. KnowledgeVault AI"
-              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
             />
           </div>
 
@@ -63,7 +63,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Short description of what you built and how it works..."
               rows={3}
-              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none transition-colors"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none transition-colors"
             />
           </div>
 
@@ -74,7 +74,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               value={tech}
               onChange={(e) => setTech(e.target.value)}
               placeholder="Next.js, TypeScript, PostgreSQL, Prisma"
-              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
             />
           </div>
 
@@ -85,7 +85,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               value={github}
               onChange={(e) => setGithub(e.target.value)}
               placeholder="https://github.com/username/project"
-              className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
             />
           </div>
 
@@ -93,15 +93,15 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-white border border-[#e8e2d8] hover:bg-zinc-50 text-zinc-700 font-bold transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-sm cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer"
             >
-              Publish Project 🚀
+              Publish Project
             </button>
           </div>
         </form>

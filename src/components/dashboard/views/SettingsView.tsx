@@ -112,7 +112,7 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* PAGE HEADER */}
-      <div className="border-b border-zinc-200 pb-6 flex items-center justify-between">
+      <div className="border-b border-[#e8e2d8] pb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Settings</h1>
           <p className="text-xs font-mono text-zinc-500 mt-1">
@@ -145,7 +145,7 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
                     : "bg-zinc-900 text-white font-extrabold shadow-sm"
                   : item.id === "danger"
                   ? "text-rose-600 hover:bg-rose-50"
-                  : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+                  : "text-zinc-700 hover:text-zinc-900 hover:bg-white/80"
               }`}
             >
               <span>{item.icon}</span>
@@ -159,14 +159,14 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
           
           {/* SECTION 1: PROFILE SETTINGS */}
           {activeSection === "profile" && (
-            <form onSubmit={handleSaveProfile} className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-6 font-mono text-xs">
+            <form onSubmit={handleSaveProfile} className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-6 font-mono text-xs">
               <div className="border-b border-zinc-100 pb-3">
                 <h2 className="text-base font-bold text-zinc-900 tracking-tight">Profile Settings</h2>
                 <p className="text-zinc-500 text-[11px]">Manage how your developer profile appears across SkillSphere.</p>
               </div>
 
               {/* Profile Picture Upload Card */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50 border border-zinc-200">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
                 <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0">
                   {getInitials(profileForm.name)}
                 </div>
@@ -183,7 +183,7 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
                     </button>
                     <button
                       type="button"
-                      className="px-3 py-1 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 text-[11px] font-bold transition-all cursor-pointer"
+                      className="px-3 py-1 rounded-lg bg-white border border-[#e8e2d8] text-zinc-700 hover:bg-zinc-100 text-[11px] font-bold transition-all cursor-pointer"
                     >
                       Remove
                     </button>
@@ -199,7 +199,7 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
                     required
                     value={profileForm.name}
                     onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 focus:outline-none focus:border-zinc-400 font-sans text-xs"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 focus:outline-none focus:border-zinc-400 font-sans text-xs"
                   />
                 </div>
 

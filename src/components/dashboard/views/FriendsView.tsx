@@ -16,7 +16,6 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = externalSetSearchQuery || setInternalSearchQuery;
 
-  // Default Friends List with XP & Level
   const [friendsList, setFriendsList] = useState<FriendItem[]>([
     {
       id: "f1",
@@ -92,26 +91,16 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
     },
   ]);
 
-  // Selected Friend for Chat
   const [selectedFriend, setSelectedFriend] = useState<FriendItem>(friendsList[0]);
   const [inputMessage, setInputMessage] = useState("");
 
-  // Mock Chat Messages per Friend ID
   const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({
     f1: [
-      { id: "m1", sender: "friend", text: "Hey! Loved your SkillSphere repository update.", time: "10:30 AM" },
-      { id: "m2", sender: "me", text: "Thanks Tanvi! Working on pgvector embeddings right now.", time: "10:32 AM" },
-      { id: "m3", sender: "friend", text: "Nice! Let me know if you want to test RAG latency.", time: "10:35 AM" },
+      { id: "m1", sender: "friend", text: "Hey! Loved KnowledgeVault AI. How are you vectorizing pages?", time: "10:24 AM" },
+      { id: "m2", sender: "me", text: "Using pgvector with Next.js 16! Performs sub-100ms similarity searches.", time: "10:26 AM" },
     ],
     f2: [
-      { id: "m1", sender: "friend", text: "Are you attending ETHIndia hackathon sprint?", time: "Yesterday" },
-      { id: "m2", sender: "me", text: "Yes! Building WebSockets telemetry tools.", time: "Yesterday" },
-    ],
-    f3: [
-      { id: "m1", sender: "friend", text: "Merged the OpenTelemetry pull request!", time: "2 days ago" },
-    ],
-    f4: [
-      { id: "m1", sender: "friend", text: "Check out the Rust Wasm sandbox demo when free.", time: "3 days ago" },
+      { id: "m3", sender: "friend", text: "Yo, tested CodeCollab multiplayer AST sync?", time: "Yesterday" },
     ],
   });
 
@@ -120,9 +109,9 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
     if (!inputMessage.trim() || !selectedFriend) return;
 
     const newMsg: ChatMessage = {
-      id: `m-${Date.now()}`,
+      id: `msg-${Date.now()}`,
       sender: "me",
-      text: inputMessage.trim(),
+      text: inputMessage,
       time: "Just now",
     };
 
@@ -134,54 +123,47 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
     setInputMessage("");
   };
 
-  const handleToggleAddFriend = (id: string) => {
+  const handleAddFriendToggle = (id: string) => {
     setFriendsList((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, isFriend: !f.isFriend } : f))
+      prev.map((f) => {
+        if (f.id === id) {
+          return { ...f, isFriend: !f.isFriend };
+        }
+        return f;
+      })
     );
   };
 
-  // Compute Friends Ranking List (User + Added Friends sorted by XP)
   const myFriends = friendsList.filter((f) => f.isFriend);
-  
-  const userAsFriend: FriendItem = {
+
+  const currentUserItem: FriendItem = {
     id: "me",
     name: user.name,
     username: user.username,
     university: user.university,
     xp: 14250,
     level: 42,
-    projects: 3,
+    projects: 12,
     status: "online",
     isFriend: true,
     avatar: "ME",
   };
 
-  const friendsRankingList = [userAsFriend, ...myFriends].sort((a, b) => b.xp - a.xp);
-
-  const getInitials = (name: string) => {
-    if (!name) return "US";
-    const parts = name.trim().split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  };
-
-  const currentMessages = chatHistories[selectedFriend.id] || [];
+  const friendsRankingList = [...myFriends, currentUserItem].sort((a, b) => b.xp - a.xp);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e8e2d8] pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Friends & Network</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Friends & Campus Network</h1>
           <p className="text-xs font-mono text-zinc-500 mt-1">
-            Connect, rank, and chat with your developer friends across campuses.
+            Connect with student builders, compare XP ranks, and chat in real-time.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-zinc-200 font-mono text-xs shadow-sm self-start sm:self-auto">
+        <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-[#e8e2d8] font-mono text-xs shadow-sm self-start sm:self-auto">
           <button
             onClick={() => setActiveTab("ranking")}
             className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
@@ -217,11 +199,11 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
             <span>Sorted by Skill Points</span>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+          <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-500 text-[11px]">
+                  <tr className="border-b border-[#e8e2d8] text-zinc-500 text-[11px]">
                     <th className="pb-3 font-semibold">RANK</th>
                     <th className="pb-3 font-semibold">FRIEND</th>
                     <th className="pb-3 font-semibold">UNIVERSITY</th>
@@ -233,12 +215,12 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
                   {friendsRankingList.map((friend, idx) => (
-                    <tr key={friend.id} className={`group hover:bg-zinc-50 transition-colors ${
-                      friend.id === "me" ? "bg-zinc-100/60 font-bold" : ""
+                    <tr key={friend.id} className={`group hover:bg-[#f4efe6]/50 transition-colors ${
+                      friend.id === "me" ? "bg-[#f4efe6] font-bold" : ""
                     }`}>
                       <td className="py-3.5">
                         <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center ${
-                          idx === 0 ? "bg-zinc-900 text-white font-extrabold" : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                          idx === 0 ? "bg-zinc-900 text-white font-extrabold" : "bg-zinc-200 text-zinc-800"
                         }`}>
                           #{idx + 1}
                         </span>
@@ -246,7 +228,7 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
                       <td className="py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative">
-                            {friend.id === "me" ? getInitials(user.name) : friend.avatar}
+                            {friend.id === "me" ? "ME" : friend.avatar}
                             <span className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 border border-white ${
                               friend.status === "online" ? "bg-emerald-500" : "bg-zinc-400"
                             }`} />
@@ -271,9 +253,9 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
                               setSelectedFriend(friend);
                               setActiveTab("chat");
                             }}
-                            className="px-3 py-1 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white border border-zinc-200 text-zinc-800 text-xs font-bold transition-all cursor-pointer"
+                            className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] hover:bg-zinc-900 hover:text-white text-zinc-800 text-xs font-bold transition-all cursor-pointer"
                           >
-                            Chat 💬
+                            Chat ➔
                           </button>
                         )}
                       </td>
@@ -290,7 +272,7 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
       {activeTab === "chat" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[550px] animate-in fade-in duration-200 font-mono text-xs">
           {/* Left Friends List Drawer */}
-          <div className="lg:col-span-1 rounded-2xl bg-white border border-zinc-200 shadow-sm p-4 space-y-3 flex flex-col justify-between overflow-hidden">
+          <div className="lg:col-span-1 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm p-4 space-y-3 flex flex-col justify-between overflow-hidden">
             <div className="space-y-3">
               <div className="text-xs font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-2">
                 Added Friends ({myFriends.length})
@@ -301,119 +283,91 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
                   <button
                     key={friend.id}
                     onClick={() => setSelectedFriend(friend)}
-                    className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer ${
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       selectedFriend.id === friend.id
                         ? "bg-zinc-900 text-white border-zinc-900 font-bold shadow-sm"
-                        : "bg-zinc-50 text-zinc-800 border-zinc-200 hover:bg-zinc-100"
+                        : "bg-[#f4efe6] border-[#e2dacd] text-zinc-800 hover:border-zinc-400"
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 border relative ${
-                        selectedFriend.id === friend.id ? "bg-white text-black border-white" : "bg-zinc-900 text-white border-zinc-800"
-                      }`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase">
                         {friend.avatar}
-                        <span className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 border border-white ${
-                          friend.status === "online" ? "bg-emerald-500" : "bg-zinc-400"
-                        }`} />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate font-bold">{friend.name}</div>
-                        <div className={`text-[10px] truncate ${selectedFriend.id === friend.id ? "text-zinc-300" : "text-zinc-500"}`}>
-                          LVL {friend.level} • {friend.xp.toLocaleString()} XP
-                        </div>
+                        <div className="truncate font-bold text-xs">{friend.name}</div>
+                        <div className="text-[10px] opacity-70 truncate">@{friend.username}</div>
                       </div>
                     </div>
-
-                    <span className={`text-[9px] ${selectedFriend.id === friend.id ? "text-white font-bold" : "text-zinc-500"}`}>
-                      {friend.status === "online" ? "● Online" : "○ Offline"}
-                    </span>
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right Direct Message Panel */}
-          <div className="lg:col-span-2 rounded-2xl bg-white border border-zinc-200 shadow-sm flex flex-col justify-between overflow-hidden">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
+          {/* Right Chat Viewport */}
+          <div className="lg:col-span-2 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm p-5 flex flex-col justify-between">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative">
+                <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center uppercase">
                   {selectedFriend.avatar}
-                  <span className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 border border-white ${
-                    selectedFriend.status === "online" ? "bg-emerald-500" : "bg-zinc-400"
-                  }`} />
                 </div>
                 <div>
-                  <div className="text-zinc-900 font-bold text-sm">{selectedFriend.name}</div>
+                  <div className="font-bold text-zinc-900 text-sm">{selectedFriend.name}</div>
                   <div className="text-[10px] text-zinc-500">@{selectedFriend.username} • {selectedFriend.university}</div>
                 </div>
               </div>
-
-              <div className="text-right text-[10px] text-zinc-500">
-                Level {selectedFriend.level} • {selectedFriend.xp.toLocaleString()} XP
-              </div>
             </div>
 
-            {/* Chat Messages Body */}
-            <div className="p-4 flex-1 overflow-y-auto space-y-3 bg-zinc-50/50">
-              {currentMessages.length > 0 ? (
-                currentMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${msg.sender === "me" ? "items-end" : "items-start"}`}
-                  >
-                    <div
-                      className={`max-w-md px-4 py-2.5 rounded-2xl text-xs font-sans ${
-                        msg.sender === "me"
-                          ? "bg-zinc-900 text-white font-medium rounded-tr-none shadow-sm"
-                          : "bg-white border border-zinc-200 text-zinc-900 rounded-tl-none"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                    <span className="text-[9px] font-mono text-zinc-400 mt-1 px-1">
-                      {msg.time}
-                    </span>
+            {/* Messages Feed */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 font-sans text-xs my-3">
+              {(chatHistories[selectedFriend.id] || []).map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.sender === "me" ? "items-end" : "items-start"}`}
+                >
+                  <div className={`max-w-[75%] p-3 rounded-2xl ${
+                    msg.sender === "me"
+                      ? "bg-zinc-900 text-white shadow-sm"
+                      : "bg-[#f4efe6] border border-[#e2dacd] text-zinc-900"
+                  }`}>
+                    <p>{msg.text}</p>
                   </div>
-                ))
-              ) : (
-                <div className="h-full flex items-center justify-center text-zinc-400 font-mono text-xs">
-                  No previous messages. Start the conversation with {selectedFriend.name}!
+                  <span className="text-[10px] font-mono text-zinc-400 mt-1 px-1">{msg.time}</span>
                 </div>
-              )}
+              ))}
             </div>
 
-            {/* Chat Input Bar (NO text-box hover clutter) */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-zinc-200 bg-white flex gap-2">
+            {/* Input Form */}
+            <form onSubmit={handleSendMessage} className="flex gap-2 pt-3 border-t border-zinc-100">
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder={`Message @${selectedFriend.username}...`}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans"
+                className="flex-1 px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans"
               />
               <button
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono transition-all shadow-sm cursor-pointer shrink-0"
+                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-mono font-bold text-xs shadow-sm transition-all cursor-pointer"
               >
-                Send 💬
+                Send ➔
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* TAB 3: ADD FRIENDS & DISCOVER */}
+      {/* TAB 3: ADD FRIENDS */}
       {activeTab === "add" && (
-        <div className="space-y-6 animate-in fade-in duration-200 font-mono text-xs">
+        <div className="space-y-6 animate-in fade-in duration-200">
           <div className="relative w-full">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search developers by name, username, or campus to add..."
-              className="w-full px-4 py-3 rounded-2xl bg-white border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
+              placeholder="Search student builders by name, campus, or username..."
+              className="w-full px-4 py-3 rounded-2xl bg-white border border-[#e8e2d8] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
             />
             <svg className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -421,43 +375,34 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {friendsList
-              .filter(
-                (f) =>
-                  f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  f.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  f.university.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((friend) => (
-                <div
-                  key={friend.id}
-                  className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm hover:border-zinc-300 transition-all flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase">
-                      {friend.avatar}
-                    </div>
-                    <div>
-                      <div className="text-zinc-900 font-bold text-sm">{friend.name}</div>
-                      <div className="text-xs text-zinc-500">@{friend.username} • {friend.university}</div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">
-                        Level {friend.level} • {friend.xp.toLocaleString()} XP
-                      </div>
-                    </div>
+            {friendsList.map((friend) => (
+              <div
+                key={friend.id}
+                className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
+                    {friend.avatar}
                   </div>
-
-                  <button
-                    onClick={() => handleToggleAddFriend(friend.id)}
-                    className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                      friend.isFriend
-                        ? "bg-zinc-100 border border-zinc-200 text-zinc-700 hover:bg-zinc-200"
-                        : "bg-zinc-900 text-white shadow-sm hover:bg-black"
-                    }`}
-                  >
-                    {friend.isFriend ? "✓ Friend Added" : "+ Add Friend"}
-                  </button>
+                  <div>
+                    <div className="text-sm font-bold text-zinc-900">{friend.name}</div>
+                    <div className="text-xs font-mono text-zinc-500">@{friend.username} • {friend.university}</div>
+                    <div className="text-[10px] font-mono text-zinc-400 mt-0.5">LVL {friend.level} • {friend.xp.toLocaleString()} XP</div>
+                  </div>
                 </div>
-              ))}
+
+                <button
+                  onClick={() => handleAddFriendToggle(friend.id)}
+                  className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                    friend.isFriend
+                      ? "bg-[#f4efe6] border border-[#e2dacd] text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+                      : "bg-zinc-900 text-white shadow-sm hover:bg-black"
+                  }`}
+                >
+                  {friend.isFriend ? "Added ✓" : "+ Add"}
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}

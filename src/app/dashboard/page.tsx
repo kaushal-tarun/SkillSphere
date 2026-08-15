@@ -170,7 +170,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900 font-sans flex selection:bg-zinc-900 selection:text-white">
+    <div className="min-h-screen bg-[#faf6f0] text-zinc-900 font-sans flex selection:bg-zinc-900 selection:text-white">
       {/* 1. SIDEBAR */}
       <Sidebar
         activeNav={activeNav}

@@ -100,40 +100,20 @@ export function DiscoverView({
       daysActive: 60,
       github: "https://github.com/rudra/hypertrace",
       campus: "NIT Trichy '26",
-      creatorHandle: "rudra_sengupta",
-    },
-    {
-      id: "disc-5",
-      name: "Aura Kernel Sandbox",
-      description: "Lightweight WebAssembly execution sandbox for untrusted user-submitted code directly in browser environments.",
-      tech: ["Rust", "Wasm", "TypeScript", "Vite"],
-      progress: 92,
-      stars: 640,
-      status: "Shipped",
-      visibility: "Public",
-      updatedAt: "4 days ago",
-      likes: 420,
-      views: 2780,
-      forks: 94,
-      commits: 215,
-      daysActive: 75,
-      github: "https://github.com/ananya/aura-sandbox",
-      campus: "IISc Bangalore '25",
-      creatorHandle: "ananya_vasisht",
+      creatorHandle: "rudra_s",
     },
   ];
 
-  const filteredProjects = discoverProjects.filter((p) => {
+  const filteredProjects = discoverProjects.filter((project) => {
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      p.campus.toLowerCase().includes(searchQuery.toLowerCase());
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      project.campus.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (activeCategory === "all") return matchesSearch;
-    if (activeCategory === "ai") return matchesSearch && (p.tech.includes("pgvector") || p.description.includes("AI") || p.name.includes("AI"));
-    if (activeCategory === "systems") return matchesSearch && (p.tech.includes("Go") || p.tech.includes("Rust") || p.tech.includes("Docker"));
-    if (activeCategory === "web3") return matchesSearch && (p.tech.includes("WebSockets") || p.description.includes("collaborative"));
+    if (activeCategory === "ai") return matchesSearch && project.tech.some((t) => ["Vector DB", "pgvector", "FastAPI", "Python"].includes(t));
+    if (activeCategory === "systems") return matchesSearch && project.tech.some((t) => ["Go", "ClickHouse", "OpenTelemetry", "Docker"].includes(t));
+    if (activeCategory === "web3") return matchesSearch && project.tech.some((t) => ["WebSockets", "Node.js", "Redis"].includes(t));
     return matchesSearch;
   });
 
@@ -145,15 +125,14 @@ export function DiscoverView({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      
-      {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
+      {/* Top Banner */}
+      <div className="border-b border-[#e8e2d8] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
-            Discover Projects
+            Discover Repositories
           </h1>
           <p className="text-xs font-mono text-zinc-500 mt-1">
-            Explore verified software repositories built by top student engineers across India.
+            Explore verified student projects, code architecture, and live campus demos.
           </p>
         </div>
 
@@ -171,7 +150,7 @@ export function DiscoverView({
               className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                 activeCategory === cat.id
                   ? "bg-zinc-900 text-white font-bold shadow-sm"
-                  : "bg-white text-zinc-600 hover:text-zinc-900 border border-zinc-200"
+                  : "bg-white text-zinc-700 hover:text-zinc-900 border border-[#e8e2d8]"
               }`}
             >
               {cat.label}
@@ -180,35 +159,34 @@ export function DiscoverView({
         </div>
       </div>
 
-      {/* SEARCH BAR (NO text-box hover clutter) */}
+      {/* SEARCH BAR */}
       <div className="relative w-full">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search discoverable repositories by title, tech stack, or campus..."
-          className="w-full px-4 py-3 rounded-2xl bg-white border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
+          className="w-full px-4 py-3 rounded-2xl bg-white border border-[#e8e2d8] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
         />
         <svg className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
 
-      {/* SINGLE COLUMN LARGE PROJECT SHOWCASE FEED (Pure White Cards) */}
+      {/* FEED */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between text-xs font-mono text-zinc-500 border-b border-zinc-200 pb-3">
+        <div className="flex items-center justify-between text-xs font-mono text-zinc-500 border-b border-[#e8e2d8] pb-3">
           <span>Student Software Showcase</span>
           <span>{sortedProjects.length} Verified Repositories</span>
         </div>
 
-        {/* 1 Big Card per row! */}
         <div className="space-y-6">
           {sortedProjects.map((project) => (
             <div
               key={project.id}
-              className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 text-zinc-900 shadow-sm hover:border-zinc-300 transition-all space-y-5 group"
+              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm hover:border-zinc-400 transition-all space-y-5 group"
             >
-              {/* Top Header Row */}
+              {/* Header Row */}
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-3">
@@ -221,7 +199,7 @@ export function DiscoverView({
                     <span className={`px-2.5 py-0.5 rounded text-xs font-mono border shrink-0 ${
                       project.status === "Shipped"
                         ? "bg-zinc-900 text-white border-zinc-900 font-bold"
-                        : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                        : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd]"
                     }`}>
                       ● {project.status}
                     </span>
@@ -244,39 +222,39 @@ export function DiscoverView({
                 </button>
               </div>
 
-              {/* Description Paragraph */}
+              {/* Description */}
               <p className="text-xs sm:text-sm text-zinc-700 font-sans leading-relaxed">
                 {project.description}
               </p>
 
-              {/* Tech Stack Pills */}
+              {/* Tech Stack */}
               <div className="flex flex-wrap gap-2 font-mono text-xs">
                 {project.tech.map((t, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-800 font-medium"
+                    className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium"
                   >
                     {t}
                   </span>
                 ))}
               </div>
 
-              {/* Bottom Metrics Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-500">
+              {/* Bottom Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-900 font-bold">★ {project.stars}</span>
                   <span>Stars</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">❤️ {project.likes}</span>
+                  <span className="text-zinc-900 font-bold">{project.likes}</span>
                   <span>Likes</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">👁️ {project.views.toLocaleString()}</span>
+                  <span className="text-zinc-900 font-bold">{project.views.toLocaleString()}</span>
                   <span>Views</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">⚡ {project.progress}%</span>
+                  <span className="text-zinc-900 font-bold">{project.progress}%</span>
                   <span>Complete</span>
                 </div>
               </div>
