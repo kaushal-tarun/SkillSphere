@@ -242,6 +242,9 @@ export default function AuthPage() {
           ) : (
             /* LOGIN CARD IN LEFT COLUMN */
             <div className="w-full max-w-md mx-auto my-auto relative p-[1.5px] rounded-[28px] overflow-hidden group animate-in fade-in slide-in-from-left-8 duration-500">
+              {/* Rotating Conic Gradient Beam creating traveling dark border line */}
+              <div className="absolute -inset-[150%] animate-spin-border bg-[conic-gradient(from_90deg_at_50%_50%,#ffffff_0%,#ffffff_70%,#000000_92%,#ffffff_100%)] opacity-90 pointer-events-none" />
+
               <div className="w-full rounded-[26px] border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl relative overflow-hidden z-10 space-y-4">
                 <div className="text-center mb-2">
                   <h2 className="text-2xl font-extrabold tracking-tight text-black">Log in to your account</h2>
@@ -339,7 +342,13 @@ export default function AuthPage() {
           {authMode === "register" ? (
             /* REGISTER CARD IN RIGHT COLUMN */
             <div className="w-full max-w-md my-auto relative p-[1.5px] rounded-[28px] overflow-hidden group animate-in fade-in slide-in-from-right-8 duration-500">
+              {/* Rotating Conic Gradient Beam creating traveling white border line */}
+              <div className="absolute -inset-[150%] animate-spin-border bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#000000_70%,#ffffff_92%,#000000_100%)] opacity-90 pointer-events-none" />
+
               <div className="w-full rounded-[26px] border border-zinc-800/90 bg-zinc-950/95 p-5 sm:p-7 backdrop-blur-2xl shadow-2xl shadow-black relative overflow-hidden z-10 space-y-3">
+                {/* Top Ambient Glow Line */}
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
                 <div className="text-center mb-2">
                   <h2 className="text-xl font-extrabold tracking-tight text-white">Create an account</h2>
                 </div>
