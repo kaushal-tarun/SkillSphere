@@ -9,6 +9,14 @@ interface CommunityViewProps {
   onSelectProject?: (project: ProjectItem) => void;
 }
 
+interface CommentItem {
+  id: string;
+  authorName: string;
+  authorHandle: string;
+  text: string;
+  time: string;
+}
+
 interface PostItem {
   id: string;
   authorName: string;
@@ -21,15 +29,19 @@ interface PostItem {
   codeSnippet?: string;
   likes: number;
   reposts: number;
-  replies: number;
   isLiked?: boolean;
   isReposted?: boolean;
   projectTag?: string;
+  comments: CommentItem[];
 }
 
 export function CommunityView({ user, onNavigateToProfile, onSelectProject }: CommunityViewProps) {
-  const [activeTab, setActiveTab] = useState<"foryou" | "launches" | "campus">("foryou");
+  const [activeTab, setActiveTab] = useState<"foryou" | "launches" | "campus" | "trending">("foryou");
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
+  const [openCommentInput, setOpenCommentInput] = useState<Record<string, boolean>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
 
   const getInitials = (name: string) => {
     if (!name) return "US";
@@ -48,11 +60,13 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "BITS Pilani '25",
       avatar: "TK",
       time: "25m ago",
-      content: "Just pushed Nexa Study Engine v2 at 3:45 AM! Rewriting Notion sync algorithms for instant flashcard indexing.",
+      content: "Just pushed Nexa Study Engine v2 at 3:45 AM! Rewriting Notion sync algorithms for instant flashcard indexing. #BuildInPublic #NextJS16",
       projectTag: "Nexa Study Engine",
       likes: 84,
       reposts: 12,
-      replies: 19,
+      comments: [
+        { id: "c1", authorName: "Tushar Somani", authorHandle: "tushar_somani", text: "Looks awesome! How fast is the AST parsing?", time: "10m ago" },
+      ],
     },
     {
       id: "p2",
@@ -61,12 +75,12 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "IIIT Hyderabad '26",
       avatar: "TS",
       time: "1h ago",
-      content: "Rewrote our WebSockets AST parser in Rust and latency dropped from 140ms to 12ms! Who wants to test the multiplayer editor?",
+      content: "Rewrote our WebSockets AST parser in Rust and latency dropped from 140ms to 12ms! Who wants to test the multiplayer editor? #RustGang",
       projectTag: "CodeCollab",
       codeSnippet: "pub fn parse_ast(buffer: &[u8]) -> Result<ASTNode, ParseError> {\n    let lexer = Lexer::new(buffer);\n    lexer.tokenize_simd()\n}",
       likes: 142,
       reposts: 28,
-      replies: 34,
+      comments: [],
     },
     {
       id: "p3",
@@ -75,11 +89,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "IIT Bombay '26",
       avatar: "AD",
       time: "3h ago",
-      content: "Built KnowledgeVault AI using Next.js 16 + pgvector. It indexes 500-page engineering PDFs and gives instant Q&A with exact citations.",
+      content: "Built KnowledgeVault AI using Next.js 16 + pgvector. It indexes 500-page engineering PDFs and gives instant Q&A with exact citations. #pgvector #NextJS16",
       projectTag: "KnowledgeVault AI",
       likes: 210,
       reposts: 45,
-      replies: 52,
+      comments: [],
     },
     {
       id: "p4",
@@ -88,10 +102,10 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       campus: "NIT Trichy '26",
       avatar: "RS",
       time: "5h ago",
-      content: "ETHIndia hackathon squad application is open! Looking for 1 solid frontend dev who knows Next.js & Tailwind.",
+      content: "ETHIndia hackathon squad application is open! Looking for 1 solid frontend dev who knows Next.js & Tailwind. #ETHIndia2026",
       likes: 67,
       reposts: 15,
-      replies: 22,
+      comments: [],
     },
   ]);
 
@@ -109,7 +123,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       content: newPostText,
       likes: 0,
       reposts: 0,
-      replies: 0,
+      comments: [],
     };
 
     setPosts([created, ...posts]);
@@ -146,6 +160,31 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     );
   };
 
+  const handleAddComment = (postId: string, text: string) => {
+    if (!text.trim()) return;
+    const newComment: CommentItem = {
+      id: `comm-${Date.now()}`,
+      authorName: user.name,
+      authorHandle: user.username,
+      text: text.trim(),
+      time: "Just now",
+    };
+
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: [...p.comments, newComment],
+          };
+        }
+        return p;
+      })
+    );
+
+    setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+  };
+
   const trendingTopics = [
     { tag: "#BuildInPublic", posts: "1.4k posts" },
     { tag: "#NextJS16", posts: "890 posts" },
@@ -154,100 +193,155 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     { tag: "#pgvector", posts: "310 posts" },
   ];
 
-  const suggestedBuilders = [
-    { name: "Tanvi Kulkarni", handle: "tanvi_kulkarni", campus: "BITS Pilani", avatar: "TK" },
-    { name: "Tushar Somani", handle: "tushar_somani", campus: "IIIT Hyderabad", avatar: "TS" },
-    { name: "Ananya Vasisht", handle: "ananya_vasisht", campus: "IISc Bangalore", avatar: "AV" },
-  ];
+  const filteredPosts = posts.filter((post) => {
+    if (activeTab === "trending" && selectedTopic) {
+      return post.content.toLowerCase().includes(selectedTopic.toLowerCase());
+    }
+    if (activeTab === "launches") {
+      return post.projectTag !== undefined;
+    }
+    if (activeTab === "campus") {
+      return post.campus.toLowerCase().includes(user.university.toLowerCase());
+    }
+    return true;
+  });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
-      
-      {/* LEFT 2 COLUMNS: FEED */}
-      <div className="lg:col-span-2 space-y-6">
-        
-        {/* FEED HEADER & TAB SWITCHER */}
-        <div className="border-b border-[#e8e2d8] pb-4 space-y-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Community</h1>
-            <p className="text-xs font-mono text-zinc-500 mt-1">
-              Developer feed. Share project updates, ask for feedback, and connect with student builders.
-            </p>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+      {/* TAB SWITCHER WITH CUSTOM STYLED TRENDING TOPICS DROPDOWN BUTTON */}
+      <div className="border-b border-[#e8e2d8] pb-1 flex flex-wrap items-center gap-2 font-mono text-xs">
+        <button
+          onClick={() => {
+            setActiveTab("foryou");
+            setSelectedTopic("");
+            setIsDropdownOpen(false);
+          }}
+          className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
+            activeTab === "foryou" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
+          }`}
+        >
+          For You
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("launches");
+            setSelectedTopic("");
+            setIsDropdownOpen(false);
+          }}
+          className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
+            activeTab === "launches" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
+          }`}
+        >
+          Project Launches
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("campus");
+            setSelectedTopic("");
+            setIsDropdownOpen(false);
+          }}
+          className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
+            activeTab === "campus" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
+          }`}
+        >
+          My Campus ({user.university})
+        </button>
 
-          <div className="flex gap-2 font-mono text-xs border-b border-[#e8e2d8] pb-1">
-            <button
-              onClick={() => setActiveTab("foryou")}
-              className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "foryou" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
-              }`}
-            >
-              For You
-            </button>
-            <button
-              onClick={() => setActiveTab("launches")}
-              className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "launches" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
-              }`}
-            >
-              Project Launches
-            </button>
-            <button
-              onClick={() => setActiveTab("campus")}
-              className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer ${
-                activeTab === "campus" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
-              }`}
-            >
-              My Campus ({user.university})
-            </button>
+        {/* SLEEK CUSTOM TRENDING TOPICS POPOVER BUTTON */}
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className={`pb-2.5 px-3 border-b-2 font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "trending" ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
+            }`}
+          >
+            <span>{selectedTopic || "Trending Topics"}</span>
+            <span className={`text-[10px] transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}>▾</span>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 mt-1 w-56 p-1.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-lg z-30 font-mono text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150">
+              {selectedTopic && (
+                <button
+                  onClick={() => {
+                    setSelectedTopic("");
+                    setActiveTab("foryou");
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-zinc-100 text-zinc-500 text-[11px] cursor-pointer"
+                >
+                  ✕ Clear Topic Filter
+                </button>
+              )}
+              {trendingTopics.map((topic) => (
+                <button
+                  key={topic.tag}
+                  onClick={() => {
+                    setSelectedTopic(topic.tag);
+                    setActiveTab("trending");
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                    selectedTopic === topic.tag ? "bg-zinc-900 text-white font-bold" : "hover:bg-[#f4efe6] text-zinc-800"
+                  }`}
+                >
+                  <span className="font-bold">{topic.tag}</span>
+                  <span className={`text-[10px] ${selectedTopic === topic.tag ? "text-zinc-300" : "text-zinc-500"}`}>{topic.posts}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* POST COMPOSER */}
+      <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4">
+        <div className="flex gap-3">
+          <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
+            {getInitials(user.name)}
           </div>
+          <textarea
+            value={newPostText}
+            onChange={(e) => setNewPostText(e.target.value)}
+            placeholder="Hey! What are you building today? Share project updates, ask for code feedback..."
+            rows={3}
+            className="w-full bg-transparent text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none font-sans resize-none pt-2"
+          />
         </div>
 
-        {/* POST COMPOSER */}
-        <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4">
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
-              {getInitials(user.name)}
-            </div>
-            <textarea
-              value={newPostText}
-              onChange={(e) => setNewPostText(e.target.value)}
-              placeholder="Hey! What are you building today? Share project updates, ask for code feedback..."
-              rows={3}
-              className="w-full bg-transparent text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none font-sans resize-none pt-2"
-            />
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs">
-            <div className="flex items-center gap-3 text-zinc-500">
-              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>Image</span>
-              </button>
-              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>Code Snippet</span>
-              </button>
-              <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-                <span>Tag Project</span>
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={!newPostText.trim()}
-              className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all cursor-pointer ${
-                newPostText.trim()
-                  ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
-                  : "bg-zinc-100 text-zinc-400 border border-[#e8e2d8]"
-              }`}
-            >
-              Post Update
+        <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs">
+          <div className="flex items-center gap-3 text-zinc-500">
+            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
+              <span>Image</span>
+            </button>
+            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
+              <span>Code Snippet</span>
+            </button>
+            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
+              <span>Tag Project</span>
             </button>
           </div>
-        </form>
 
-        {/* POSTS FEED */}
-        <div className="space-y-4">
-          {posts.map((post) => (
+          <button
+            type="submit"
+            disabled={!newPostText.trim()}
+            className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all cursor-pointer ${
+              newPostText.trim()
+                ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
+                : "bg-zinc-100 text-zinc-400 border border-[#e8e2d8]"
+            }`}
+          >
+            Post Update
+          </button>
+        </div>
+      </form>
+
+      {/* POSTS FEED */}
+      <div className="space-y-4">
+        {filteredPosts.map((post) => {
+          const isCommentOpen = !!openCommentInput[post.id];
+
+          return (
             <div
               key={post.id}
               className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-3.5 hover:border-zinc-400 transition-all"
@@ -285,71 +379,86 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs text-zinc-500">
+              {/* LIKES, REPOSTS, & COMMENT ACTION BAR WITH SVG ICONS */}
+              <div className="flex items-center gap-6 pt-3 border-t border-zinc-100 font-mono text-xs">
                 <button
                   onClick={() => handleToggleLike(post.id)}
-                  className={`flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer ${
-                    post.isLiked ? "text-zinc-900 font-bold" : ""
+                  className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    post.isLiked ? "text-zinc-900 font-bold" : "text-zinc-500 hover:text-zinc-900"
                   }`}
                 >
-                  <span>{post.likes} Likes</span>
+                  <svg className={`w-4 h-4 ${post.isLiked ? "fill-zinc-900 text-zinc-900" : "fill-none stroke-current"}`} strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.684a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  <span>{post.likes}</span>
                 </button>
 
                 <button
                   onClick={() => handleToggleRepost(post.id)}
-                  className={`flex items-center gap-1.5 hover:text-zinc-900 transition-colors cursor-pointer ${
-                    post.isReposted ? "text-zinc-900 font-bold" : ""
+                  className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    post.isReposted ? "text-zinc-900 font-bold" : "text-zinc-500 hover:text-zinc-900"
                   }`}
                 >
-                  <span>{post.reposts} Reposts</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M4.5 12c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l-2.25 2.25M4.5 12l2.25-2.25m15 2.25l2.25 2.25m-2.25-2.25l-2.25-2.25" />
+                  </svg>
+                  <span>{post.reposts}</span>
                 </button>
 
-                <div className="flex items-center gap-1.5">
-                  <span>{post.replies} Replies</span>
-                </div>
+                <button
+                  onClick={() => setOpenCommentInput((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                  className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 0012 20.25z" />
+                  </svg>
+                  <span>{post.comments.length} Comments</span>
+                </button>
               </div>
+
+              {/* COMMENTS THREAD & INPUT */}
+              {isCommentOpen && (
+                <div className="pt-3 border-t border-zinc-100 space-y-3 font-mono text-xs animate-in fade-in duration-200">
+                  {post.comments.length > 0 && (
+                    <div className="space-y-2">
+                      {post.comments.map((comm) => (
+                        <div key={comm.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-bold text-zinc-900">{comm.authorName} <span className="text-zinc-500 font-normal">@{comm.authorHandle}</span></span>
+                            <span className="text-[9px] text-zinc-500">{comm.time}</span>
+                          </div>
+                          <p className="text-xs text-zinc-800 font-sans">{comm.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={commentInputs[post.id] || ""}
+                      onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleAddComment(post.id, commentInputs[post.id] || "");
+                        }
+                      }}
+                      placeholder="Write a comment..."
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans"
+                    />
+                    <button
+                      onClick={() => handleAddComment(post.id, commentInputs[post.id] || "")}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-900 text-white font-bold text-xs hover:bg-black transition-all cursor-pointer"
+                    >
+                      Comment
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
-
-      {/* RIGHT SIDEBAR: TRENDING & BUILDERS */}
-      <div className="lg:col-span-1 space-y-6">
-        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4 font-mono text-xs">
-          <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Trending Topics</h3>
-          <div className="space-y-3">
-            {trendingTopics.map((topic) => (
-              <div key={topic.tag} className="flex items-center justify-between p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-                <span className="font-bold text-zinc-900">{topic.tag}</span>
-                <span className="text-[10px] text-zinc-500">{topic.posts}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4 font-mono text-xs">
-          <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Suggested Builders</h3>
-          <div className="space-y-3">
-            {suggestedBuilders.map((builder) => (
-              <div key={builder.handle} className="flex items-center justify-between p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center">
-                    {builder.avatar}
-                  </div>
-                  <div>
-                    <div className="font-bold text-zinc-900">{builder.name}</div>
-                    <div className="text-[10px] text-zinc-500">@{builder.handle} • {builder.campus}</div>
-                  </div>
-                </div>
-                <button className="px-2.5 py-1 rounded bg-zinc-900 text-white text-[10px] font-bold hover:bg-black transition-all cursor-pointer">
-                  Follow
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 }
