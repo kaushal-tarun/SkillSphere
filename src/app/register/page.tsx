@@ -2,27 +2,26 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function AuthPage() {
   const [authMode, setAuthMode] = useState<"register" | "login">("register");
 
   // Registration Form State
   const [regData, setRegData] = useState({
-    name: "",
     username: "",
+    name: "",
     university: "",
-    email: "",
     password: "",
     confirmPassword: "",
   });
 
   // Login Form State
   const [loginData, setLoginData] = useState({
-    identifier: "", // Email OR Username
+    username: "",
     password: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -42,8 +41,8 @@ export default function AuthPage() {
     setError("");
     setSuccess("");
 
-    if (!regData.name || !regData.email || !regData.password) {
-      setError("Please fill in all required fields.");
+    if (!regData.username || !regData.password) {
+      setError("Please enter a username and password.");
       return;
     }
 
@@ -64,10 +63,9 @@ export default function AuthPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: regData.name,
+          name: regData.name || regData.username,
           username: regData.username,
           university: regData.university,
-          email: regData.email,
           password: regData.password,
         }),
       });
@@ -77,14 +75,20 @@ export default function AuthPage() {
       if (!res.ok) {
         setError(data.error || "Failed to create account.");
       } else {
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
+        const signInRes = await signIn("credentials", {
+          identifier: regData.username,
+          password: regData.password,
+          redirect: false,
+        });
+
+        if (signInRes?.error) {
+          setError(signInRes.error);
+        } else {
+          setSuccess("Account created successfully! Redirecting...");
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 800);
         }
-        setSuccess("Account created successfully! Redirecting to Dashboard...");
-        setRegData({ name: "", username: "", university: "", email: "", password: "", confirmPassword: "" });
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -98,42 +102,38 @@ export default function AuthPage() {
     setError("");
     setSuccess("");
 
-    if (!loginData.identifier || !loginData.password) {
-      setError("Please enter your email/username and password.");
+    if (!loginData.username || !loginData.password) {
+      setError("Please enter your username and password.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identifier: loginData.identifier,
-          password: loginData.password,
-        }),
+      const res = await signIn("credentials", {
+        identifier: loginData.username,
+        password: loginData.password,
+        redirect: false,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Invalid email/username or password.");
+      if (res?.error) {
+        setError("Invalid username or password.");
       } else {
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
-        setSuccess(`Welcome back, ${data.user.name}! Redirecting to Dashboard...`);
-        setLoginData({ identifier: "", password: "" });
+        setSuccess("Welcome back! Redirecting to Dashboard...");
         setTimeout(() => {
           window.location.href = "/dashboard";
-        }, 1000);
+        }, 800);
       }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    setError("");
+    signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const toggleAuthMode = (mode: "register" | "login") => {
@@ -143,8 +143,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col font-sans bg-black relative overflow-hidden">
-      {/* Absolute Top-Left 'Back to Arena' Navigation */}
+    <div className="min-h-screen w-full flex flex-col font-sans bg-black relative overflow-hidden select-none">
+      {/* Top-Left Navigation */}
       <div className="absolute top-6 left-6 sm:left-10 z-40">
         <Link
           href="/"
@@ -154,18 +154,17 @@ export default function AuthPage() {
               : "text-black bg-white hover:bg-zinc-100 border-zinc-200"
           }`}
         >
-          <span className="group-hover:-translate-x-1 transition-transform">‹</span>
-          <span>Back to Arena</span>
+          <span className="group-hover:-translate-x-1 transition-transform">←</span>
+          <span>Back to Home</span>
         </Link>
       </div>
 
-      {/* Split Screen 2-Column Gliding Grid */}
+      {/* Split Screen Grid */}
       <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 flex-1 relative z-10">
         
-        {/* LEFT COLUMN (White Side in Register Mode / Contains Login Box when in Login Mode) */}
+        {/* LEFT COLUMN */}
         <div className="bg-white text-black px-6 sm:px-12 lg:px-16 pt-6 pb-8 flex flex-col justify-between relative z-10 min-h-[550px] lg:min-h-full transition-all duration-700 ease-in-out">
-          
-          {/* Top Header of Left Column */}
+          {/* Brand Header */}
           <div className="flex items-center justify-end w-full pt-2">
             <div className="inline-flex items-center gap-2.5">
               <img src="/SSblacky.png" alt="SkillSphere Logo" className="h-7 w-auto object-contain" />
@@ -173,10 +172,9 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* LEFT COLUMN CONTENT: REGISTER MODE (Brand Slogan + 3 Pixel Animations) */}
+          {/* REGISTER MODE: Headline & Animations */}
           {authMode === "register" ? (
             <div className="space-y-6 my-auto max-w-lg -translate-y-4 animate-in fade-in slide-in-from-left-6 duration-500">
-              {/* Build. Compete. Rise. Headline */}
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none space-y-1">
                 <span className="block text-black">Build.</span>
                 <span className="block bg-gradient-to-r from-black via-zinc-800 to-zinc-600 bg-clip-text text-transparent">
@@ -185,10 +183,10 @@ export default function AuthPage() {
                 <span className="block text-zinc-400">Rise.</span>
               </h1>
 
-              {/* 3 Retro 8-Bit Pixel Animations in Sequence */}
+              {/* 3 Retro 8-Bit Pixel Animations */}
               <div className="pt-2 pb-2">
                 <div className="inline-flex items-center gap-3 sm:gap-4 p-3 rounded-2xl bg-zinc-50 border border-zinc-200 shadow-sm">
-                  {/* 1. Hammer Builder */}
+                  {/* Hammer Builder */}
                   <div className="p-2 rounded-xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center" title="Build">
                     <svg className="w-10 h-10 sm:w-12 sm:h-12 text-black" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
                       <rect x="14" y="18" width="7" height="3" fill="#000000" />
@@ -201,13 +199,12 @@ export default function AuthPage() {
                         <rect x="12" y="5" width="2" height="7" fill="#71717a" />
                         <rect x="10" y="3" width="6" height="4" fill="#000000" />
                       </g>
-                      <rect x="17" y="14" width="2" height="2" className="animate-spark-flash fill-black" />
                     </svg>
                   </div>
 
                   <span className="text-zinc-400 font-mono text-sm">➔</span>
 
-                  {/* 2. Running Man */}
+                  {/* Runner */}
                   <div className="p-2 rounded-xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center" title="Compete">
                     <svg className="w-10 h-10 sm:w-12 sm:h-12 text-black" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
                       <rect x="2" y="21" width="6" height="1" fill="#71717a" />
@@ -229,7 +226,7 @@ export default function AuthPage() {
 
                   <span className="text-zinc-400 font-mono text-sm">➔</span>
 
-                  {/* 3. Rising Sun */}
+                  {/* Rising Sun */}
                   <div className="p-2 rounded-xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center" title="Rise">
                     <svg className="w-10 h-10 sm:w-12 sm:h-12 text-black animate-sun-rise" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
                       <rect x="1" y="19" width="22" height="2" fill="#71717a" />
@@ -237,198 +234,161 @@ export default function AuthPage() {
                       <rect x="8" y="8" width="8" height="8" fill="#000000" />
                       <rect x="9" y="7" width="6" height="1" fill="#000000" />
                       <rect x="9" y="16" width="6" height="1" fill="#000000" />
-                      <g className="animate-sun-rays">
-                        <rect x="11" y="3" width="2" height="3" fill="#000000" />
-                        <rect x="11" y="18" width="2" height="1" fill="#000000" />
-                        <rect x="3" y="11" width="3" height="2" fill="#000000" />
-                        <rect x="18" y="11" width="3" height="2" fill="#000000" />
-                        <rect x="5" y="5" width="2" height="2" fill="#27272a" />
-                        <rect x="17" y="5" width="2" height="2" fill="#27272a" />
-                        <rect x="5" y="17" width="2" height="2" fill="#27272a" />
-                        <rect x="17" y="17" width="2" height="2" fill="#27272a" />
-                      </g>
                     </svg>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            /* LEFT COLUMN CONTENT: LOGIN MODE (Login Card Glides into White Column) */
+            /* LOGIN CARD IN LEFT COLUMN */
             <div className="w-full max-w-md mx-auto my-auto relative p-[1.5px] rounded-[28px] overflow-hidden group animate-in fade-in slide-in-from-left-8 duration-500">
-              {/* Rotating Conic Gradient Beam creating a tiny moving black border line */}
-              <div className="absolute -inset-[150%] animate-spin-border bg-[conic-gradient(from_90deg_at_50%_50%,#ffffff_0%,#ffffff_70%,#000000_92%,#ffffff_100%)] opacity-90 pointer-events-none" />
-
-              {/* Inner Login Card Container */}
-              <div className="w-full rounded-[26px] border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl relative overflow-hidden z-10">
-                
-                {/* Form Header Badge */}
-                <div className="text-center mb-4">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-zinc-200 bg-zinc-100 text-[11px] font-mono text-zinc-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-                    WELCOME BACK BUILDER
-                  </div>
-                  <h2 className="text-2xl font-extrabold tracking-tight text-black mt-2">Log In to SkillSphere</h2>
+              <div className="w-full rounded-[26px] border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl relative overflow-hidden z-10 space-y-4">
+                <div className="text-center mb-2">
+                  <h2 className="text-2xl font-extrabold tracking-tight text-black">Log in to your account</h2>
                 </div>
 
-                {/* Error Alert */}
                 {error && (
-                  <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono flex items-center gap-2 animate-in fade-in duration-200">
-                    <svg className="w-4 h-4 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{error}</span>
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono">
+                    ⚠️ {error}
                   </div>
                 )}
-
-                {/* Success Alert */}
                 {success && (
-                  <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono flex items-center gap-2 animate-in fade-in duration-200">
-                    <svg className="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{success}</span>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono">
+                    ✓ {success}
                   </div>
                 )}
 
-                {/* Login Form */}
+                {/* Google Sign-in Option */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900 font-mono text-xs font-bold flex items-center justify-center gap-2 shadow-xs hover:border-zinc-400 transition-all cursor-pointer"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+
+                <div className="relative my-3 text-center">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-200" /></div>
+                  <span className="relative bg-white px-3 font-mono text-[10px] text-zinc-400 uppercase">OR</span>
+                </div>
+
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
-                  {/* Email Address OR Username */}
                   <div>
-                    <label className="block text-xs font-mono text-zinc-700 mb-1">Email Address or Username</label>
+                    <label className="block text-xs font-mono text-zinc-700 mb-1">Username</label>
                     <input
                       type="text"
-                      name="identifier"
-                      value={loginData.identifier}
+                      name="username"
+                      value={loginData.username}
                       onChange={handleLoginChange}
-                      placeholder="e.g. advait@gmail.com or advait_deshmukh"
+                      placeholder="e.g. advait_d"
                       required
-                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-black placeholder-zinc-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-sans"
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-black placeholder-zinc-400 focus:outline-none focus:border-black font-sans"
                     />
                   </div>
 
-                  {/* Password */}
                   <div>
                     <label className="block text-xs font-mono text-zinc-700 mb-1">Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={loginData.password}
-                        onChange={handleLoginChange}
-                        placeholder="Enter your password"
-                        required
-                        className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-black placeholder-zinc-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-sans pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
-                      >
-                        {showPassword ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.047 10.047 0 013.68-.763c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
+                    <input
+                      type="password"
+                      name="password"
+                      value={loginData.password}
+                      onChange={handleLoginChange}
+                      placeholder="Enter password"
+                      required
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-black placeholder-zinc-400 focus:outline-none focus:border-black font-sans"
+                    />
                   </div>
 
-                  {/* Submit Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? (
-                        <>
-                          <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                          <span>Logging In...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Log In</span>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm shadow-xl transition-all cursor-pointer"
+                  >
+                    {loading ? "Signing In..." : "Log In ➔"}
+                  </button>
                 </form>
 
-                {/* Switch to Register Link */}
-                <div className="mt-5 pt-4 border-t border-zinc-200 text-center font-mono text-xs text-zinc-600">
-                  <span>Don&apos;t have an account? </span>
+                <div className="mt-4 pt-3 border-t border-zinc-200 text-center font-mono text-xs text-zinc-600">
+                  <span>Don't have an account? </span>
                   <button
                     onClick={() => toggleAuthMode("register")}
                     className="text-black font-bold hover:underline cursor-pointer ml-1"
                   >
-                    Sign up
+                    Sign up ➔
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Left Footer copyright */}
           <div className="text-xs font-mono text-zinc-400 pt-2">
-            SkillSphere © {new Date().getFullYear()} • Engineered for Ambitious Builders
+            SkillSphere © {new Date().getFullYear()} • Student Developer Network
           </div>
         </div>
 
-        {/* RIGHT COLUMN (Black Side in Register Mode / Contains Slogan when in Login Mode) */}
+        {/* RIGHT COLUMN */}
         <div className="bg-black text-white p-4 sm:p-8 lg:p-12 flex flex-col justify-center items-center relative overflow-hidden transition-all duration-700 ease-in-out">
-          {/* Subtle Ambient background glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-white/5 blur-[140px] rounded-full pointer-events-none" />
 
           {authMode === "register" ? (
-            /* RIGHT COLUMN CONTENT: REGISTER MODE (Register Box Card with Traveling White Border Spinner) */
+            /* REGISTER CARD IN RIGHT COLUMN */
             <div className="w-full max-w-md my-auto relative p-[1.5px] rounded-[28px] overflow-hidden group animate-in fade-in slide-in-from-right-8 duration-500">
-              {/* Rotating Conic Gradient Beam creating a tiny moving white border line */}
-              <div className="absolute -inset-[150%] animate-spin-border bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#000000_70%,#ffffff_92%,#000000_100%)] opacity-90 pointer-events-none" />
-
-              {/* Inner Register Card Container */}
-              <div className="w-full rounded-[26px] border border-zinc-800/90 bg-zinc-950/95 p-5 sm:p-7 backdrop-blur-2xl shadow-2xl shadow-black relative overflow-hidden z-10">
-                {/* Top Ambient Glow Line */}
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-                {/* Form Header Badge */}
-                <div className="text-center mb-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900 text-[10px] font-mono text-zinc-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                    STUDENT DEVELOPER ARENA
-                  </div>
+              <div className="w-full rounded-[26px] border border-zinc-800/90 bg-zinc-950/95 p-5 sm:p-7 backdrop-blur-2xl shadow-2xl shadow-black relative overflow-hidden z-10 space-y-3">
+                <div className="text-center mb-2">
+                  <h2 className="text-xl font-extrabold tracking-tight text-white">Create an account</h2>
                 </div>
 
-                {/* Error Alert */}
                 {error && (
-                  <div className="mb-3 p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-mono flex items-center gap-2 animate-in fade-in duration-200">
-                    <svg className="w-4 h-4 shrink-0 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{error}</span>
+                  <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-mono">
+                    ⚠️ {error}
                   </div>
                 )}
-
-                {/* Success Alert */}
                 {success && (
-                  <div className="mb-3 p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-mono flex items-center gap-2 animate-in fade-in duration-200">
-                    <svg className="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{success}</span>
+                  <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-mono">
+                    ✓ {success}
                   </div>
                 )}
 
-                {/* Registration Form */}
+                {/* Google Sign-in Option */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="w-full py-2.5 px-4 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-white font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+
+                <div className="relative my-2 text-center">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800" /></div>
+                  <span className="relative bg-zinc-950 px-3 font-mono text-[10px] text-zinc-500 uppercase">OR</span>
+                </div>
+
                 <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
-                  {/* Full Name */}
+                  <div>
+                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Username *</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={regData.username}
+                      onChange={handleRegChange}
+                      placeholder="e.g. advait_d"
+                      required
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-[11px] font-mono text-zinc-300 mb-1">Full Name</label>
                     <input
@@ -436,222 +396,82 @@ export default function AuthPage() {
                       name="name"
                       value={regData.name}
                       onChange={handleRegChange}
-                      placeholder="e.g. Advait Deshmukh"
-                      required
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
+                      placeholder="Advait Deshmukh"
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
                     />
                   </div>
 
-                  {/* Username Handle */}
                   <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={regData.username}
-                      onChange={handleRegChange}
-                      placeholder="e.g. advait_deshmukh"
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                    />
-                  </div>
-
-                  {/* University / College Name */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">University / College Name</label>
+                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">University / Campus</label>
                     <input
                       type="text"
                       name="university"
                       value={regData.university}
                       onChange={handleRegChange}
-                      placeholder="e.g. IIT Bombay / BITS Pilani"
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
+                      placeholder="e.g. IIT Bombay '26"
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
                     />
                   </div>
 
-                  {/* Email Address */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Email Address</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={regData.email}
-                      onChange={handleRegChange}
-                      placeholder="e.g. advait@gmail.com"
-                      required
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                    />
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Password</label>
-                    <div className="relative">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-mono text-zinc-300 mb-1">Password *</label>
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type="password"
                         name="password"
                         value={regData.password}
                         onChange={handleRegChange}
-                        placeholder="At least 6 characters"
+                        placeholder="••••••••"
                         required
-                        className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans pr-10"
+                        className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
-                      >
-                        {showPassword ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.047 10.047 0 013.68-.763c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-mono text-zinc-300 mb-1">Confirm *</label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={regData.confirmPassword}
+                        onChange={handleRegChange}
+                        placeholder="••••••••"
+                        required
+                        className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
+                      />
                     </div>
                   </div>
 
-                  {/* Confirm Password */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Confirm Password</label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={regData.confirmPassword}
-                      onChange={handleRegChange}
-                      placeholder="Re-enter your password"
-                      required
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-xs sm:text-sm shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:shadow-[0_0_35px_rgba(255,255,255,0.7)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? (
-                        <>
-                          <span className="w-4 h-4 rounded-full border-2 border-black border-t-transparent animate-spin" />
-                          <span>Creating Account...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Create Account</span>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-2.5 rounded-xl bg-white text-black font-bold font-mono text-xs shadow-lg hover:bg-zinc-200 transition-all cursor-pointer mt-2"
+                  >
+                    {loading ? "Registering..." : "Create Account ➔"}
+                  </button>
                 </form>
 
-                {/* Footer Navigation */}
-                <div className="mt-4 pt-3 border-t border-zinc-900 text-center font-mono text-xs text-zinc-400">
+                <div className="mt-3 pt-3 border-t border-zinc-800 text-center font-mono text-xs text-zinc-400">
                   <span>Already have an account? </span>
                   <button
                     onClick={() => toggleAuthMode("login")}
-                    className="text-white hover:underline font-semibold cursor-pointer ml-1"
+                    className="text-white font-bold hover:underline cursor-pointer ml-1"
                   >
-                    Log in
+                    Log In ➔
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            /* RIGHT COLUMN CONTENT: LOGIN MODE (Brand Slogan Glides onto Black Side) */
-            <div className="space-y-6 my-auto max-w-lg -translate-y-4 animate-in fade-in slide-in-from-right-6 duration-500">
-              {/* Logo Header */}
-              <div className="inline-flex items-center gap-2.5 mb-1">
-                <img src="/SSwhitey.png" alt="SkillSphere Logo" className="h-8 w-auto object-contain" />
-                <span className="text-xs font-extrabold tracking-widest text-white uppercase font-mono">SKILLSPHERE</span>
-              </div>
-
-              {/* Build. Compete. Rise. Headline */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none space-y-1">
-                <span className="block text-white">Build.</span>
-                <span className="block bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
-                  Compete.
-                </span>
-                <span className="block text-zinc-400">Rise.</span>
+            /* RIGHT COLUMN SLOGAN IN LOGIN MODE */
+            <div className="space-y-6 my-auto max-w-lg -translate-y-4 animate-in fade-in slide-in-from-right-6 duration-500 text-center">
+              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-none">
+                Build. Compete. Rise.
               </h1>
-
-              {/* 3 Retro 8-Bit Pixel Animations in Sequence */}
-              <div className="pt-2 pb-2">
-                <div className="inline-flex items-center gap-3 sm:gap-4 p-3 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-xl">
-                  {/* 1. Hammer Builder */}
-                  <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center" title="Build">
-                    <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-                      <rect x="14" y="18" width="7" height="3" fill="#ffffff" />
-                      <rect x="15" y="16" width="5" height="2" fill="#a1a1aa" />
-                      <rect x="2" y="7" width="5" height="5" fill="#ffffff" />
-                      <rect x="2" y="5" width="6" height="2" fill="#ffffff" />
-                      <rect x="3" y="12" width="5" height="8" fill="#e4e4e7" />
-                      <g className="animate-hammer-swing">
-                        <rect x="7" y="10" width="5" height="2" fill="#ffffff" />
-                        <rect x="12" y="5" width="2" height="7" fill="#71717a" />
-                        <rect x="10" y="3" width="6" height="4" fill="#ffffff" />
-                      </g>
-                      <rect x="17" y="14" width="2" height="2" className="animate-spark-flash fill-white" />
-                    </svg>
-                  </div>
-
-                  <span className="text-zinc-600 font-mono text-sm">➔</span>
-
-                  {/* 2. Running Man */}
-                  <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center" title="Compete">
-                    <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-                      <rect x="2" y="21" width="6" height="1" fill="#71717a" />
-                      <rect x="10" y="21" width="8" height="1" fill="#e4e4e7" />
-                      <rect x="11" y="4" width="5" height="5" fill="#ffffff" />
-                      <rect x="8" y="9" width="7" height="6" fill="#e4e4e7" />
-                      <rect x="4" y="10" width="5" height="2" fill="#ffffff" />
-                      <rect x="14" y="11" width="5" height="2" fill="#ffffff" />
-                      <g className="animate-runner-leg1">
-                        <rect x="8" y="15" width="2" height="6" fill="#ffffff" />
-                        <rect x="6" y="19" width="3" height="2" fill="#ffffff" />
-                      </g>
-                      <g className="animate-runner-leg2">
-                        <rect x="12" y="15" width="2" height="6" fill="#ffffff" />
-                        <rect x="13" y="19" width="3" height="2" fill="#ffffff" />
-                      </g>
-                    </svg>
-                  </div>
-
-                  <span className="text-zinc-600 font-mono text-sm">➔</span>
-
-                  {/* 3. Rising Sun */}
-                  <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center" title="Rise">
-                    <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-sun-rise" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-                      <rect x="1" y="19" width="22" height="2" fill="#71717a" />
-                      <rect x="4" y="21" width="16" height="1" fill="#52525b" />
-                      <rect x="8" y="8" width="8" height="8" fill="#ffffff" />
-                      <rect x="9" y="7" width="6" height="1" fill="#ffffff" />
-                      <rect x="9" y="16" width="6" height="1" fill="#ffffff" />
-                      <g className="animate-sun-rays">
-                        <rect x="11" y="3" width="2" height="3" fill="#ffffff" />
-                        <rect x="11" y="18" width="2" height="1" fill="#ffffff" />
-                        <rect x="3" y="11" width="3" height="2" fill="#ffffff" />
-                        <rect x="18" y="11" width="3" height="2" fill="#ffffff" />
-                        <rect x="5" y="5" width="2" height="2" fill="#e4e4e7" />
-                        <rect x="17" y="5" width="2" height="2" fill="#e4e4e7" />
-                        <rect x="5" y="17" width="2" height="2" fill="#e4e4e7" />
-                        <rect x="17" y="17" width="2" height="2" fill="#e4e4e7" />
-                      </g>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              <p className="text-zinc-400 text-sm font-normal">
+                Join student developers showcasing verified proof-of-work on SkillSphere.
+              </p>
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

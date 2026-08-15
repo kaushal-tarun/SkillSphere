@@ -6,48 +6,35 @@ export async function POST(request: Request) {
   try {
     const { name, username, email, password, university } = await request.json();
 
-    if (!name || !email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { error: "Full Name, Email, and Password are required" },
+        { error: "Username and Password are required" },
         { status: 400 }
       );
     }
 
-    // Check if Email already exists
-    const existingEmail = await prisma.user.findUnique({
-      where: { email },
+    const cleanUsername = username.trim().toLowerCase();
+    const userEmail = email ? email.trim().toLowerCase() : `${cleanUsername}@skillsphere.user`;
+
+    // Check if Username already exists
+    const existingUsername = await prisma.user.findFirst({
+      where: { username: cleanUsername },
     });
 
-    if (existingEmail) {
+    if (existingUsername) {
       return NextResponse.json(
-        { error: "An account with this email already exists" },
+        { error: "Username is already taken" },
         { status: 400 }
       );
-    }
-
-    // Check if Username already exists (if provided)
-    if (username) {
-      const cleanUsername = username.trim().toLowerCase();
-      const existingUsername = await prisma.user.findFirst({
-        where: { username: cleanUsername },
-      });
-
-      if (existingUsername) {
-        return NextResponse.json(
-          { error: "Username is already taken" },
-          { status: 400 }
-        );
-      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const cleanUsername = username ? username.trim().toLowerCase() : null;
 
     const user = await prisma.user.create({
       data: {
-        name,
+        name: name || cleanUsername,
         username: cleanUsername,
-        email,
+        email: userEmail,
         password: hashedPassword,
         university: university || null,
       },

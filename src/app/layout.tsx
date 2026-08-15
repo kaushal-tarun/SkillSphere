@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +17,9 @@ export const metadata: Metadata = {
   title: "SkillSphere | Student Developer Network",
   description: "SkillSphere is the premier student developer network. Build side projects, compete in community arena battles, showcase proof-of-work, and rise in your developer career.",
   icons: {
-    icon: "/SSwhitey.png",
-    shortcut: "/SSwhitey.png",
-    apple: "/SSwhitey.png",
+    icon: "/SSblacky.png",
+    shortcut: "/SSblacky.png",
+    apple: "/SSblacky.png",
   },
 };
 
@@ -30,12 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-black text-white selection:bg-white selection:text-black">
-        {children}
+      <body className="min-h-full flex flex-col bg-[#faf6f0] text-zinc-900 selection:bg-zinc-900 selection:text-white">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
-
