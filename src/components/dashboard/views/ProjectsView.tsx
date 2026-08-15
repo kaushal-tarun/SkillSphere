@@ -96,24 +96,7 @@ export function ProjectsView({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e8e2d8] pb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Projects</h1>
-          <p className="text-xs font-mono text-zinc-500 mt-1">
-            Showcase your work. Track your progress. Learn from others.
-          </p>
-        </div>
-
-        <button
-          onClick={onOpenNewProjectModal}
-          className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono shadow-sm transition-all cursor-pointer self-start sm:self-auto"
-        >
-          + New Project
-        </button>
-      </div>
-
-      {/* FILTER BAR */}
+      {/* FILTER BAR WITH + NEW PROJECT BUTTON */}
       <div className="p-3.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
         <div className="relative flex-1 min-w-[200px]">
           <input
@@ -132,7 +115,7 @@ export function ProjectsView({
           <select
             value={techFilter}
             onChange={(e) => setTechFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400"
+            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400 cursor-pointer"
           >
             <option value="all">All Tech Stack</option>
             <option value="next">Next.js</option>
@@ -142,72 +125,25 @@ export function ProjectsView({
           </select>
 
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="shipped">Shipped</option>
-          </select>
-
-          <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400"
+            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400 cursor-pointer"
           >
             <option value="updated">Recently Updated</option>
             <option value="stars">Most Stars</option>
             <option value="progress">Highest Progress</option>
           </select>
+
+          <button
+            onClick={onOpenNewProjectModal}
+            className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono shadow-sm transition-all cursor-pointer"
+          >
+            + New Project
+          </button>
         </div>
       </div>
 
-      {/* FEATURED PROJECT SECTION */}
-      <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5 relative overflow-hidden group">
-        <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
-          <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold">
-            FEATURED CASE STUDY
-          </span>
-          <span>Spotlight Repository</span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-          <div className="lg:col-span-2 space-y-3">
-            <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">
-              SkillSphere Platform Engine v1.0
-            </h2>
-            <p className="text-xs text-zinc-600 leading-relaxed font-normal line-clamp-2">
-              A high-contrast developer networking platform built for university builders to verify proof-of-work, compete in 1v1 project battles, and showcase side projects to founders.
-            </p>
-            
-            <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
-              {["Next.js 16", "TypeScript", "Prisma", "PostgreSQL"].map((t) => (
-                <span key={t} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-1 flex flex-col justify-between bg-[#f4efe6] p-4 rounded-xl border border-[#e2dacd] space-y-3">
-            <div className="font-mono text-xs space-y-1">
-              <div className="text-zinc-500 text-[10px]">Built By</div>
-              <div className="text-zinc-900 font-bold">{user.name}</div>
-              <div className="text-zinc-500 text-[10px]">{user.university}</div>
-            </div>
-
-            <button
-              onClick={() => onSelectProject && projectsList[0] && onSelectProject(projectsList[0])}
-              className="w-full py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono text-center shadow-sm transition-all cursor-pointer"
-            >
-              View Case Study ➔
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* MY PROJECTS SECTION */}
+      {/* 1. MY PROJECTS SECTION */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-zinc-900 tracking-tight flex items-center gap-2">
@@ -274,23 +210,83 @@ export function ProjectsView({
             ))}
           </div>
         ) : (
-          <div className="p-8 rounded-2xl bg-white border border-[#e8e2d8] text-center space-y-3">
-            <div className="text-zinc-400 font-mono text-sm">No projects found matching filter criteria</div>
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setTechFilter("all");
-                setStatusFilter("all");
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold"
-            >
-              Reset Filters
-            </button>
+          <div className="p-8 sm:p-12 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm text-center space-y-4">
+            <div className="space-y-1.5 max-w-md mx-auto">
+              <h3 className="text-base font-bold text-zinc-900 tracking-tight">No projects listed yet</h3>
+              <p className="text-xs text-zinc-600 font-sans leading-relaxed">
+                {projectsList.length === 0
+                  ? "Things look empty here. Start by building or showcasing your first project repository."
+                  : "No projects match your current search or filter options."}
+              </p>
+            </div>
+            {projectsList.length === 0 ? (
+              <button
+                onClick={onOpenNewProjectModal}
+                className="px-4 py-2.5 rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold shadow-sm hover:bg-black transition-all cursor-pointer"
+              >
+                + Add Your First Project
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setTechFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold cursor-pointer"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* COMMUNITY PROJECTS SECTION */}
+      {/* 2. FEATURED PROJECT SECTION */}
+      <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5 relative overflow-hidden group">
+        <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
+          <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold">
+            FEATURED CASE STUDY
+          </span>
+          <span>Spotlight Repository</span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+          <div className="lg:col-span-2 space-y-3">
+            <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">
+              SkillSphere Platform Engine v1.0
+            </h2>
+            <p className="text-xs text-zinc-600 leading-relaxed font-normal line-clamp-2">
+              A high-contrast developer networking platform built for university builders to verify proof-of-work, compete in 1v1 project battles, and showcase side projects to founders.
+            </p>
+            
+            <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
+              {["Next.js 16", "TypeScript", "Prisma", "PostgreSQL"].map((t) => (
+                <span key={t} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-1 flex flex-col justify-between bg-[#f4efe6] p-4 rounded-xl border border-[#e2dacd] space-y-3">
+            <div className="font-mono text-xs space-y-1">
+              <div className="text-zinc-500 text-[10px]">Built By</div>
+              <div className="text-zinc-900 font-bold">{user.name}</div>
+              <div className="text-zinc-500 text-[10px]">{user.university}</div>
+            </div>
+
+            <button
+              onClick={() => onSelectProject && projectsList[0] && onSelectProject(projectsList[0])}
+              className="w-full py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono text-center shadow-sm transition-all cursor-pointer"
+            >
+              View Case Study ➔
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. COMMUNITY PROJECTS SECTION */}
       <div className="space-y-4 pt-4 border-t border-[#e8e2d8]">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-zinc-900 tracking-tight">Community Discoveries</h2>

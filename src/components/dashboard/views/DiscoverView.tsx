@@ -18,12 +18,12 @@ export function DiscoverView({
   onSelectProject,
   onNavigateToProfile,
 }: DiscoverViewProps) {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [internalSearchQuery, setInternalSearchQuery] = useState<string>("");
   
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = externalSetSearchQuery || setInternalSearchQuery;
   const [sortBy, setSortBy] = useState<"trending" | "newest" | "likes">("trending");
+  const [likedProjects, setLikedProjects] = useState<Record<string, boolean>>({});
 
   const discoverProjects: (ProjectItem & { campus: string; creatorHandle: string })[] = [
     {
@@ -100,166 +100,190 @@ export function DiscoverView({
       daysActive: 60,
       github: "https://github.com/rudra/hypertrace",
       campus: "NIT Trichy '26",
-      creatorHandle: "rudra_s",
+      creatorHandle: "rudra_sengupta",
+    },
+    {
+      id: "disc-5",
+      name: "Aura Kernel Sandbox",
+      description: "Lightweight WebAssembly execution sandbox for untrusted user-submitted code in browser environments with CPU time caps.",
+      tech: ["Rust", "Wasm", "TypeScript", "Vite"],
+      progress: 92,
+      stars: 420,
+      status: "Shipped",
+      visibility: "Public",
+      updatedAt: "4 days ago",
+      likes: 380,
+      views: 2310,
+      forks: 64,
+      commits: 165,
+      daysActive: 50,
+      github: "https://github.com/ananya/aura-sandbox",
+      campus: "IISc Bangalore '25",
+      creatorHandle: "ananya_vasisht",
     },
   ];
 
-  const filteredProjects = discoverProjects.filter((project) => {
-    const matchesSearch =
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.tech.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      project.campus.toLowerCase().includes(searchQuery.toLowerCase());
+  const toggleLike = (id: string) => {
+    setLikedProjects((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
-    if (activeCategory === "ai") return matchesSearch && project.tech.some((t) => ["Vector DB", "pgvector", "FastAPI", "Python"].includes(t));
-    if (activeCategory === "systems") return matchesSearch && project.tech.some((t) => ["Go", "ClickHouse", "OpenTelemetry", "Docker"].includes(t));
-    if (activeCategory === "web3") return matchesSearch && project.tech.some((t) => ["WebSockets", "Node.js", "Redis"].includes(t));
-    return matchesSearch;
+  const filteredProjects = discoverProjects.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.campus.toLowerCase().includes(q) ||
+      p.creatorHandle.toLowerCase().includes(q) ||
+      p.tech.some((t) => t.toLowerCase().includes(q))
+    );
   });
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
-    if (sortBy === "likes") return b.likes - a.likes;
+    if (sortBy === "likes") return (b.likes + (likedProjects[b.id] ? 1 : 0)) - (a.likes + (likedProjects[a.id] ? 1 : 0));
     if (sortBy === "newest") return b.daysActive - a.daysActive;
     return b.stars - a.stars;
   });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Top Banner */}
-      <div className="border-b border-[#e8e2d8] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
-            Discover Repositories
-          </h1>
-          <p className="text-xs font-mono text-zinc-500 mt-1">
-            Explore verified student projects, code architecture, and live campus demos.
-          </p>
+      {/* SEARCH BAR WITH FILTERS */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search discoverable repositories by title, tech stack, or campus..."
+            className="w-full px-4 py-3 rounded-2xl bg-white border border-[#e8e2d8] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
+          />
+          <svg className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-          {[
-            { id: "all", label: "All Projects" },
-            { id: "ai", label: "AI & Vector DB" },
-            { id: "systems", label: "Systems & Infrastructure" },
-            { id: "web3", label: "Realtime & Web Apps" },
-          ].map((cat) => (
+        <div className="flex gap-2 font-mono text-xs">
+          {(["trending", "newest", "likes"] as const).map((tab) => (
             <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                activeCategory === cat.id
+              key={tab}
+              onClick={() => setSortBy(tab)}
+              className={`px-3 py-2 rounded-2xl capitalize transition-all cursor-pointer ${
+                sortBy === tab
                   ? "bg-zinc-900 text-white font-bold shadow-sm"
                   : "bg-white text-zinc-700 hover:text-zinc-900 border border-[#e8e2d8]"
               }`}
             >
-              {cat.label}
+              {tab}
             </button>
           ))}
         </div>
       </div>
 
-      {/* SEARCH BAR */}
-      <div className="relative w-full">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search discoverable repositories by title, tech stack, or campus..."
-          className="w-full px-4 py-3 rounded-2xl bg-white border border-[#e8e2d8] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
-        />
-        <svg className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-
-      {/* FEED */}
+      {/* FEED LIST WITH MICRO-ANIMATIONS */}
       <div className="space-y-6">
         <div className="flex items-center justify-between text-xs font-mono text-zinc-500 border-b border-[#e8e2d8] pb-3">
           <span>Student Software Showcase</span>
           <span>{sortedProjects.length} Verified Repositories</span>
         </div>
 
-        <div className="space-y-6">
-          {sortedProjects.map((project) => (
-            <div
-              key={project.id}
-              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm hover:border-zinc-400 transition-all space-y-5 group"
-            >
-              {/* Header Row */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-3">
-                    <h2
-                      onClick={() => onSelectProject && onSelectProject(project)}
-                      className="text-xl sm:text-2xl font-extrabold text-zinc-900 hover:underline cursor-pointer tracking-tight"
+        <div className="space-y-5">
+          {sortedProjects.map((project) => {
+            const isLiked = likedProjects[project.id];
+            const currentLikes = project.likes + (isLiked ? 1 : 0);
+
+            return (
+              <div
+                key={project.id}
+                className="p-6 rounded-3xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 hover:-translate-y-1 hover:shadow-md transition-all duration-300 space-y-4 group"
+              >
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h2
+                        onClick={() => onSelectProject && onSelectProject(project)}
+                        className="text-xl sm:text-2xl font-extrabold text-zinc-900 group-hover:text-black transition-colors hover:underline cursor-pointer tracking-tight"
+                      >
+                        {project.name}
+                      </h2>
+                      <span className={`px-2.5 py-0.5 rounded text-xs font-mono border shrink-0 ${
+                        project.status === "Shipped"
+                          ? "bg-zinc-900 text-white border-zinc-900 font-bold"
+                          : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd]"
+                      }`}>
+                        ● {project.status}
+                      </span>
+                    </div>
+
+                    <div className="text-xs font-mono text-zinc-500 flex items-center gap-2">
+                      <span>Built by <strong className="text-zinc-900 font-bold">@{project.creatorHandle}</strong></span>
+                      <span>•</span>
+                      <span>{project.campus}</span>
+                      <span>•</span>
+                      <span>Updated {project.updatedAt}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button
+                      onClick={() => toggleLike(project.id)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isLiked
+                          ? "bg-zinc-900 text-white border-zinc-900 shadow-xs scale-105"
+                          : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd] hover:bg-zinc-900 hover:text-white"
+                      }`}
                     >
-                      {project.name}
-                    </h2>
-                    <span className={`px-2.5 py-0.5 rounded text-xs font-mono border shrink-0 ${
-                      project.status === "Shipped"
-                        ? "bg-zinc-900 text-white border-zinc-900 font-bold"
-                        : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd]"
-                    }`}>
-                      ● {project.status}
+                      <span className={isLiked ? "animate-heart-pulse text-red-400" : ""}>♥</span>
+                      <span>{currentLikes}</span>
+                    </button>
+
+                    <button
+                      onClick={() => onSelectProject && onSelectProject(project)}
+                      className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono transition-all shrink-0 shadow-sm cursor-pointer"
+                    >
+                      View Case Study ➔
+                    </button>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs sm:text-sm text-zinc-700 font-sans leading-relaxed">
+                  {project.description}
+                </p>
+
+                {/* Tech Stack */}
+                <div className="flex flex-wrap gap-2 font-mono text-xs">
+                  {project.tech.map((t, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium group-hover:border-zinc-300 transition-colors"
+                    >
+                      {t}
                     </span>
+                  ))}
+                </div>
+
+                {/* Bottom Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-900 font-bold">★ {project.stars}</span>
+                    <span>Stars</span>
                   </div>
-
-                  <div className="text-xs font-mono text-zinc-500 flex items-center gap-2">
-                    <span>Built by <strong className="text-zinc-900 font-bold">@{project.creatorHandle}</strong></span>
-                    <span>•</span>
-                    <span>{project.campus}</span>
-                    <span>•</span>
-                    <span>Updated {project.updatedAt}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-900 font-bold">{currentLikes}</span>
+                    <span>Likes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-900 font-bold">{project.views.toLocaleString()}</span>
+                    <span>Views</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-900 font-bold">{project.progress}%</span>
+                    <span>Complete</span>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => onSelectProject && onSelectProject(project)}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono transition-all shrink-0 shadow-sm cursor-pointer self-start sm:self-auto"
-                >
-                  View Case Study ➔
-                </button>
               </div>
-
-              {/* Description */}
-              <p className="text-xs sm:text-sm text-zinc-700 font-sans leading-relaxed">
-                {project.description}
-              </p>
-
-              {/* Tech Stack */}
-              <div className="flex flex-wrap gap-2 font-mono text-xs">
-                {project.tech.map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              {/* Bottom Metrics */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">★ {project.stars}</span>
-                  <span>Stars</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">{project.likes}</span>
-                  <span>Likes</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">{project.views.toLocaleString()}</span>
-                  <span>Views</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-900 font-bold">{project.progress}%</span>
-                  <span>Complete</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

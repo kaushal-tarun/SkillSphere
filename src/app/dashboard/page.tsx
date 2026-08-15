@@ -73,8 +73,7 @@ export default function DashboardPage() {
   const [projectFilter, setProjectFilter] = useState<"all" | "active" | "shipped">("all");
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
-  // Projects State
-  const [projectsList, setProjectsList] = useState<ProjectItem[]>([
+  const SAMPLE_PROJECTS: ProjectItem[] = [
     {
       id: "proj-1",
       name: "SkillSphere Platform",
@@ -126,7 +125,10 @@ export default function DashboardPage() {
       tech: ["Rust", "WebSockets", "Docker", "Next.js"],
       github: "https://github.com/advait/algorank-core",
     },
-  ]);
+  ];
+
+  // Projects State - Starts Empty by Default for New Sessions
+  const [projectsList, setProjectsList] = useState<ProjectItem[]>([]);
 
   const handleCreateProject = (projectData: { name: string; description: string; tech: string; github: string }) => {
     const created: ProjectItem = {
@@ -171,13 +173,15 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#faf6f0] text-zinc-900 font-sans flex selection:bg-zinc-900 selection:text-white">
-      {/* 1. SIDEBAR */}
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        projectsCount={projectsList.length}
-      />
+      {/* 1. SIDEBAR (HIDDEN WHEN IN SETTINGS TO LOOK LIKE A STANDALONE PAGE) */}
+      {activeNav !== "settings" && (
+        <Sidebar
+          activeNav={activeNav}
+          setActiveNav={setActiveNav}
+          user={user}
+          projectsCount={projectsList.length}
+        />
+      )}
 
       {/* 2. MAIN CONTENT WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -214,7 +218,10 @@ export default function DashboardPage() {
                   setLeaderboardTab={setLeaderboardTab}
                   activityFeed={activityFeed}
                   onNavigateToProfile={() => setActiveNav("profile")}
+                  onNavigateToDiscover={() => setActiveNav("discover")}
                   onSelectProject={(proj) => setSelectedProject(proj)}
+                  onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
+                  onLoadDemoProjects={() => setProjectsList(SAMPLE_PROJECTS)}
                 />
               )}
 
@@ -258,7 +265,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "settings" && (
-                <SettingsView user={user} setUser={setUser} />
+                <SettingsView user={user} setUser={setUser} onBackToDashboard={() => setActiveNav("dashboard")} />
               )}
             </>
           )}

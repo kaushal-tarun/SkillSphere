@@ -153,42 +153,32 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e8e2d8] pb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Friends & Campus Network</h1>
-          <p className="text-xs font-mono text-zinc-500 mt-1">
-            Connect with student builders, compare XP ranks, and chat in real-time.
-          </p>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-[#e8e2d8] font-mono text-xs shadow-sm self-start sm:self-auto">
-          <button
-            onClick={() => setActiveTab("ranking")}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeTab === "ranking" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            Friends Ranking
-          </button>
-          <button
-            onClick={() => setActiveTab("chat")}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeTab === "chat" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            Direct Messages ({myFriends.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("add")}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeTab === "add" ? "bg-zinc-900 text-white font-bold" : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            + Add Friends
-          </button>
-        </div>
+      {/* TOP CONTROLS BAR (RANKING, DIRECT MESSAGES, ADD FRIENDS) */}
+      <div className="flex flex-wrap items-center justify-start gap-2 bg-white p-1.5 rounded-2xl border border-[#e8e2d8] font-mono text-xs shadow-sm w-fit">
+        <button
+          onClick={() => setActiveTab("ranking")}
+          className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "ranking" ? "bg-zinc-900 text-white font-bold shadow-xs" : "text-zinc-600 hover:text-zinc-900 hover:bg-[#f4efe6]"
+          }`}
+        >
+          Friends Ranking
+        </button>
+        <button
+          onClick={() => setActiveTab("chat")}
+          className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "chat" ? "bg-zinc-900 text-white font-bold shadow-xs" : "text-zinc-600 hover:text-zinc-900 hover:bg-[#f4efe6]"
+          }`}
+        >
+          Direct Messages ({myFriends.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("add")}
+          className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "add" ? "bg-zinc-900 text-white font-bold shadow-xs" : "text-zinc-600 hover:text-zinc-900 hover:bg-[#f4efe6]"
+          }`}
+        >
+          + Add Friends
+        </button>
       </div>
 
       {/* TAB 1: FRIENDS RANKING */}
@@ -366,7 +356,7 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search student builders by name, campus, or username..."
+              placeholder="Search builders by username..."
               className="w-full px-4 py-3 rounded-2xl bg-white border border-[#e8e2d8] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans pl-11 shadow-sm"
             />
             <svg className="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

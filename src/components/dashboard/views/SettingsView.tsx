@@ -6,6 +6,7 @@ import { UserProfile } from "@/types/dashboard";
 interface SettingsViewProps {
   user: UserProfile;
   setUser: React.Dispatch<React.SetStateAction<UserProfile>>;
+  onBackToDashboard?: () => void;
 }
 
 type SettingsSection = 
@@ -18,7 +19,7 @@ type SettingsSection =
   | "connected" 
   | "danger";
 
-export function SettingsView({ user, setUser }: SettingsViewProps) {
+export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -113,9 +114,17 @@ export function SettingsView({ user, setUser }: SettingsViewProps) {
       
       {/* PAGE HEADER */}
       <div className="border-b border-[#e8e2d8] pb-6 flex items-center justify-between">
-        <div>
+        <div className="space-y-1">
+          {onBackToDashboard && (
+            <button
+              onClick={onBackToDashboard}
+              className="text-xs font-mono font-bold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1 cursor-pointer mb-2"
+            >
+              <span>← Back to Dashboard</span>
+            </button>
+          )}
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Settings</h1>
-          <p className="text-xs font-mono text-zinc-500 mt-1">
+          <p className="text-xs font-mono text-zinc-500">
             Manage your account and personalize your experience.
           </p>
         </div>
