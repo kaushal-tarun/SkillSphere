@@ -20,7 +20,7 @@ export interface ProjectItem {
   forks: number;
   commits: number;
   daysActive: number;
-  views: number;
+  views?: number;
   likes: number;
   status: "Shipped" | "Active" | "In Development";
   tech: string[];
@@ -36,7 +36,7 @@ export interface CommunityProject {
   description: string;
   tech: string[];
   likes: number;
-  views: number;
+  views?: number;
   updatedAt: string;
   github: string;
 }

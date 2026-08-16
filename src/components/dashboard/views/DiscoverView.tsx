@@ -263,7 +263,7 @@ export function DiscoverView({
                 </div>
 
                 {/* Bottom Metrics */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-900 font-bold">★ {project.stars}</span>
                     <span>Stars</span>
@@ -271,14 +271,6 @@ export function DiscoverView({
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-900 font-bold">{currentLikes}</span>
                     <span>Likes</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-zinc-900 font-bold">{project.views.toLocaleString()}</span>
-                    <span>Views</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-zinc-900 font-bold">{project.progress}%</span>
-                    <span>Complete</span>
                   </div>
                 </div>
               </div>

@@ -84,6 +84,26 @@ export default function AuthPage() {
         if (signInRes?.error) {
           setError(signInRes.error);
         } else {
+          // Save registered account profile into skillsphere_users_db in localStorage
+          try {
+            const newAcc = {
+              id: data.user?.id || `usr_${Date.now()}`,
+              name: regData.name || regData.username,
+              username: regData.username.toLowerCase().trim().replace(/\s+/g, "_"),
+              university: regData.university || "University Student",
+              xp: 1000,
+              level: 1,
+              projects: 0,
+              avatar: (regData.name || regData.username).slice(0, 2).toUpperCase(),
+            };
+            const existingUsers = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
+            const updatedUsers = [newAcc, ...existingUsers.filter((u: any) => u.username.toLowerCase() !== newAcc.username)];
+            localStorage.setItem("skillsphere_users_db", JSON.stringify(updatedUsers));
+            localStorage.setItem("user", JSON.stringify(newAcc));
+          } catch (e) {
+            console.error("Failed to store user profile in localStorage", e);
+          }
+
           setSuccess("Account created successfully! Redirecting...");
           setTimeout(() => {
             window.location.href = "/dashboard";
@@ -110,8 +130,10 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      const cleanUsername = loginData.username.toLowerCase().trim().replace(/\s+/g, "_");
+
       const res = await signIn("credentials", {
-        identifier: loginData.username,
+        identifier: cleanUsername,
         password: loginData.password,
         redirect: false,
       });
@@ -119,6 +141,28 @@ export default function AuthPage() {
       if (res?.error) {
         setError("Invalid username or password.");
       } else {
+        try {
+          const existingUsers = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
+          const matchedUser = existingUsers.find((u: any) => u.username.toLowerCase() === cleanUsername);
+
+          const loggedInProfile = matchedUser || {
+            id: `usr_${cleanUsername}`,
+            name: loginData.username,
+            username: cleanUsername,
+            university: "University Student",
+            xp: 1000,
+            level: 1,
+            projects: 0,
+            avatar: loginData.username.slice(0, 2).toUpperCase(),
+          };
+
+          localStorage.setItem("user", JSON.stringify(loggedInProfile));
+          const updatedUsers = [loggedInProfile, ...existingUsers.filter((u: any) => u.username.toLowerCase() !== cleanUsername)];
+          localStorage.setItem("skillsphere_users_db", JSON.stringify(updatedUsers));
+        } catch (e) {
+          console.error("Failed to update user session on login", e);
+        }
+
         setSuccess("Welcome back! Redirecting to Dashboard...");
         setTimeout(() => {
           window.location.href = "/dashboard";

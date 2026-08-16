@@ -37,7 +37,7 @@ export default function DashboardPage() {
       try {
         const parsed = JSON.parse(savedUser);
         if (parsed.name) {
-          setUser({
+          const userObj = {
             id: parsed.id || "",
             name: parsed.name,
             username: parsed.username || parsed.name.toLowerCase().replace(/\s+/g, "_"),
@@ -46,7 +46,27 @@ export default function DashboardPage() {
             role: parsed.role || "Full-Stack Engineer & AI Developer",
             location: parsed.location || "India",
             bio: parsed.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
-          });
+          };
+          setUser(userObj);
+
+          // Register in skillsphere_users_db
+          try {
+            const existingUsers = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
+            const userAccount = {
+              id: userObj.id || `usr_${userObj.username}`,
+              name: userObj.name,
+              username: userObj.username.toLowerCase().trim(),
+              university: userObj.university,
+              xp: 1250,
+              level: 2,
+              projects: 1,
+              avatar: getInitials(userObj.name),
+            };
+            const updated = [userAccount, ...existingUsers.filter((u: any) => u.username.toLowerCase() !== userAccount.username)];
+            localStorage.setItem("skillsphere_users_db", JSON.stringify(updated));
+          } catch (e) {
+            console.error("Failed to sync registered users DB", e);
+          }
         }
       } catch (e) {
         console.error("Failed to parse user session", e);
@@ -177,7 +197,10 @@ export default function DashboardPage() {
       {activeNav !== "settings" && (
         <Sidebar
           activeNav={activeNav}
-          setActiveNav={setActiveNav}
+          setActiveNav={(tab) => {
+            setSelectedProject(null);
+            setActiveNav(tab);
+          }}
           user={user}
           projectsCount={projectsList.length}
         />

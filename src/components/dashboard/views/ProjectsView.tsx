@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { UserProfile, ProjectItem, CommunityProject } from "@/types/dashboard";
 
 interface ProjectsViewProps {
@@ -32,6 +32,23 @@ export function ProjectsView({
   onOpenNewProjectModal,
   onSelectProject,
 }: ProjectsViewProps) {
+  const [isTechOpen, setIsTechOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const techOptions = [
+    { value: "all", label: "All Tech Stack" },
+    { value: "next", label: "Next.js" },
+    { value: "python", label: "Python" },
+    { value: "rust", label: "Rust" },
+    { value: "typescript", label: "TypeScript" },
+  ];
+
+  const sortOptions = [
+    { value: "updated", label: "Recently Updated" },
+    { value: "stars", label: "Most Stars" },
+    { value: "commits", label: "Most Commits" },
+  ];
+
   const communityProjects: CommunityProject[] = [
     {
       id: "comm-1",
@@ -42,7 +59,6 @@ export function ProjectsView({
       description: "AI-assisted flashcard generation engine syncing directly with Notion databases and Markdown notes.",
       tech: ["React", "FastAPI", "PostgreSQL", "Tailwind"],
       likes: 198,
-      views: 1120,
       updatedAt: "Yesterday",
       github: "https://github.com/tanvi/nexa-engine",
     },
@@ -55,7 +71,6 @@ export function ProjectsView({
       description: "Real-time collaborative code editor with WebRTC audio channels and synchronized AST parsing.",
       tech: ["Node.js", "WebSockets", "Monaco Editor", "Redis"],
       likes: 245,
-      views: 1540,
       updatedAt: "2 days ago",
       github: "https://github.com/tushar/codecollab",
     },
@@ -68,7 +83,6 @@ export function ProjectsView({
       description: "Low-overhead distributed tracing collector for microservices with OpenTelemetry exporter plugin.",
       tech: ["Go", "OpenTelemetry", "ClickHouse", "Docker"],
       likes: 312,
-      views: 1890,
       updatedAt: "3 days ago",
       github: "https://github.com/rudra/hypertrace",
     },
@@ -81,7 +95,6 @@ export function ProjectsView({
       description: "Lightweight WebAssembly execution sandbox for untrusted user-submitted code in browser environments.",
       tech: ["Rust", "Wasm", "TypeScript", "Vite"],
       likes: 420,
-      views: 2780,
       updatedAt: "4 days ago",
       github: "https://github.com/ananya/aura-sandbox",
     },
@@ -112,27 +125,77 @@ export function ProjectsView({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={techFilter}
-            onChange={(e) => setTechFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400 cursor-pointer"
-          >
-            <option value="all">All Tech Stack</option>
-            <option value="next">Next.js</option>
-            <option value="python">Python</option>
-            <option value="rust">Rust</option>
-            <option value="typescript">TypeScript</option>
-          </select>
+          {/* CUSTOM STYLED TECH STACK DROPDOWN */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsTechOpen(!isTechOpen);
+                setIsSortOpen(false);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 font-mono text-xs font-bold focus:outline-none flex items-center gap-1.5 cursor-pointer shadow-xs hover:border-zinc-400 transition-all"
+            >
+              <span>{techOptions.find((t) => t.value === techFilter)?.label || "All Tech Stack"}</span>
+              <span className={`text-[10px] transition-transform duration-200 ${isTechOpen ? "rotate-180" : ""}`}>▾</span>
+            </button>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-mono text-xs focus:outline-none focus:border-zinc-400 cursor-pointer"
-          >
-            <option value="updated">Recently Updated</option>
-            <option value="stars">Most Stars</option>
-            <option value="progress">Highest Progress</option>
-          </select>
+            {isTechOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xl z-40 font-mono text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                {techOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setTechFilter(opt.value);
+                      setIsTechOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition-all font-medium flex items-center justify-between cursor-pointer ${
+                      techFilter === opt.value
+                        ? "bg-zinc-900 text-white font-bold shadow-xs"
+                        : "text-zinc-800 hover:bg-[#f4efe6]"
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {techFilter === opt.value && <span className="text-[10px]">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CUSTOM STYLED SORT BY DROPDOWN */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsSortOpen(!isSortOpen);
+                setIsTechOpen(false);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 font-mono text-xs font-bold focus:outline-none flex items-center gap-1.5 cursor-pointer shadow-xs hover:border-zinc-400 transition-all"
+            >
+              <span>{sortOptions.find((s) => s.value === sortBy)?.label || "Recently Updated"}</span>
+              <span className={`text-[10px] transition-transform duration-200 ${isSortOpen ? "rotate-180" : ""}`}>▾</span>
+            </button>
+
+            {isSortOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xl z-40 font-mono text-xs space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                {sortOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setSortBy(opt.value);
+                      setIsSortOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-mono transition-all font-medium flex items-center justify-between cursor-pointer ${
+                      sortBy === opt.value
+                        ? "bg-zinc-900 text-white font-bold shadow-xs"
+                        : "text-zinc-800 hover:bg-[#f4efe6]"
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {sortBy === opt.value && <span className="text-[10px]">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <button
             onClick={onOpenNewProjectModal}

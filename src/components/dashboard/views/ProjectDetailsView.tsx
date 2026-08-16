@@ -106,30 +106,18 @@ export function ProjectDetailsView({
         </div>
 
         {/* STATS METRICS ROW */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Views</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.views.toLocaleString()}</div>
-          </div>
+        <div className="grid grid-cols-3 gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-[10px] text-zinc-500">Likes</div>
             <div className="text-zinc-900 font-bold mt-0.5">{project.likes}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Forks</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.forks}</div>
           </div>
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-[10px] text-zinc-500">Commits</div>
             <div className="text-zinc-900 font-bold mt-0.5">{project.commits}</div>
           </div>
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Days Active</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.daysActive} Days</div>
-          </div>
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Completion</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.progress}%</div>
+            <div className="text-[10px] text-zinc-500">Stars</div>
+            <div className="text-zinc-900 font-bold mt-0.5">★ {project.stars}</div>
           </div>
         </div>
       </div>

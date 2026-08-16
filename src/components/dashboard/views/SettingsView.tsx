@@ -538,12 +538,28 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
             </div>
           )}
 
-          {/* SECTION 8: DANGER ZONE */}
+          {/* SECTION 8: DANGER ZONE & SIGN OUT */}
           {activeSection === "danger" && (
             <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 shadow-sm space-y-6 font-mono text-xs">
               <div className="border-b border-rose-200 pb-3">
-                <h2 className="text-base font-bold text-rose-900 tracking-tight">Danger Zone</h2>
-                <p className="text-rose-700 text-[11px]">Irreversible actions for your account.</p>
+                <h2 className="text-base font-bold text-rose-900 tracking-tight">Account Session & Danger Zone</h2>
+                <p className="text-rose-700 text-[11px]">Manage active login session or delete your account.</p>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-rose-200">
+                <div>
+                  <div className="text-zinc-900 font-bold">Sign Out of Account</div>
+                  <div className="text-[10px] text-zinc-600 font-sans">Log out of @{user.username} to log in as another user.</div>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("user");
+                    window.location.href = "/register";
+                  }}
+                  className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                >
+                  Sign Out ➔
+                </button>
               </div>
 
               <div className="flex items-center justify-between pt-2">
@@ -554,8 +570,8 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                 <button
                   onClick={() => {
                     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                      alert("Account deleted.");
-                      window.location.href = "/login";
+                      localStorage.removeItem("user");
+                      window.location.href = "/register";
                     }
                   }}
                   className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
