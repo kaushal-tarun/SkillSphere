@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function CTA() {
   return (
@@ -10,7 +11,8 @@ export default function CTA() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-amber-200/20 blur-[150px] rounded-full pointer-events-none" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="rounded-3xl border border-[#e8e2d8] bg-white p-8 sm:p-12 lg:p-16 text-center shadow-md relative overflow-hidden">
+        <ScrollReveal>
+          <div className="rounded-3xl border border-[#e8e2d8] bg-white p-8 sm:p-12 lg:p-16 text-center shadow-md relative overflow-hidden">
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <img
@@ -21,10 +23,10 @@ export default function CTA() {
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 text-zinc-900">
-            Ready to Rise on SkillSphere?
+            Ready for a long Run?
           </h2>
           <p className="text-base sm:text-lg text-zinc-700 max-w-2xl mx-auto mb-6 font-normal leading-relaxed">
-            Showcase your projects, compete on leaderboards, earn XP, and connect with student builders.
+            Showcase your projects, compete with friends, earn XP, and connect with student builders.
           </p>
 
           {/* Clean 8-bit Running Dino Game */}
@@ -90,7 +92,8 @@ export default function CTA() {
             </Link>
           </div>
         </div>
-      </div>
+      </ScrollReveal>
+    </div>
     </section>
   );
 }

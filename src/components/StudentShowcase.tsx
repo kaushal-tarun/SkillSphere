@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function StudentShowcase() {
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
@@ -178,18 +179,15 @@ export default function StudentShowcase() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-amber-200/20 blur-[150px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#e2dacd] bg-white text-xs font-mono text-zinc-800 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 animate-pulse" />
-            FEATURED STUDENT PROJECTS
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900">
-            What Students Build Here
-          </h2>
-          <p className="text-sm sm:text-base text-zinc-700">
-            Browse live project screenshot previews, test feature walkthroughs, like student creations, and see proof of work.
-          </p>
+        <ScrollReveal>
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900">
+              What Students Build Here
+            </h2>
+            <p className="text-sm sm:text-base text-zinc-700">
+              Browse live project screenshot previews, test feature walkthroughs, like student creations, and see proof of work.
+            </p>
 
           {/* Project Quick Selector Tabs */}
           <div className="flex flex-wrap justify-center gap-2.5 pt-4 font-mono">
@@ -393,6 +391,7 @@ export default function StudentShowcase() {
             Next ›
           </button>
         </div>
+        </ScrollReveal>
       </div>
 
       {/* FULL-SCREEN LIGHTBOX MODAL */}

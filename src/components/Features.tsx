@@ -1,357 +1,196 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
+interface FeatureItem {
+  id: string;
+  title: string;
+  desc: string;
+  highlight: string;
+  widget: React.ReactNode;
+}
+
+function ScrollPopFeatureCard({ item, index }: { item: FeatureItem; index: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${
+        isVisible
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 translate-y-16 scale-95"
+      }`}
+    >
+      <div className="group relative h-full rounded-2xl bg-white border border-[#e8e2d8] p-6 sm:p-8 text-zinc-900 shadow-sm transition-all duration-300 hover:border-zinc-400 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between overflow-hidden">
+        <div className="space-y-3">
+          <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-900 group-hover:text-black transition-colors">
+            {item.title}
+          </h3>
+          <p className="text-sm sm:text-base text-zinc-600 font-normal leading-relaxed">
+            {item.desc}
+          </p>
+        </div>
+
+        <div className="pt-6 mt-6 border-t border-zinc-100">
+          <div className="text-xs font-mono text-zinc-500 flex items-center gap-2 mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+            <span>{item.highlight}</span>
+          </div>
+          {item.widget}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Features() {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [starred, setStarred] = useState(false);
 
-  // Cute peeking pixel guy state
-  const [peekBoxIndex, setPeekBoxIndex] = useState<number | null>(null);
-  const [isWaving, setIsWaving] = useState(false);
-
-  // Mouse spotlight state for interactive card hover
-  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  const features = [
+  const features: FeatureItem[] = [
     {
-      id: "project-battles",
-      title: "Project Battles & Arena Rankings",
-      category: "showcase",
-      colSpan: "lg:col-span-2",
-      desc: "Submit your side projects to compete in community arena battles. Rank up based on peer votes, code craftsmanship, and live production demos.",
-      icon: (
-        <div className="animate-sword-clash">
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="3" y="3" width="3" height="3" fill="#18181b" />
-            <rect x="6" y="6" width="3" height="3" fill="#18181b" />
-            <rect x="9" y="9" width="3" height="3" fill="#3f3f46" />
-            <rect x="12" y="12" width="3" height="3" fill="#18181b" />
-            <rect x="15" y="15" width="3" height="3" fill="#71717a" />
-            <rect x="18" y="18" width="3" height="3" fill="#18181b" />
-            <rect x="18" y="3" width="3" height="3" fill="#18181b" />
-            <rect x="15" y="6" width="3" height="3" fill="#18181b" />
-            <rect x="6" y="15" width="3" height="3" fill="#18181b" />
-            <rect x="3" y="18" width="3" height="3" fill="#18181b" />
-          </svg>
-        </div>
-      ),
-      badge: "ARENA MODE",
-      highlight: "Head-to-head project battles & live peer rankings",
+      id: "project-portfolio",
+      title: "Project Portfolio & Case Studies",
+      desc: "Publish your side projects, highlight tech stacks, and feature detailed case studies with live repository and demo links.",
+      highlight: "Organized project cards & tech stack tags",
       widget: (
-        <div className="mt-4 p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-sm">
+        <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex flex-wrap items-center justify-between gap-3 font-mono text-xs shadow-xs">
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-            <span className="text-zinc-900 font-bold tracking-tight">DevPulse</span>
-            <span className="text-zinc-400 font-extrabold text-[10px]">VS</span>
-            <span className="text-zinc-800 font-bold tracking-tight">Algorank</span>
+            <span className="w-2 h-2 rounded-full bg-zinc-900" />
+            <span className="text-zinc-900 font-bold tracking-tight">Nexa Study Engine</span>
           </div>
-          <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-white font-extrabold text-[10px] shadow-sm">
-            842 Votes Today
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-white font-bold text-[11px]">
+              Next.js 16
+            </span>
+            <span className="px-2.5 py-1 rounded-md bg-zinc-800 text-white font-bold text-[11px]">
+              pgvector
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "discover-engine",
+      title: " Discover ",
+      desc: "Explore community student repositories across AI, Web Development, Open Source, and Mobile Applications.",
+      highlight: "Filter by categories & interactive star likes",
+      widget: (
+        <button
+          onClick={() => setStarred(!starred)}
+          className="w-full p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-xs hover:border-zinc-400 transition-all cursor-pointer"
+        >
+          <span className="text-zinc-800 font-semibold truncate">KnowledgeVault AI</span>
+          <span className={`px-3 py-1 rounded-md font-bold text-[11px] transition-all ${
+            starred ? "bg-zinc-900 text-white" : "bg-white text-zinc-900 border border-[#e8e2d8]"
+          }`}>
+            ★ {starred ? "211 Stars" : "210 Stars"}
+          </span>
+        </button>
+      ),
+    },
+    {
+      id: "campus-leaderboard",
+      title: "Friends Leaderboard",
+      desc: "View student builder rankings and compare project contributions across universities.",
+      highlight: "Campus rankings across BITS, IIIT, IIT, & NIT",
+      widget: (
+        <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-xs">
+          <span className="text-zinc-800 font-semibold">Campus Leaderboard</span>
+          <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-white font-bold text-[11px]">
+            #1 IIT Bombay
           </span>
         </div>
       ),
     },
     {
-      id: "proof-of-work",
-      title: "Live Proof-of-Work",
-      category: "showcase",
-      colSpan: "lg:col-span-1",
-      desc: "Connect your GitHub repositories to showcase verified commit histories, real-world contributions, and live production deployments.",
-      icon: (
-        <div>
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="2" y="4" width="20" height="16" fill="#ffffff" stroke="#18181b" strokeWidth="2" />
-            <rect x="5" y="8" width="3" height="2" fill="#18181b" />
-            <rect x="7" y="10" width="3" height="2" fill="#18181b" />
-            <rect x="5" y="12" width="3" height="2" fill="#18181b" />
-            <rect x="11" y="12" width="5" height="2" className="animate-terminal-blink fill-zinc-900" />
-          </svg>
-        </div>
-      ),
-      badge: "GITHUB SYNCED",
-      highlight: "Auto-synced contribution graph & code stats",
+      id: "community-feed",
+      title: "Community Developer Feed",
+      desc: "Share project launches, code snippets, and updates. Filter feed by trending hashtags like #BuildInPublic and #NextJS16.",
+      highlight: "Hashtag filters, code snippets, & comments",
       widget: (
-        <div className="mt-4 p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center gap-1.5 justify-center shadow-sm">
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-300" />
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-400" />
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-900 shadow-sm" />
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-500" />
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-900 shadow-sm" />
-          <span className="w-3.5 h-3.5 rounded-xs bg-zinc-400" />
-          <span className="text-[10px] font-mono text-zinc-700 ml-2">1,240 Commits</span>
-        </div>
-      ),
-    },
-    {
-      id: "teammate-match",
-      title: "Co-Founder Matchmaking",
-      category: "connect",
-      colSpan: "lg:col-span-1",
-      desc: "Find ideal hackathon teammates, frontend wizards, backend architects, or AI researchers based on complementary skill sets.",
-      icon: (
-        <div className="animate-team-pulse">
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="4" y="5" width="5" height="5" fill="#18181b" />
-            <rect x="3" y="11" width="7" height="6" fill="#18181b" />
-            <rect x="15" y="5" width="5" height="5" fill="#18181b" />
-            <rect x="14" y="11" width="7" height="6" fill="#18181b" />
-          </svg>
-        </div>
-      ),
-      badge: "TEAMMAKING",
-      highlight: "AI-powered skill matrix matching engine",
-      widget: (
-        <div className="mt-4 p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-sm">
-          <span className="text-zinc-800 font-semibold">Match Score</span>
-          <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-extrabold text-[10px]">
-            98% Compatible
+        <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-xs">
+          <span className="text-zinc-800 font-semibold">Trending Topic</span>
+          <span className="text-zinc-900 font-bold bg-white px-2.5 py-1 rounded-md border border-[#e8e2d8]">
+            #BuildInPublic (1.4k)
           </span>
         </div>
       ),
     },
     {
-      id: "xp-levels",
-      title: "XP & Badge Progression",
-      category: "grow",
-      colSpan: "lg:col-span-1",
-      desc: "Earn XP points by shipping repositories, assisting peers, writing technical notes, and winning competitive hackathons.",
-      icon: (
-        <div className="animate-[bounce_2s_infinite]">
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="10" y="2" width="4" height="4" fill="#18181b" />
-            <rect x="6" y="6" width="12" height="4" fill="#18181b" />
-            <rect x="8" y="10" width="8" height="6" fill="#18181b" />
-            <rect x="10" y="16" width="4" height="4" fill="#18181b" />
-          </svg>
-        </div>
-      ),
-      badge: "GAMIFIED XP",
-      highlight: "Unlock tier badges & exclusive builder perks",
+      id: "direct-messaging",
+      title: "Direct Peer Messaging",
+      desc: "Connect directly with student developers, send friend requests, and start project collaboration.",
+      highlight: "Direct messaging & friend connections",
       widget: (
-        <div className="mt-4 p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-sm">
-          <span className="text-zinc-800 font-semibold">Current Rank</span>
-          <span className="text-zinc-900 font-bold">LVL 42 • 14,250 XP</span>
-        </div>
-      ),
-    },
-    {
-      id: "recruiter-pipeline",
-      title: "Direct Founder Pipeline",
-      category: "connect",
-      colSpan: "lg:col-span-1",
-      desc: "Top-ranked student builders get direct inbound messages from tech founders, venture funds, and fast-growing YC startups.",
-      icon: (
-        <div className="animate-[pulse_3s_infinite]">
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="3" y="3" width="18" height="18" fill="none" stroke="#18181b" strokeWidth="2" />
-            <circle cx="12" cy="12" r="4" fill="none" stroke="#71717a" strokeWidth="1.5" />
-            <g className="animate-radar-scan">
-              <line x1="12" y1="12" x2="20" y2="6" stroke="#18181b" strokeWidth="2" />
-            </g>
-          </svg>
-        </div>
-      ),
-      badge: "DIRECT PIPELINE",
-      highlight: "Bypass resume screening with real code",
-      widget: (
-        <div className="mt-4 p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-sm">
-          <span className="text-zinc-800 font-semibold">14 Founder Inbounds</span>
-          <span className="px-2 py-0.5 rounded bg-zinc-900 text-white font-extrabold text-[10px]">
-            YC Backed
+        <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-xs">
+          <div className="flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-zinc-800 font-semibold truncate">Tanvi Kulkarni</span>
+          </div>
+          <span className="px-2.5 py-1 rounded-md bg-zinc-900 text-white font-bold text-[11px] shrink-0">
+            Direct Message
           </span>
         </div>
       ),
     },
     {
-      id: "hackathon-hub",
-      title: "Global Hackathon Feed",
-      category: "showcase",
-      colSpan: "lg:col-span-1",
-      desc: "Discover upcoming student hackathons, submit project demos, and compete on live global leaderboards.",
-      icon: (
-        <div className="animate-flame-flicker">
-          <svg className="w-6 h-6 text-zinc-900" viewBox="0 0 24 24" fill="currentColor" style={{ shapeRendering: "crispEdges" }}>
-            <rect x="10" y="3" width="4" height="4" fill="#18181b" />
-            <rect x="8" y="7" width="8" height="5" fill="#18181b" />
-            <rect x="6" y="12" width="12" height="6" fill="#18181b" />
-            <rect x="8" y="18" width="8" height="3" fill="#3f3f46" />
-          </svg>
-        </div>
-      ),
-      badge: "HACKATHONS",
-      highlight: "Live tracking & trophy showcases",
+      id: "profile-settings",
+      title: "Custom Profile & Preferences",
+      desc: "Customize your public builder profile, university affiliation, portfolio links, and privacy settings.",
+      highlight: "Custom profile bio, credentials, & privacy",
       widget: (
-        <div className="mt-4 p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-sm">
-          <span className="text-zinc-800 font-semibold">ETHIndia 2026</span>
-          <span className="text-emerald-700 font-bold">3d 14h left</span>
+        <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between font-mono text-xs shadow-xs">
+          <span className="text-zinc-800 font-semibold truncate">Advait Deshmukh</span>
+          <span className="text-zinc-900 font-bold text-[11px] bg-white px-2.5 py-1 rounded-md border border-[#e8e2d8] shrink-0">
+            ✓ Verified Builder
+          </span>
         </div>
       ),
     },
   ];
 
-  const filteredFeatures =
-    activeFilter === "all"
-      ? features
-      : features.filter((f) => f.category === activeFilter);
-
-  // Timer loop for cute pixel guy peeking behind feature boxes
-  useEffect(() => {
-    const initialTimeout = setTimeout(() => {
-      triggerPeek();
-    }, 1200);
-
-    const triggerPeek = () => {
-      const randomIndex = Math.floor(Math.random() * filteredFeatures.length);
-      setPeekBoxIndex(randomIndex);
-
-      setIsWaving(true);
-      setTimeout(() => {
-        setIsWaving(false);
-        setTimeout(() => setPeekBoxIndex(null), 700);
-      }, 2500);
-    };
-
-    const interval = setInterval(triggerPeek, 6500);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
-    };
-  }, [filteredFeatures.length]);
-
   return (
-    <section id="features" className="py-24 bg-[#faf6f0] text-zinc-900 relative overflow-hidden border-t border-[#e8e2d8]">
-      {/* Background Glow */}
+    <section id="features" className="py-28 bg-[#faf6f0] text-zinc-900 relative overflow-hidden border-t border-[#e8e2d8]">
+      {/* Ambient background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[450px] bg-amber-200/20 blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-16">
         {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#e2dacd] bg-white text-xs font-mono text-zinc-800 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 animate-pulse" />
-            POWERFUL CAPABILITIES
-          </div>
+        <div className="text-center max-w-3xl mx-auto space-y-4">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-zinc-900">
-            Engineered for Ambitious Builders
+            Engineered for Student Builders
           </h2>
           <p className="text-base sm:text-lg text-zinc-700 font-normal leading-relaxed">
-            Everything student developers need to build, showcase side projects, match with teammates, and accelerate their tech career.
+            Everything student developers need to manage projects, explore peer code, connect with campus builders, and share progress updates.
           </p>
-
-          {/* Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2 pt-4 font-mono">
-            {[
-              { id: "all", label: "All Features", count: features.length },
-              { id: "showcase", label: "Showcase", count: features.filter(f => f.category === "showcase").length },
-              { id: "connect", label: "Connect", count: features.filter(f => f.category === "connect").length },
-              { id: "grow", label: "Grow & Learn", count: features.filter(f => f.category === "grow").length },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveFilter(tab.id)}
-                className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
-                  activeFilter === tab.id
-                    ? "bg-zinc-900 text-white font-bold shadow-md"
-                    : "bg-white text-zinc-700 border border-[#e8e2d8] hover:text-zinc-900 hover:border-zinc-400"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                  activeFilter === tab.id ? "bg-white text-zinc-900" : "bg-zinc-100 text-zinc-600"
-                }`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
-          {filteredFeatures.map((item, index) => (
-            <div
-              key={item.id}
-              className={`relative pt-3 ${activeFilter === "all" ? item.colSpan : ""}`}
-            >
-              {/* Peeking 8-Bit Pixel Guy */}
-              {peekBoxIndex === index && (
-                <div
-                  className={`absolute -top-3 right-8 z-0 pointer-events-none transition-all duration-700 transform ${
-                    isWaving
-                      ? "-translate-y-2 opacity-100 scale-100"
-                      : "translate-y-6 opacity-0 scale-90"
-                  }`}
-                >
-                  <div className="animate-cute-excitement">
-                    <svg
-                      className="w-12 h-12 text-zinc-900 drop-shadow-md"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      style={{ shapeRendering: "crispEdges" }}
-                    >
-                      <rect x="5" y="4" width="12" height="3" fill="#18181b" />
-                      <rect x="6" y="6" width="10" height="9" fill="#18181b" />
-                      <rect x="8" y="9" width="2" height="2.5" fill="#ffffff" />
-                      <rect x="13" y="9" width="2" height="2.5" fill="#ffffff" />
-                      <rect x="9" y="9" width="1" height="1" fill="#18181b" />
-                      <rect x="14" y="9" width="1" height="1" fill="#18181b" />
-                      <rect x="10" y="13" width="3" height="1" fill="#ffffff" />
-                      <rect x="7" y="15" width="8" height="8" fill="#3f3f46" />
-                      <rect x="4" y="15" width="3" height="2" fill="#18181b" />
-                      <g className="animate-cute-fast-wave">
-                        <rect x="15" y="11" width="4" height="2" fill="#18181b" />
-                        <rect x="17" y="7" width="2" height="5" fill="#18181b" />
-                        <rect x="16" y="5" width="4" height="3" fill="#18181b" />
-                      </g>
-                    </svg>
-                  </div>
-                </div>
-              )}
-
-              {/* Main Bento Feature Card */}
-              <div
-                onMouseEnter={() => setHoveredCardId(item.id)}
-                onMouseLeave={() => setHoveredCardId(null)}
-                onMouseMove={handleMouseMove}
-                className="group relative rounded-3xl border border-[#e8e2d8] bg-white p-7 hover:border-[#d8cfc0] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 shadow-sm z-10 h-full overflow-hidden"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="p-3 rounded-2xl bg-[#f4efe6] border border-[#e2dacd]">
-                      {item.icon}
-                    </div>
-                    <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 font-bold">
-                      {item.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-zinc-900 tracking-tight group-hover:text-black transition-colors">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed font-normal">
-                    {item.desc}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-zinc-100">
-                  <div className="text-[11px] font-mono text-zinc-500 font-semibold flex items-center gap-1.5">
-                    <span className="text-zinc-900">✓</span>
-                    <span>{item.highlight}</span>
-                  </div>
-                  {item.widget}
-                </div>
-              </div>
-            </div>
+        {/* SCROLL-REVEAL SEQUENTIAL FEATURE CARDS */}
+        <div className="space-y-8">
+          {features.map((item, idx) => (
+            <ScrollPopFeatureCard key={item.id} item={item} index={idx} />
           ))}
         </div>
       </div>

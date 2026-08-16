@@ -121,6 +121,25 @@ body {
   }
 }
 
+/* 3D Logo Float & Smooth Y-Rotation Animation */
+@keyframes logo3dRotate {
+  0% {
+    transform: perspective(1000px) rotateY(0deg) rotateX(4deg) translateY(0px);
+  }
+  50% {
+    transform: perspective(1000px) rotateY(180deg) rotateX(-4deg) translateY(-8px);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(360deg) rotateX(4deg) translateY(0px);
+  }
+}
+
+.animate-3d-logo-rotate {
+  animation: logo3dRotate 8s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
 .animate-runner-leg1 {
   animation: runnerLeg1 0.35s ease-in-out infinite;
   transform-origin: 10px 14px;

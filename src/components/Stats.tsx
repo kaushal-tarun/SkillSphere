@@ -38,10 +38,6 @@ export default function Stats() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Title */}
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            MEASURABLE IMPACT
-          </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
             Proven Growth & Momentum
           </h2>

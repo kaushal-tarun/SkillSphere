@@ -102,7 +102,7 @@ export default function StarterSplash({ onComplete }: { onComplete?: () => void 
               step >= 4 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-90"
             }`}
           >
-            Connect Builders
+            Connect 
           </span>
 
           <span
