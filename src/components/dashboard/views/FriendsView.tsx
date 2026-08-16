@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { UserProfile, FriendItem, ChatMessage } from "@/types/dashboard";
+import { getBuilderTitle } from "@/lib/titles";
 
 interface FriendsViewProps {
   user: UserProfile;
+  projectsCount?: number;
   searchQuery?: string;
   setSearchQuery?: (q: string) => void;
 }
 
-export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQuery: externalSetSearchQuery }: FriendsViewProps) {
+export function FriendsView({ user, projectsCount = 0, searchQuery: externalSearchQuery, setSearchQuery: externalSetSearchQuery }: FriendsViewProps) {
   const [activeTab, setActiveTab] = useState<"ranking" | "chat" | "add">("chat");
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
 
@@ -61,7 +63,7 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
 
     setChatHistories((prev) => ({
       ...prev,
-      [selectedFriend.id]: [...(prev[selectedFriend.id] || []), newMsg],
+      [selectedFriend.username]: [...(prev[selectedFriend.username] || []), newMsg],
     }));
 
     setInputMessage("");
@@ -83,14 +85,17 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
     saveFriends(updated);
   };
 
+  const realXp = projectsCount * 500;
+  const realLevel = Math.floor(realXp / 500) + 1;
+
   const currentUserItem: FriendItem = {
     id: "me",
     name: user.name,
     username: user.username,
     university: user.university,
-    xp: 14250,
-    level: 42,
-    projects: 12,
+    xp: realXp,
+    level: realLevel,
+    projects: projectsCount,
     status: "online",
     isFriend: true,
     avatar: "ME",
@@ -217,7 +222,12 @@ export function FriendsView({ user, searchQuery: externalSearchQuery, setSearchQ
                               <span>{friend.name}</span>
                               {friend.id === "me" && <span className="text-[10px] text-zinc-500 font-normal">(YOU)</span>}
                             </div>
-                            <div className="text-[10px] text-zinc-500">@{friend.username}</div>
+                            <div className="text-[10px] text-zinc-500 flex items-center gap-1.5">
+                              <span>@{friend.username}</span>
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getBuilderTitle(friend.projects).badgeClass}`}>
+                                {getBuilderTitle(friend.projects).title}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>

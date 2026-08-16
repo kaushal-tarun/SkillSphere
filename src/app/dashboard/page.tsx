@@ -280,7 +280,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "friends" && (
-                <FriendsView user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <FriendsView user={user} projectsCount={projectsList.length} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
               )}
 
               {activeNav === "community" && (

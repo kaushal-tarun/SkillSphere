@@ -49,56 +49,7 @@ export function ProjectsView({
     { value: "commits", label: "Most Commits" },
   ];
 
-  const communityProjects: CommunityProject[] = [
-    {
-      id: "comm-1",
-      name: "Nexa Study Engine",
-      creatorName: "Tanvi Kulkarni",
-      creatorHandle: "tanvi_kulkarni",
-      university: "BITS Pilani '25",
-      description: "AI-assisted flashcard generation engine syncing directly with Notion databases and Markdown notes.",
-      tech: ["React", "FastAPI", "PostgreSQL", "Tailwind"],
-      likes: 198,
-      updatedAt: "Yesterday",
-      github: "https://github.com/tanvi/nexa-engine",
-    },
-    {
-      id: "comm-2",
-      name: "CodeCollab Workspace",
-      creatorName: "Tushar Somani",
-      creatorHandle: "tushar_somani",
-      university: "IIIT Hyderabad '26",
-      description: "Real-time collaborative code editor with WebRTC audio channels and synchronized AST parsing.",
-      tech: ["Node.js", "WebSockets", "Monaco Editor", "Redis"],
-      likes: 245,
-      updatedAt: "2 days ago",
-      github: "https://github.com/tushar/codecollab",
-    },
-    {
-      id: "comm-3",
-      name: "HyperTrace Distributed APM",
-      creatorName: "Rudra Sengupta",
-      creatorHandle: "rudra_sengupta",
-      university: "NIT Trichy '26",
-      description: "Low-overhead distributed tracing collector for microservices with OpenTelemetry exporter plugin.",
-      tech: ["Go", "OpenTelemetry", "ClickHouse", "Docker"],
-      likes: 312,
-      updatedAt: "3 days ago",
-      github: "https://github.com/rudra/hypertrace",
-    },
-    {
-      id: "comm-4",
-      name: "Aura Kernel Sandbox",
-      creatorName: "Ananya Vasisht",
-      creatorHandle: "ananya_vasisht",
-      university: "IISc Bangalore '25",
-      description: "Lightweight WebAssembly execution sandbox for untrusted user-submitted code in browser environments.",
-      tech: ["Rust", "Wasm", "TypeScript", "Vite"],
-      likes: 420,
-      updatedAt: "4 days ago",
-      github: "https://github.com/ananya/aura-sandbox",
-    },
-  ];
+  const communityProjects: CommunityProject[] = [];
 
   const filteredProjects = projectsList.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());

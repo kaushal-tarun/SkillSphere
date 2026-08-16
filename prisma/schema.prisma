@@ -8,16 +8,146 @@ datasource db {
 }
 
 model User {
+  id          String   @id @default(cuid())
+  name        String
+  username    String   @unique
+  email       String   @unique
+  password    String
+  university  String?
+  role        String?
+  location    String?
+  avatar      String?
+  xp          Int      @default(0)
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  // Relations
+  profile             Profile?
+  projects            Project[]
+  posts               Post[]
+  comments            Comment[]
+  likes               Like[]
+  sentMessages        Message[]        @relation("SentMessages")
+  receivedMessages    Message[]        @relation("ReceivedMessages")
+  sentFriendships     Friendship[]     @relation("SentFriendships")
+  receivedFriendships Friendship[]     @relation("ReceivedFriendships")
+  xpRecords           XpRecord[]
+}
+
+model Profile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio          String?
+  portfolioUrl String?
+  githubUrl    String?
+  linkedinUrl  String?
+  university   String?
+  role         String?
+  location     String?
+  totalXp      Int      @default(0)
+  level        Int      @default(1)
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  status      String   @default("Active")
+  visibility  String   @default("Public")
+  stars       Int      @default(0)
+  commits     Int      @default(1)
+  likesCount  Int      @default(0)
+  tech        String[] @default([])
+  githubUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  likes       Like[]
+}
+
+model Post {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      String
+  image        String?
+  codeSnippet  String?
+  projectTag   String?
+  likesCount   Int       @default(0)
+  repostsCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  comments     Comment[]
+  likes        Like[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@unique([userId, postId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Friendship {
+  id         String           @id @default(cuid())
+  senderId   String
+  sender     User             @relation("SentFriendships", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User             @relation("ReceivedFriendships", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     FriendshipStatus @default(ACCEPTED)
+  createdAt  DateTime         @default(now())
+
+  @@unique([senderId, receiverId])
+}
+
+model Message {
   id         String   @id @default(cuid())
-  name       String
-  email      String   @unique
-  password   String
-  university String?
-
-  username   String?  @unique
-  bio        String?
-  avatar     String?
-  xp         Int      @default(0)
-
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+model XpRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  source    String
+  reason    String?
+  createdAt DateTime @default(now())
 }

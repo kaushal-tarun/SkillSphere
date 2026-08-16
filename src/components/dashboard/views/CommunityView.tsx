@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
 
 interface CommunityViewProps {
@@ -52,62 +52,27 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     return name.slice(0, 2).toUpperCase();
   };
 
-  const [posts, setPosts] = useState<PostItem[]>([
-    {
-      id: "p1",
-      authorName: "Tanvi Kulkarni",
-      authorHandle: "tanvi_kulkarni",
-      campus: "BITS Pilani '25",
-      avatar: "TK",
-      time: "25m ago",
-      content: "Just pushed Nexa Study Engine v2 at 3:45 AM! Rewriting Notion sync algorithms for instant flashcard indexing. #BuildInPublic #NextJS16",
-      projectTag: "Nexa Study Engine",
-      likes: 84,
-      reposts: 12,
-      comments: [
-        { id: "c1", authorName: "Tushar Somani", authorHandle: "tushar_somani", text: "Looks awesome! How fast is the AST parsing?", time: "10m ago" },
-      ],
-    },
-    {
-      id: "p2",
-      authorName: "Tushar Somani",
-      authorHandle: "tushar_somani",
-      campus: "IIIT Hyderabad '26",
-      avatar: "TS",
-      time: "1h ago",
-      content: "Rewrote our WebSockets AST parser in Rust and latency dropped from 140ms to 12ms! Who wants to test the multiplayer editor? #RustGang",
-      projectTag: "CodeCollab",
-      codeSnippet: "pub fn parse_ast(buffer: &[u8]) -> Result<ASTNode, ParseError> {\n    let lexer = Lexer::new(buffer);\n    lexer.tokenize_simd()\n}",
-      likes: 142,
-      reposts: 28,
-      comments: [],
-    },
-    {
-      id: "p3",
-      authorName: "Advait Deshmukh",
-      authorHandle: "advait_d",
-      campus: "IIT Bombay '26",
-      avatar: "AD",
-      time: "3h ago",
-      content: "Built KnowledgeVault AI using Next.js 16 + pgvector. It indexes 500-page engineering PDFs and gives instant Q&A with exact citations. #pgvector #NextJS16",
-      projectTag: "KnowledgeVault AI",
-      likes: 210,
-      reposts: 45,
-      comments: [],
-    },
-    {
-      id: "p4",
-      authorName: "Rudra Sengupta",
-      authorHandle: "rudra_sengupta",
-      campus: "NIT Trichy '26",
-      avatar: "RS",
-      time: "5h ago",
-      content: "ETHIndia hackathon squad application is open! Looking for 1 solid frontend dev who knows Next.js & Tailwind. #ETHIndia2026",
-      likes: 67,
-      reposts: 15,
-      comments: [],
-    },
-  ]);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("skillsphere_community_posts");
+      if (saved) {
+        setPosts(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load community posts", e);
+    }
+  }, []);
+
+  const saveCommunityPosts = (updated: PostItem[]) => {
+    setPosts(updated);
+    try {
+      localStorage.setItem("skillsphere_community_posts", JSON.stringify(updated));
+    } catch (e) {
+      console.error("Failed to save community posts", e);
+    }
+  };
 
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,38 +91,37 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       comments: [],
     };
 
-    setPosts([created, ...posts]);
+    const updated = [created, ...posts];
+    saveCommunityPosts(updated);
     setNewPostText("");
   };
 
   const handleToggleLike = (id: string) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          return {
-            ...p,
-            likes: p.isLiked ? p.likes - 1 : p.likes + 1,
-            isLiked: !p.isLiked,
-          };
-        }
-        return p;
-      })
-    );
+    const updated = posts.map((p) => {
+      if (p.id === id) {
+        return {
+          ...p,
+          likes: p.isLiked ? p.likes - 1 : p.likes + 1,
+          isLiked: !p.isLiked,
+        };
+      }
+      return p;
+    });
+    saveCommunityPosts(updated);
   };
 
   const handleToggleRepost = (id: string) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          return {
-            ...p,
-            reposts: p.isReposted ? p.reposts - 1 : p.reposts + 1,
-            isReposted: !p.isReposted,
-          };
-        }
-        return p;
-      })
-    );
+    const updated = posts.map((p) => {
+      if (p.id === id) {
+        return {
+          ...p,
+          reposts: p.isReposted ? p.reposts - 1 : p.reposts + 1,
+          isReposted: !p.isReposted,
+        };
+      }
+      return p;
+    });
+    saveCommunityPosts(updated);
   };
 
   const handleAddComment = (postId: string, text: string) => {
@@ -170,18 +134,17 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       time: "Just now",
     };
 
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            comments: [...p.comments, newComment],
-          };
-        }
-        return p;
-      })
-    );
+    const updated = posts.map((p) => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          comments: [...p.comments, newComment],
+        };
+      }
+      return p;
+    });
 
+    saveCommunityPosts(updated);
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
   };
 

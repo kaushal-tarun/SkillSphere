@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
+import { getBuilderTitle } from "@/lib/titles";
 
 interface ProfileViewProps {
   user: UserProfile;
@@ -21,23 +22,34 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
     return name.slice(0, 2).toUpperCase();
   };
 
-  const userSkills = [
-    "Next.js 16", "TypeScript", "Python", "FastAPI", "PostgreSQL", 
-    "Prisma", "Rust", "Docker", "Vector DB", "RAG Architecture", "TailwindCSS", "Git"
+  // Derive tech skills dynamically from user's actual project tech tags
+  const dynamicTechSkills = Array.from(
+    new Set(projectsList.flatMap((p) => p.tech || []))
+  );
+
+  // Derive real achievements based on actual user activity
+  const realAchievements = [
+    { title: "Registered Builder", detail: `Member at ${user.university}`, date: "Active" },
+    ...(projectsList.length > 0
+      ? [
+          { title: "First Repository Published", detail: `Shipped ${projectsList[0].name}`, date: "Verified" },
+          { title: `${projectsList.length} Repositories Published`, detail: `Built ${projectsList.length} project case studies`, date: "Active" },
+        ]
+      : []),
   ];
 
-  const userAchievements = [
-    { title: "First Project Published", detail: "Shipped SkillSphere v1.0 to production", date: "Jan 2026" },
-    { title: "10,000+ XP Milestone", detail: "Earned 14,250 Skill Points in Season 4", date: "Feb 2026" },
-    { title: "Top #1 Campus Leader", detail: "Ranked #1 developer at " + user.university, date: "Feb 2026" },
-    { title: "ETHIndia Hackathon Finalist", detail: "Built real-time WebSockets telemetry engine", date: "Dec 2025" },
-  ];
-
-  const timelineEvents = [
-    { title: "Published SkillSphere Platform Engine v1.0", detail: "Verified repository & deployed core platform", time: "2 hours ago" },
-    { title: "Completed KnowledgeVault AI Indexing Engine", detail: "Integrated vector search pipeline", time: "Yesterday" },
-    { title: "Reached 14,250 Skill Points Milestone", detail: "Crossed top 1% developer threshold", time: "3 days ago" },
-    { title: "Joined SkillSphere Developer Arena", detail: "Verified developer account at " + user.university, time: "Jan 2026" },
+  // Derive real timeline events from user's actual projects
+  const realTimeline = [
+    ...projectsList.map((p) => ({
+      title: `Published project: ${p.name}`,
+      detail: p.description,
+      time: "Recent activity",
+    })),
+    {
+      title: "Account Registered",
+      detail: `Joined platform as @${user.username}`,
+      time: "Member",
+    },
   ];
 
   const handleCopyProfileLink = () => {
@@ -53,6 +65,8 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const realXp = projectsList.length * 500;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* PROFILE HERO HEADER */}
@@ -64,9 +78,14 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
             </div>
 
             <div className="space-y-1">
-              <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
-                {user.name}
-              </h1>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+                  {user.name}
+                </h1>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${getBuilderTitle(projectsList.length).badgeClass}`}>
+                  {getBuilderTitle(projectsList.length).title}
+                </span>
+              </div>
               <div className="text-xs font-mono text-zinc-500 flex flex-wrap items-center gap-2.5">
                 <span className="text-zinc-900 font-bold">@{user.username}</span>
                 <span>•</span>
@@ -102,7 +121,7 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs">
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Total XP</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">14,250 XP</div>
+            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{realXp.toLocaleString()} XP</div>
           </div>
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
@@ -117,7 +136,7 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Member Since</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">Jan 2026</div>
+            <div className="text-base font-extrabold text-zinc-900 mt-0.5">Feb 2026</div>
           </div>
         </div>
       </div>
@@ -131,14 +150,18 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
           <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Tech Stack</h3>
             <div className="flex flex-wrap gap-1.5">
-              {userSkills.map((skill) => (
-                <span
-                  key={skill}
-                  className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium text-[11px]"
-                >
-                  {skill}
-                </span>
-              ))}
+              {dynamicTechSkills.length > 0 ? (
+                dynamicTechSkills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium text-[11px]"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="text-zinc-500 text-xs italic">No tech stack tagged yet.</span>
+              )}
             </div>
           </div>
 
@@ -146,7 +169,7 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
           <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Badges</h3>
             <div className="space-y-3">
-              {userAchievements.map((ach) => (
+              {realAchievements.map((ach) => (
                 <div key={ach.title} className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
                   <div className="text-zinc-900 font-bold text-xs">{ach.title}</div>
                   <div className="text-[10px] text-zinc-500 font-sans">{ach.detail}</div>
@@ -216,7 +239,7 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
             <h2 className="text-base font-bold text-zinc-900 tracking-tight">Activity Timeline</h2>
 
             <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4 font-mono text-xs">
-              {timelineEvents.map((evt, idx) => (
+              {realTimeline.map((evt, idx) => (
                 <div key={idx} className="flex gap-3 items-start">
                   <div className="w-2 h-2 rounded-full bg-zinc-900 mt-1.5 shrink-0" />
                   <div className="space-y-0.5">

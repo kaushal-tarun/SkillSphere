@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { UserProfile } from "@/types/dashboard";
+import { getBuilderTitle } from "@/lib/titles";
 
 export type NavTab = "dashboard" | "discover" | "projects" | "friends" | "community" | "profile" | "settings";
 
@@ -130,7 +131,12 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold text-zinc-900 truncate">{user.name}</div>
-                <div className="text-[10px] font-mono text-zinc-500 truncate">@{user.username}</div>
+                <div className="text-[10px] font-mono text-zinc-500 truncate flex items-center gap-1">
+                  <span>@{user.username}</span>
+                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getBuilderTitle(projectsCount).badgeClass}`}>
+                    {getBuilderTitle(projectsCount).title}
+                  </span>
+                </div>
               </div>
             </div>
 

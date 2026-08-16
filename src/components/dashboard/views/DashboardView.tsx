@@ -2,6 +2,7 @@
 
 import React from "react";
 import { UserProfile, ProjectItem, LeaderboardItem, ActivityItem } from "@/types/dashboard";
+import { getBuilderTitle } from "@/lib/titles";
 
 interface DashboardViewProps {
   user: UserProfile;
@@ -35,6 +36,7 @@ export function DashboardView({
   );
 
   const hasProjects = projectsList.length > 0;
+  const titleInfo = getBuilderTitle(projectsList.length);
 
   return (
     <div className="animate-in fade-in duration-300 w-full">
@@ -48,7 +50,9 @@ export function DashboardView({
             
             <div className="relative z-10 p-8 sm:p-12 rounded-[22px] bg-white text-center space-y-5">
               <div className="space-y-2 max-w-md mx-auto">
-                <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">Things look pretty empty here</h2>
+                <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">
+                  Things look pretty empty here
+                </h2>
                 <p className="text-xs text-zinc-600 font-sans leading-relaxed">
                   You haven't added any projects yet. Start building your portfolio or show off something you've been working on.
                 </p>
@@ -89,6 +93,7 @@ export function DashboardView({
       ) : (
         /* POPULATED DASHBOARD VIEW (WHEN PROJECTS EXIST) */
         <div className="max-w-4xl mx-auto space-y-6">
+
           <div className="flex items-center justify-between border-b border-[#e8e2d8] pb-4">
             <h2 className="text-base font-bold text-zinc-900 tracking-tight flex items-center gap-2">
               <span>Your Projects</span>
