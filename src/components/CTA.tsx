@@ -23,7 +23,7 @@ export default function CTA() {
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 text-zinc-900">
-            Ready for a long Run?
+            Ready for a long Run
           </h2>
           <p className="text-base sm:text-lg text-zinc-700 max-w-2xl mx-auto mb-6 font-normal leading-relaxed">
             Showcase your projects, compete with friends, earn XP, and connect with student builders.
