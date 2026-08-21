@@ -32,46 +32,57 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (parsed.name) {
-          const userObj = {
-            id: parsed.id || "",
-            name: parsed.name,
-            username: parsed.username || parsed.name.toLowerCase().replace(/\s+/g, "_"),
-            email: parsed.email || "user@skillsphere.dev",
-            university: parsed.university || "University Student",
-            role: parsed.role || "Full-Stack Engineer & AI Developer",
-            location: parsed.location || "India",
-            bio: parsed.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
-          };
-          setUser(userObj);
-
-          // Register in skillsphere_users_db
-          try {
-            const existingUsers = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
-            const userAccount = {
-              id: userObj.id || `usr_${userObj.username}`,
-              name: userObj.name,
-              username: userObj.username.toLowerCase().trim(),
-              university: userObj.university,
-              xp: 1250,
-              level: 2,
-              projects: 1,
-              avatar: getInitials(userObj.name),
+    async function loadUserProfile() {
+      let currentUsername = user.username;
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          if (parsed.name) {
+            currentUsername = parsed.username || parsed.name.toLowerCase().replace(/\s+/g, "_");
+            const userObj = {
+              id: parsed.id || "",
+              name: parsed.name,
+              username: currentUsername,
+              email: parsed.email || "user@skillsphere.dev",
+              university: parsed.university || "University Student",
+              role: parsed.role || "Full-Stack Engineer & AI Developer",
+              location: parsed.location || "India",
+              bio: parsed.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+              avatar: parsed.avatar || undefined,
             };
-            const updated = [userAccount, ...existingUsers.filter((u: any) => u.username.toLowerCase() !== userAccount.username)];
-            localStorage.setItem("skillsphere_users_db", JSON.stringify(updated));
-          } catch (e) {
-            console.error("Failed to sync registered users DB", e);
+            setUser(userObj);
+          }
+        } catch (e) {
+          console.error("Failed to parse user session", e);
+        }
+      }
+
+      try {
+        const res = await fetch(`/api/profile?username=${encodeURIComponent(currentUsername)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profile) {
+            setUser((prev) => {
+              const updated = {
+                ...prev,
+                name: data.profile.name || prev.name,
+                university: data.profile.university || prev.university,
+                role: data.profile.role || prev.role,
+                location: data.profile.location || prev.location,
+                bio: data.profile.bio || prev.bio,
+                avatar: data.profile.avatar || prev.avatar,
+              };
+              localStorage.setItem("user", JSON.stringify(updated));
+              return updated;
+            });
           }
         }
       } catch (e) {
-        console.error("Failed to parse user session", e);
+        console.error("Failed to fetch profile from PostgreSQL", e);
       }
     }
+    loadUserProfile();
   }, []);
 
   const getInitials = (name: string) => {
