@@ -137,42 +137,71 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     }
   };
 
-  const handleToggleRepost = (id: string) => {
-    const updated = posts.map((p) => {
-      if (p.id === id) {
-        return {
-          ...p,
-          reposts: p.isReposted ? p.reposts - 1 : p.reposts + 1,
-          isReposted: !p.isReposted,
-        };
-      }
-      return p;
-    });
-    setPosts(updated);
+  const handleToggleRepost = async (id: string) => {
+    let nextRepostState = false;
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          nextRepostState = !p.isReposted;
+          return {
+            ...p,
+            reposts: p.isReposted ? p.reposts - 1 : p.reposts + 1,
+            isReposted: !p.isReposted,
+          };
+        }
+        return p;
+      })
+    );
+
+    try {
+      await fetch("/api/reposts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: id,
+          isReposted: nextRepostState,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to update repost in PostgreSQL", e);
+    }
   };
 
-  const handleAddComment = (postId: string, text: string) => {
+  const handleAddComment = async (postId: string, text: string) => {
     if (!text.trim()) return;
-    const newComment: CommentItem = {
-      id: `comm-${Date.now()}`,
-      authorName: user.name,
-      authorHandle: user.username,
-      text: text.trim(),
-      time: "Just now",
-    };
-
-    const updated = posts.map((p) => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          comments: [...p.comments, newComment],
-        };
-      }
-      return p;
-    });
-
-    setPosts(updated);
+    const commentText = text.trim();
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId,
+          text: commentText,
+          username: user.username,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.comment) {
+          setPosts((prev) =>
+            prev.map((p) => {
+              if (p.id === postId) {
+                return {
+                  ...p,
+                  comments: [...p.comments, data.comment],
+                };
+              }
+              return p;
+            })
+          );
+        }
+      }
+    } catch (e) {
+      console.error("Failed to save comment to PostgreSQL", e);
+    }
   };
 
   const trendingTopics = [
