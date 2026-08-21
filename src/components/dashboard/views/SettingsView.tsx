@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { UserProfile } from "@/types/dashboard";
 
 interface SettingsViewProps {
@@ -22,6 +22,25 @@ type SettingsSection =
 export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please select an image under 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setProfileForm((prev) => ({ ...prev, avatar: event.target!.result as string }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -240,30 +259,38 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
 
               {/* Profile Picture Upload Card */}
               <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0 overflow-hidden shadow-sm">
                   {profileForm.avatar ? (
                     <img src={profileForm.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     getInitials(profileForm.name)
                   )}
                 </div>
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="text-zinc-900 font-bold text-xs">Avatar Image URL</div>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="url"
-                      value={profileForm.avatar}
-                      onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
-                      placeholder="Paste image URL (e.g. https://github.com/identicon.png)..."
-                      className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-[#e2dacd] text-zinc-900 focus:outline-none focus:border-zinc-900 text-xs font-mono"
-                    />
+                <div className="space-y-1">
+                  <div className="text-zinc-900 font-bold text-xs">Profile Picture</div>
+                  <div className="text-[10px] text-zinc-500 font-sans">JPG, PNG or GIF under 5MB.</div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarFileUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                    >
+                      Upload New
+                    </button>
                     {profileForm.avatar && (
                       <button
                         type="button"
                         onClick={() => setProfileForm({ ...profileForm, avatar: "" })}
-                        className="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-[11px] font-bold transition-all cursor-pointer shrink-0"
+                        className="px-3 py-1 rounded-lg bg-white border border-[#e8e2d8] text-zinc-700 hover:bg-rose-50 hover:text-rose-700 text-[11px] font-bold transition-all cursor-pointer"
                       >
-                        Clear
+                        Remove
                       </button>
                     )}
                   </div>
