@@ -55,45 +55,47 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   const [posts, setPosts] = useState<PostItem[]>([]);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("skillsphere_community_posts");
-      if (saved) {
-        setPosts(JSON.parse(saved));
+    async function loadCommunityPosts() {
+      try {
+        const res = await fetch("/api/posts");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.posts && Array.isArray(data.posts)) {
+            setPosts(data.posts);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load community posts from PostgreSQL", e);
       }
-    } catch (e) {
-      console.error("Failed to load community posts", e);
     }
+    loadCommunityPosts();
   }, []);
 
-  const saveCommunityPosts = (updated: PostItem[]) => {
-    setPosts(updated);
-    try {
-      localStorage.setItem("skillsphere_community_posts", JSON.stringify(updated));
-    } catch (e) {
-      console.error("Failed to save community posts", e);
-    }
-  };
-
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPostText.trim()) return;
 
-    const created: PostItem = {
-      id: `p-${Date.now()}`,
-      authorName: user.name,
-      authorHandle: user.username,
-      campus: user.university,
-      avatar: getInitials(user.name),
-      time: "Just now",
-      content: newPostText,
-      likes: 0,
-      reposts: 0,
-      comments: [],
-    };
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: newPostText,
+          username: user.username,
+        }),
+      });
 
-    const updated = [created, ...posts];
-    saveCommunityPosts(updated);
-    setNewPostText("");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.post) {
+          setPosts((prev) => [data.post, ...prev]);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to save post to PostgreSQL", e);
+    } finally {
+      setNewPostText("");
+    }
   };
 
   const handleToggleLike = (id: string) => {
@@ -107,7 +109,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       }
       return p;
     });
-    saveCommunityPosts(updated);
+    setPosts(updated);
   };
 
   const handleToggleRepost = (id: string) => {
@@ -121,7 +123,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       }
       return p;
     });
-    saveCommunityPosts(updated);
+    setPosts(updated);
   };
 
   const handleAddComment = (postId: string, text: string) => {
@@ -144,7 +146,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       return p;
     });
 
-    saveCommunityPosts(updated);
+    setPosts(updated);
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
   };
 
