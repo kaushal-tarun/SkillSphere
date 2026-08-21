@@ -98,6 +98,17 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    try {
+      await fetch(`/api/posts?id=${encodeURIComponent(postId)}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to delete post in PostgreSQL", e);
+    }
+  };
+
   const handleToggleLike = (id: string) => {
     const updated = posts.map((p) => {
       if (p.id === id) {
@@ -327,11 +338,21 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   </div>
                 </div>
 
-                {post.projectTag && (
-                  <span className="px-2.5 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] font-mono text-zinc-800 font-bold">
-                    {post.projectTag}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {post.authorHandle.toLowerCase() === user.username.toLowerCase() && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      className="px-2 py-0.5 rounded text-[10px] font-mono text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer"
+                    >
+                      Delete 🗑️
+                    </button>
+                  )}
+                  {post.projectTag && (
+                    <span className="px-2.5 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] font-mono text-zinc-800 font-bold">
+                      {post.projectTag}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <p className="text-xs sm:text-sm text-zinc-800 font-sans leading-relaxed">

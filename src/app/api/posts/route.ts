@@ -139,3 +139,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create community post" }, { status: 500 });
   }
 }
+
+// DELETE /api/posts - Delete a community post in Neon PostgreSQL
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const postId = searchParams.get("id");
+
+    if (!postId) {
+      return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+    }
+
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("DELETE /api/posts error:", error);
+    return NextResponse.json({ error: "Failed to delete community post" }, { status: 500 });
+  }
+}
