@@ -3,8 +3,35 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
 // GET /api/posts - Fetch all community posts from Neon PostgreSQL
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get("username");
+
+    const session = await auth();
+    let currentUser = null;
+
+    if (session?.user?.email) {
+      currentUser = await prisma.user.findFirst({
+        where: { email: session.user.email },
+      });
+    }
+
+    if (!currentUser && username) {
+      currentUser = await prisma.user.findFirst({
+        where: { username: username.toLowerCase().trim() },
+      });
+    }
+
+    let likedPostIdsSet = new Set<string>();
+    if (currentUser) {
+      const userLikes = await prisma.like.findMany({
+        where: { userId: currentUser.id, postId: { not: null } },
+        select: { postId: true },
+      });
+      likedPostIdsSet = new Set(userLikes.map((l) => l.postId as string));
+    }
+
     const posts = await prisma.post.findMany({
       include: {
         user: {
@@ -47,6 +74,7 @@ export async function GET() {
       projectTag: p.projectTag || undefined,
       likes: p.likesCount,
       reposts: p.repostsCount,
+      isLiked: likedPostIdsSet.has(p.id),
       comments: p.comments.map((c) => ({
         id: c.id,
         authorName: c.user?.name || "Developer",
@@ -130,6 +158,7 @@ export async function POST(request: Request) {
       projectTag: newPost.projectTag || undefined,
       likes: 0,
       reposts: 0,
+      isLiked: false,
       comments: [],
     };
 

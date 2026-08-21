@@ -57,7 +57,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   useEffect(() => {
     async function loadCommunityPosts() {
       try {
-        const res = await fetch("/api/posts");
+        const res = await fetch(`/api/posts?username=${encodeURIComponent(user.username)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.posts && Array.isArray(data.posts)) {
@@ -69,7 +69,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       }
     }
     loadCommunityPosts();
-  }, []);
+  }, [user.username]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,18 +109,32 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     }
   };
 
-  const handleToggleLike = (id: string) => {
-    const updated = posts.map((p) => {
-      if (p.id === id) {
-        return {
-          ...p,
-          likes: p.isLiked ? p.likes - 1 : p.likes + 1,
-          isLiked: !p.isLiked,
-        };
-      }
-      return p;
-    });
-    setPosts(updated);
+  const handleToggleLike = async (id: string) => {
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          return {
+            ...p,
+            likes: p.isLiked ? p.likes - 1 : p.likes + 1,
+            isLiked: !p.isLiked,
+          };
+        }
+        return p;
+      })
+    );
+
+    try {
+      await fetch("/api/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: id,
+          username: user.username,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to update post like in PostgreSQL", e);
+    }
   };
 
   const handleToggleRepost = (id: string) => {
