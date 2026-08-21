@@ -377,7 +377,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       <form onSubmit={handleCreatePost} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-4">
         <div className="flex gap-3">
           <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0 overflow-hidden">
-            {user.avatar ? (
+            {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
               <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               getInitials(user.name)

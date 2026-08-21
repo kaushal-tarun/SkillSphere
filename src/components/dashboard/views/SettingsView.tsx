@@ -260,7 +260,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
               {/* Profile Picture Upload Card */}
               <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
                 <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0 overflow-hidden shadow-sm">
-                  {profileForm.avatar ? (
+                  {profileForm.avatar && (profileForm.avatar.startsWith("data:") || profileForm.avatar.startsWith("http") || profileForm.avatar.startsWith("/")) ? (
                     <img src={profileForm.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     getInitials(profileForm.name)
