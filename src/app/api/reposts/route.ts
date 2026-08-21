@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { postId, isReposted } = body;
+    const { postId, action } = body; // action: "INCREMENT" | "DECREMENT"
 
     if (!postId) {
       return NextResponse.json({ error: "postId is required" }, { status: 400 });
@@ -19,9 +19,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const newCount = isReposted
-      ? targetPost.repostsCount + 1
-      : Math.max(0, targetPost.repostsCount - 1);
+    let newCount = targetPost.repostsCount;
+    if (action === "INCREMENT") {
+      newCount = targetPost.repostsCount + 1;
+    } else if (action === "DECREMENT") {
+      newCount = Math.max(0, targetPost.repostsCount - 1);
+    } else {
+      // Fallback
+      newCount = targetPost.repostsCount + 1;
+    }
 
     await prisma.post.update({
       where: { id: postId },

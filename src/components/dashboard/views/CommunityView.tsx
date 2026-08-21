@@ -61,7 +61,16 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
         if (res.ok) {
           const data = await res.json();
           if (data.posts && Array.isArray(data.posts)) {
-            setPosts(data.posts);
+            let userReposts: Record<string, boolean> = {};
+            try {
+              userReposts = JSON.parse(localStorage.getItem(`skillsphere_reposts_${user.username.toLowerCase()}`) || "{}");
+            } catch (e) {}
+
+            const merged = data.posts.map((p: PostItem) => ({
+              ...p,
+              isReposted: !!userReposts[p.id],
+            }));
+            setPosts(merged);
           }
         }
       } catch (e) {
@@ -138,15 +147,32 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   };
 
   const handleToggleRepost = async (id: string) => {
-    let nextRepostState = false;
+    const storageKey = `skillsphere_reposts_${user.username.toLowerCase()}`;
+    let userReposts: Record<string, boolean> = {};
+    try {
+      userReposts = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    } catch (e) {}
+
+    const isCurrentlyReposted = !!userReposts[id];
+    const action = isCurrentlyReposted ? "DECREMENT" : "INCREMENT";
+
+    if (isCurrentlyReposted) {
+      delete userReposts[id];
+    } else {
+      userReposts[id] = true;
+    }
+
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(userReposts));
+    } catch (e) {}
+
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id === id) {
-          nextRepostState = !p.isReposted;
           return {
             ...p,
-            reposts: p.isReposted ? p.reposts - 1 : p.reposts + 1,
-            isReposted: !p.isReposted,
+            reposts: isCurrentlyReposted ? Math.max(0, p.reposts - 1) : p.reposts + 1,
+            isReposted: !isCurrentlyReposted,
           };
         }
         return p;
@@ -159,7 +185,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           postId: id,
-          isReposted: nextRepostState,
+          action,
         }),
       });
     } catch (e) {
