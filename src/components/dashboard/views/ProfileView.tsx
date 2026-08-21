@@ -73,8 +73,12 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
       <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-lg flex items-center justify-center shrink-0 uppercase shadow-md">
-              {getInitials(user.name)}
+            <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-lg flex items-center justify-center shrink-0 uppercase shadow-md overflow-hidden">
+              {user.avatar ? (
+                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                getInitials(user.name)
+              )}
             </div>
 
             <div className="space-y-1">

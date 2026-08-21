@@ -43,6 +43,7 @@ export async function GET(request: Request) {
         role: targetUser.profile?.role || targetUser.role || "Full-Stack Engineer & AI Developer",
         location: targetUser.profile?.location || targetUser.location || "India",
         bio: targetUser.profile?.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+        avatar: targetUser.avatar || undefined,
         xp: totalXp,
         level,
         projectsCount,
@@ -60,7 +61,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, bio, university, role, location } = body;
+    const { name, username, bio, university, role, location, avatar } = body;
 
     const session = await auth();
     let currentUser = null;
@@ -88,6 +89,7 @@ export async function PUT(request: Request) {
         university: university !== undefined ? university.trim() : undefined,
         role: role !== undefined ? role.trim() : undefined,
         location: location !== undefined ? location.trim() : undefined,
+        avatar: avatar !== undefined ? avatar.trim() : undefined,
       },
     });
 

@@ -7,6 +7,7 @@ export interface UserProfile {
   role?: string;
   location?: string;
   bio?: string;
+  avatar?: string;
 }
 
 export interface ProjectItem {

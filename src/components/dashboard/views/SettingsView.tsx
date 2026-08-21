@@ -31,6 +31,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
     role: user.role || "Full-Stack Engineer",
     location: user.location || "Mumbai, India",
     bio: user.bio || "Building web tools, distributed systems, and open-source applications.",
+    avatar: user.avatar || "",
     portfolioUrl: "https://skillsphere.dev",
     githubUrl: `https://github.com/${user.username}`,
     linkedinUrl: `https://linkedin.com/in/${user.username}`,
@@ -77,6 +78,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
       role: profileForm.role,
       location: profileForm.location,
       bio: profileForm.bio,
+      avatar: profileForm.avatar,
     };
 
     setUser(updated);
@@ -92,6 +94,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
           role: profileForm.role,
           location: profileForm.location,
           bio: profileForm.bio,
+          avatar: profileForm.avatar,
         }),
       });
     } catch (err) {
@@ -237,26 +240,32 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
 
               {/* Profile Picture Upload Card */}
               <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0">
-                  {getInitials(profileForm.name)}
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-bold text-base flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                  {profileForm.avatar ? (
+                    <img src={profileForm.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(profileForm.name)
+                  )}
                 </div>
-                <div className="space-y-1">
-                  <div className="text-zinc-900 font-bold text-xs">Profile Picture</div>
-                  <div className="text-[10px] text-zinc-500 font-sans">JPG, PNG or GIF under 5MB.</div>
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => alert("Avatar upload dialog open.")}
-                      className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[11px] font-bold shadow-sm transition-all cursor-pointer"
-                    >
-                      Upload New
-                    </button>
-                    <button
-                      type="button"
-                      className="px-3 py-1 rounded-lg bg-white border border-[#e8e2d8] text-zinc-700 hover:bg-zinc-100 text-[11px] font-bold transition-all cursor-pointer"
-                    >
-                      Remove
-                    </button>
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="text-zinc-900 font-bold text-xs">Avatar Image URL</div>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="url"
+                      value={profileForm.avatar}
+                      onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
+                      placeholder="Paste image URL (e.g. https://github.com/identicon.png)..."
+                      className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-[#e2dacd] text-zinc-900 focus:outline-none focus:border-zinc-900 text-xs font-mono"
+                    />
+                    {profileForm.avatar && (
+                      <button
+                        type="button"
+                        onClick={() => setProfileForm({ ...profileForm, avatar: "" })}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-[11px] font-bold transition-all cursor-pointer shrink-0"
+                      >
+                        Clear
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
