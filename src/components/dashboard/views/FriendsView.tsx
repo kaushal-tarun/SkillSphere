@@ -417,8 +417,12 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative">
-                            {friend.avatar}
+                          <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative overflow-hidden">
+                            {friend.avatar && (friend.avatar.startsWith("data:") || friend.avatar.startsWith("http") || friend.avatar.startsWith("/")) ? (
+                              <img src={friend.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              friend.avatar
+                            )}
                             <span className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 border border-white ${
                               friend.status === "online" ? "bg-emerald-500" : "bg-zinc-400"
                             }`} />
@@ -440,8 +444,12 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                   {/* Header */}
                   <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center uppercase">
-                        {activeChatFriend.avatar}
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center uppercase overflow-hidden">
+                        {activeChatFriend.avatar && (activeChatFriend.avatar.startsWith("data:") || activeChatFriend.avatar.startsWith("http") || activeChatFriend.avatar.startsWith("/")) ? (
+                          <img src={activeChatFriend.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          activeChatFriend.avatar
+                        )}
                       </div>
                       <div>
                         <div className="font-bold text-zinc-900 text-sm">{activeChatFriend.name}</div>
@@ -580,8 +588,12 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                     className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-3 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0">
-                        {friend.avatar}
+                      <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                        {friend.avatar && (friend.avatar.startsWith("data:") || friend.avatar.startsWith("http") || friend.avatar.startsWith("/")) ? (
+                          <img src={friend.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          friend.avatar
+                        )}
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-bold text-zinc-900 truncate">{friend.name}</div>

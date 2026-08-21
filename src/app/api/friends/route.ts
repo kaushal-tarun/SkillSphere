@@ -56,7 +56,7 @@ export async function GET(request: Request) {
         projects: projCount,
         status: "online" as const,
         isFriend: true,
-        avatar: (friend.name || friend.username).slice(0, 2).toUpperCase(),
+        avatar: friend.avatar || (friend.name || friend.username).slice(0, 2).toUpperCase(),
       };
     });
 
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
         username: sender.username,
         university: sender.university || "University Student",
         xp,
-        avatar: (sender.name || sender.username).slice(0, 2).toUpperCase(),
+        avatar: sender.avatar || (sender.name || sender.username).slice(0, 2).toUpperCase(),
       };
     });
 
