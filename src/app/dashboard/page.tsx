@@ -147,30 +147,53 @@ export default function DashboardPage() {
     },
   ];
 
-  // Projects State - Starts Empty by Default for New Sessions
+  // Projects State - Connects to Neon PostgreSQL API
   const [projectsList, setProjectsList] = useState<ProjectItem[]>([]);
 
-  const handleCreateProject = (projectData: { name: string; description: string; tech: string; github: string }) => {
-    const created: ProjectItem = {
-      id: `proj-${Date.now()}`,
-      name: projectData.name,
-      description: projectData.description || "Developer tool built for student software projects.",
-      progress: 10,
-      updatedAt: "Just now",
-      visibility: "Public",
-      stars: 1,
-      forks: 0,
-      commits: 1,
-      daysActive: 1,
-      views: 12,
-      likes: 1,
-      status: "Active",
-      tech: projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : ["TypeScript", "Next.js"],
-      github: projectData.github || "https://github.com",
-    };
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const res = await fetch("/api/projects");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.projects && Array.isArray(data.projects)) {
+            setProjectsList(data.projects);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load projects from PostgreSQL", e);
+      }
+    }
+    loadProjects();
+  }, []);
 
-    setProjectsList((prev) => [created, ...prev]);
-    setIsNewProjectModalOpen(false);
+  const handleCreateProject = async (projectData: { name: string; description: string; tech: string; github: string }) => {
+    const techArray = projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : ["TypeScript", "Next.js"];
+
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: projectData.name,
+          description: projectData.description,
+          tech: techArray,
+          githubUrl: projectData.github,
+          username: user.username,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.project) {
+          setProjectsList((prev) => [data.project, ...prev]);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to save project to PostgreSQL", e);
+    } finally {
+      setIsNewProjectModalOpen(false);
+    }
   };
 
   // Real Top 5 Leaderboard Data
