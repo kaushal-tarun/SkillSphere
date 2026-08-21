@@ -136,3 +136,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
   }
 }
+
+// DELETE /api/projects - Delete a project in Neon PostgreSQL
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get("id");
+
+    if (!projectId) {
+      return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
+    }
+
+    await prisma.project.delete({
+      where: { id: projectId },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("DELETE /api/projects error:", error);
+    return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });
+  }
+}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-// GET /api/friends - Fetch added friends for active user from Neon PostgreSQL
+// GET /api/friends - Fetch accepted friends & pending incoming requests from Neon PostgreSQL
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -24,47 +24,77 @@ export async function GET(request: Request) {
     }
 
     if (!targetUser) {
-      return NextResponse.json({ friends: [] }, { status: 200 });
+      return NextResponse.json({ friends: [], pendingRequests: [] }, { status: 200 });
     }
 
-    const friendships = await prisma.friendship.findMany({
+    // Accepted Friendships
+    const acceptedFriendships = await prisma.friendship.findMany({
       where: {
         OR: [{ senderId: targetUser.id }, { receiverId: targetUser.id }],
         status: "ACCEPTED",
       },
       include: {
-        sender: true,
-        receiver: true,
+        sender: { include: { projects: true } },
+        receiver: { include: { projects: true } },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    const friendsList = friendships.map((f) => {
+    const friendsList = acceptedFriendships.map((f) => {
       const friend = f.senderId === targetUser.id ? f.receiver : f.sender;
+      const projCount = friend.projects ? friend.projects.length : 0;
+      const xp = projCount * 500;
+      const level = Math.floor(xp / 500) + 1;
+
       return {
         id: friend.id,
         name: friend.name,
         username: friend.username,
         university: friend.university || "University Student",
-        xp: friend.xp || 1000,
-        level: Math.floor((friend.xp || 0) / 500) + 1,
-        projects: 0,
+        xp,
+        level,
+        projects: projCount,
         status: "online" as const,
         isFriend: true,
         avatar: (friend.name || friend.username).slice(0, 2).toUpperCase(),
       };
     });
 
-    return NextResponse.json({ friends: friendsList }, { status: 200 });
+    // Pending incoming friend requests (where current user is receiver)
+    const incomingPending = await prisma.friendship.findMany({
+      where: {
+        receiverId: targetUser.id,
+        status: "PENDING",
+      },
+      include: {
+        sender: { include: { projects: true } },
+      },
+    });
+
+    const pendingRequests = incomingPending.map((f) => {
+      const sender = f.sender;
+      const projCount = sender.projects ? sender.projects.length : 0;
+      const xp = projCount * 500;
+
+      return {
+        friendshipId: f.id,
+        senderId: sender.id,
+        name: sender.name,
+        username: sender.username,
+        university: sender.university || "University Student",
+        xp,
+        avatar: (sender.name || sender.username).slice(0, 2).toUpperCase(),
+      };
+    });
+
+    return NextResponse.json({ friends: friendsList, pendingRequests }, { status: 200 });
   } catch (error) {
     console.error("GET /api/friends error:", error);
     return NextResponse.json({ error: "Failed to fetch friends" }, { status: 500 });
   }
 }
 
-// POST /api/friends - Add a friend in Neon PostgreSQL
+// POST /api/friends - Send a Friend Request (PENDING) in Neon PostgreSQL
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -101,7 +131,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Target builder not found" }, { status: 404 });
     }
 
-    // Upsert friendship record
+    // Create a PENDING friendship request
     const friendship = await prisma.friendship.upsert({
       where: {
         senderId_receiverId: {
@@ -109,37 +139,73 @@ export async function POST(request: Request) {
           receiverId: targetUser.id,
         },
       },
-      update: { status: "ACCEPTED" },
+      update: { status: "PENDING" },
       create: {
         senderId: currentUser.id,
         receiverId: targetUser.id,
-        status: "ACCEPTED",
+        status: "PENDING",
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      friendship,
-      friend: {
-        id: targetUser.id,
-        name: targetUser.name,
-        username: targetUser.username,
-        university: targetUser.university || "University Student",
-        xp: targetUser.xp || 1000,
-        level: Math.floor((targetUser.xp || 0) / 500) + 1,
-        projects: 0,
-        status: "online",
-        isFriend: true,
-        avatar: (targetUser.name || targetUser.username).slice(0, 2).toUpperCase(),
-      },
-    }, { status: 201 });
+    return NextResponse.json({ success: true, friendship, status: "PENDING" }, { status: 201 });
   } catch (error) {
     console.error("POST /api/friends error:", error);
-    return NextResponse.json({ error: "Failed to add friend" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to send friend request" }, { status: 500 });
   }
 }
 
-// DELETE /api/friends - Remove a friend in Neon PostgreSQL
+// PUT /api/friends - Accept or Decline a Friend Request in Neon PostgreSQL
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { action, senderUsername, username } = body; // action: "ACCEPT" | "DECLINE"
+
+    const session = await auth();
+    let currentUser = null;
+
+    if (session?.user?.email) {
+      currentUser = await prisma.user.findFirst({
+        where: { email: session.user.email },
+      });
+    }
+
+    if (!currentUser && username) {
+      currentUser = await prisma.user.findFirst({
+        where: { username: username.toLowerCase().trim() },
+      });
+    }
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "User session not found" }, { status: 404 });
+    }
+
+    const senderUser = await prisma.user.findFirst({
+      where: { username: senderUsername.toLowerCase().trim() },
+    });
+
+    if (!senderUser) {
+      return NextResponse.json({ error: "Sender user not found" }, { status: 404 });
+    }
+
+    if (action === "ACCEPT") {
+      await prisma.friendship.updateMany({
+        where: { senderId: senderUser.id, receiverId: currentUser.id },
+        data: { status: "ACCEPTED" },
+      });
+      return NextResponse.json({ success: true, status: "ACCEPTED" }, { status: 200 });
+    } else {
+      await prisma.friendship.deleteMany({
+        where: { senderId: senderUser.id, receiverId: currentUser.id },
+      });
+      return NextResponse.json({ success: true, status: "REJECTED" }, { status: 200 });
+    }
+  } catch (error) {
+    console.error("PUT /api/friends error:", error);
+    return NextResponse.json({ error: "Failed to update friend request" }, { status: 500 });
+  }
+}
+
+// DELETE /api/friends - Unfriend / Remove a friend in Neon PostgreSQL
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);

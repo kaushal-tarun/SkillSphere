@@ -25,106 +25,36 @@ export function DiscoverView({
   const [sortBy, setSortBy] = useState<"trending" | "newest" | "likes">("trending");
   const [likedProjects, setLikedProjects] = useState<Record<string, boolean>>({});
 
-  const discoverProjects: (ProjectItem & { campus: string; creatorHandle: string })[] = [
-    {
-      id: "disc-1",
-      name: "KnowledgeVault AI",
-      description: "Enterprise PDF & research paper indexing engine using PostgreSQL pgvector. Performs sub-100ms vector similarity searches with instant AST citations.",
-      tech: ["Next.js 16", "TypeScript", "PostgreSQL", "pgvector", "Prisma"],
-      progress: 95,
-      stars: 340,
-      status: "Shipped",
-      visibility: "Public",
-      updatedAt: "2 hours ago",
-      likes: 210,
-      views: 1420,
-      forks: 48,
-      commits: 112,
-      daysActive: 38,
-      github: "https://github.com/advait/knowledge-vault",
-      campus: "IIT Bombay '26",
-      creatorHandle: "advait_d",
-    },
-    {
-      id: "disc-2",
-      name: "Nexa Study Engine",
-      description: "AI-assisted flashcard generation engine syncing directly with Notion databases and Markdown notes for university exams.",
-      tech: ["React", "FastAPI", "PostgreSQL", "TailwindCSS"],
-      progress: 90,
-      stars: 285,
-      status: "Shipped",
-      visibility: "Public",
-      updatedAt: "Yesterday",
-      likes: 198,
-      views: 1120,
-      forks: 34,
-      commits: 86,
-      daysActive: 24,
-      github: "https://github.com/tanvi/nexa-engine",
-      campus: "BITS Pilani '25",
-      creatorHandle: "tanvi_kulkarni",
-    },
-    {
-      id: "disc-3",
-      name: "CodeCollab Workspace",
-      description: "Real-time collaborative code editor with WebRTC mesh audio channels and synchronized AST syntax parsing.",
-      tech: ["Node.js", "WebSockets", "Monaco Editor", "Redis"],
-      progress: 85,
-      stars: 410,
-      status: "Active",
-      visibility: "Public",
-      updatedAt: "2 days ago",
-      likes: 245,
-      views: 1540,
-      forks: 59,
-      commits: 144,
-      daysActive: 45,
-      github: "https://github.com/tushar/codecollab",
-      campus: "IIIT Hyderabad '26",
-      creatorHandle: "tushar_somani",
-    },
-    {
-      id: "disc-4",
-      name: "HyperTrace Distributed APM",
-      description: "Low-overhead distributed tracing collector for microservices with OpenTelemetry exporter plugin and ClickHouse analytics backend.",
-      tech: ["Go", "OpenTelemetry", "ClickHouse", "Docker"],
-      progress: 88,
-      stars: 520,
-      status: "Shipped",
-      visibility: "Public",
-      updatedAt: "3 days ago",
-      likes: 312,
-      views: 1890,
-      forks: 72,
-      commits: 190,
-      daysActive: 60,
-      github: "https://github.com/rudra/hypertrace",
-      campus: "NIT Trichy '26",
-      creatorHandle: "rudra_sengupta",
-    },
-    {
-      id: "disc-5",
-      name: "Aura Kernel Sandbox",
-      description: "Lightweight WebAssembly execution sandbox for untrusted user-submitted code in browser environments with CPU time caps.",
-      tech: ["Rust", "Wasm", "TypeScript", "Vite"],
-      progress: 92,
-      stars: 420,
-      status: "Shipped",
-      visibility: "Public",
-      updatedAt: "4 days ago",
-      likes: 380,
-      views: 2310,
-      forks: 64,
-      commits: 165,
-      daysActive: 50,
-      github: "https://github.com/ananya/aura-sandbox",
-      campus: "IISc Bangalore '25",
-      creatorHandle: "ananya_vasisht",
-    },
-  ];
+  const [discoverProjects, setDiscoverProjects] = useState<(ProjectItem & { campus?: string; creatorHandle?: string })[]>([]);
 
-  const toggleLike = (id: string) => {
+  React.useEffect(() => {
+    async function fetchDiscoverProjects() {
+      try {
+        const res = await fetch("/api/projects");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.projects && Array.isArray(data.projects)) {
+            setDiscoverProjects(data.projects);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load discover projects from PostgreSQL", e);
+      }
+    }
+    fetchDiscoverProjects();
+  }, []);
+
+  const toggleLike = async (id: string) => {
     setLikedProjects((prev) => ({ ...prev, [id]: !prev[id] }));
+    try {
+      await fetch("/api/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: id, username: user.username }),
+      });
+    } catch (e) {
+      console.error("Failed to update like in PostgreSQL", e);
+    }
   };
 
   const filteredProjects = discoverProjects.filter((p) => {
@@ -132,8 +62,8 @@ export function DiscoverView({
     return (
       p.name.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
-      p.campus.toLowerCase().includes(q) ||
-      p.creatorHandle.toLowerCase().includes(q) ||
+      (p.campus && p.campus.toLowerCase().includes(q)) ||
+      (p.creatorHandle && p.creatorHandle.toLowerCase().includes(q)) ||
       p.tech.some((t) => t.toLowerCase().includes(q))
     );
   });
@@ -186,15 +116,16 @@ export function DiscoverView({
         </div>
 
         <div className="space-y-5">
-          {sortedProjects.map((project) => {
-            const isLiked = likedProjects[project.id];
-            const currentLikes = project.likes + (isLiked ? 1 : 0);
+          {sortedProjects.length > 0 ? (
+            sortedProjects.map((project) => {
+              const isLiked = likedProjects[project.id];
+              const currentLikes = project.likes + (isLiked ? 1 : 0);
 
-            return (
-              <div
-                key={project.id}
-                className="p-6 rounded-3xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 hover:-translate-y-1 hover:shadow-md transition-all duration-300 space-y-4 group"
-              >
+              return (
+                <div
+                  key={project.id}
+                  className="p-6 rounded-3xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 hover:-translate-y-1 hover:shadow-md transition-all duration-300 space-y-4 group"
+                >
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -275,7 +206,15 @@ export function DiscoverView({
                 </div>
               </div>
             );
-          })}
+          })
+        ) : (
+          <div className="p-8 sm:p-12 rounded-3xl bg-white border border-[#e8e2d8] text-center space-y-3 font-mono text-xs">
+            <h3 className="text-base font-extrabold text-zinc-900 font-sans tracking-tight">No discoverable repositories yet</h3>
+            <p className="text-zinc-600 font-sans text-xs max-w-md mx-auto leading-relaxed">
+              Be the first builder to publish a project portfolio! Switch to Projects tab and click + New Project.
+            </p>
+          </div>
+        )}
         </div>
       </div>
     </div>

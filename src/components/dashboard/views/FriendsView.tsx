@@ -20,22 +20,28 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
   // Added friends state - connects to Neon PostgreSQL API
   const [addedFriends, setAddedFriends] = useState<FriendItem[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
 
-  // Load added friends from Neon PostgreSQL API
-  useEffect(() => {
-    async function loadFriendsFromApi() {
-      try {
-        const res = await fetch(`/api/friends?username=${encodeURIComponent(user.username)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.friends && Array.isArray(data.friends)) {
-            setAddedFriends(data.friends);
-          }
+  // Load added friends and incoming requests from Neon PostgreSQL API
+  const loadFriendsFromApi = async () => {
+    try {
+      const res = await fetch(`/api/friends?username=${encodeURIComponent(user.username)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.friends && Array.isArray(data.friends)) {
+          setAddedFriends(data.friends);
         }
-      } catch (e) {
-        console.error("Failed to load added friends from PostgreSQL", e);
+        if (data.pendingRequests && Array.isArray(data.pendingRequests)) {
+          setPendingRequests(data.pendingRequests);
+        }
       }
+    } catch (e) {
+      console.error("Failed to load added friends from PostgreSQL", e);
     }
+  };
+
+  useEffect(() => {
     loadFriendsFromApi();
   }, [user.username]);
 
@@ -106,7 +112,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === targetUser.username.toLowerCase());
 
     if (isAlreadyFriend) {
-      // Remove friend in PostgreSQL
+      // Unfriend in PostgreSQL
       setAddedFriends((prev) => prev.filter((f) => f.username.toLowerCase() !== targetUser.username.toLowerCase()));
       if (selectedFriend && selectedFriend.username.toLowerCase() === targetUser.username.toLowerCase()) {
         setSelectedFriend(null);
@@ -119,10 +125,8 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
         console.error("Failed to remove friend in PostgreSQL", e);
       }
     } else {
-      // Add friend in PostgreSQL
-      const friendToAdd = { ...targetUser, isFriend: true };
-      setAddedFriends((prev) => [friendToAdd, ...prev]);
-      setSelectedFriend(friendToAdd);
+      // Send Friend Request (Pending) in PostgreSQL
+      setSentRequests((prev) => ({ ...prev, [targetUser.username.toLowerCase()]: true }));
 
       try {
         await fetch("/api/friends", {
@@ -134,8 +138,43 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
           }),
         });
       } catch (e) {
-        console.error("Failed to add friend in PostgreSQL", e);
+        console.error("Failed to send friend request in PostgreSQL", e);
       }
+    }
+  };
+
+  const handleAcceptRequest = async (senderUsername: string) => {
+    setPendingRequests((prev) => prev.filter((req) => req.username.toLowerCase() !== senderUsername.toLowerCase()));
+    try {
+      await fetch("/api/friends", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ACCEPT",
+          username: user.username,
+          senderUsername,
+        }),
+      });
+      loadFriendsFromApi();
+    } catch (e) {
+      console.error("Failed to accept friend request", e);
+    }
+  };
+
+  const handleDeclineRequest = async (senderUsername: string) => {
+    setPendingRequests((prev) => prev.filter((req) => req.username.toLowerCase() !== senderUsername.toLowerCase()));
+    try {
+      await fetch("/api/friends", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "DECLINE",
+          username: user.username,
+          senderUsername,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to decline friend request", e);
     }
   };
 
@@ -287,15 +326,23 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                       <td className="py-3.5 text-right text-zinc-900 font-bold">{friend.xp.toLocaleString()} XP</td>
                       <td className="py-3.5 text-right">
                         {friend.id !== "me" && (
-                          <button
-                            onClick={() => {
-                              setSelectedFriend(friend);
-                              setActiveTab("chat");
-                            }}
-                            className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] hover:bg-zinc-900 hover:text-white text-zinc-800 text-xs font-bold transition-all cursor-pointer"
-                          >
-                            Chat ➔
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleAddFriendToggle(friend)}
+                              className="px-2.5 py-1 rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-600 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                            >
+                              Unfriend ✕
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedFriend(friend);
+                                setActiveTab("chat");
+                              }}
+                              className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] hover:bg-zinc-900 hover:text-white text-zinc-800 text-xs font-bold transition-all cursor-pointer"
+                            >
+                              Chat ➔
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -446,6 +493,39 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
       {/* TAB 3: SEARCH-DRIVEN ADD FRIENDS */}
       {activeTab === "add" && (
         <div className="space-y-6 animate-in fade-in duration-200">
+          {/* INCOMING FRIEND REQUESTS NOTIFICATION BANNER */}
+          {pendingRequests.length > 0 && (
+            <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 shadow-xs space-y-3 font-mono text-xs">
+              <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
+                <span>📩 Incoming Friend Requests ({pendingRequests.length})</span>
+              </h3>
+              <div className="space-y-2">
+                {pendingRequests.map((req) => (
+                  <div key={req.username} className="p-3 rounded-xl bg-white border border-amber-200 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-bold text-zinc-900">{req.name} (@{req.username})</div>
+                      <div className="text-[10px] text-zinc-500">{req.university}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleAcceptRequest(req.username)}
+                        className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer"
+                      >
+                        Accept ✓
+                      </button>
+                      <button
+                        onClick={() => handleDeclineRequest(req.username)}
+                        className="px-3 py-1 rounded-xl bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold transition-all cursor-pointer"
+                      >
+                        Decline ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="relative w-full">
             <input
               type="text"
@@ -466,7 +546,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                 Search Builders by Username
               </h3>
               <p className="text-zinc-500 leading-relaxed">
-                Type an exact username above to find student developers and add friends.
+                Type an exact username above to find student developers and send a friend request.
               </p>
             </div>
           ) : searchResults.length === 0 ? (
@@ -484,6 +564,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {searchResults.map((friend) => {
                 const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === friend.username.toLowerCase());
+                const isRequestSent = sentRequests[friend.username.toLowerCase()];
 
                 return (
                   <div
@@ -503,13 +584,16 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
                     <button
                       onClick={() => handleAddFriendToggle(friend)}
-                      className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                      disabled={isRequestSent && !isAlreadyFriend}
+                      className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all shrink-0 ${
                         isAlreadyFriend
-                          ? "bg-[#f4efe6] border border-[#e2dacd] text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
-                          : "bg-zinc-900 text-white shadow-sm hover:bg-black"
+                          ? "bg-[#f4efe6] border border-[#e2dacd] text-zinc-700 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                          : isRequestSent
+                          ? "bg-amber-100 text-amber-900 border border-amber-300 font-bold"
+                          : "bg-zinc-900 text-white shadow-sm hover:bg-black cursor-pointer"
                       }`}
                     >
-                      {isAlreadyFriend ? "Added ✓" : "+ Add Friend"}
+                      {isAlreadyFriend ? "Added ✓ (Unfriend)" : isRequestSent ? "Pending Request ⏳" : "+ Add Friend"}
                     </button>
                   </div>
                 );

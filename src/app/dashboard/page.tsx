@@ -196,6 +196,17 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteProject = async (id: string) => {
+    setProjectsList((prev) => prev.filter((p) => p.id !== id));
+    try {
+      await fetch(`/api/projects?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to delete project in PostgreSQL", e);
+    }
+  };
+
   // Real Top 5 Leaderboard Data
   const leaderboardTop5: LeaderboardItem[] = [
     { rank: 1, name: user.name, username: user.username, campus: user.university, points: 14250, projects: projectsList.length, avatar: getInitials(user.name) },
@@ -295,6 +306,7 @@ export default function DashboardPage() {
                   setSortBy={setSortBy}
                   onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
                   onSelectProject={(proj) => setSelectedProject(proj)}
+                  onDeleteProject={handleDeleteProject}
                 />
               )}
 

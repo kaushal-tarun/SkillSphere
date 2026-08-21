@@ -16,6 +16,7 @@ interface ProjectsViewProps {
   setSortBy: (s: string) => void;
   onOpenNewProjectModal: () => void;
   onSelectProject?: (proj: ProjectItem) => void;
+  onDeleteProject?: (id: string) => void;
 }
 
 export function ProjectsView({
@@ -31,6 +32,7 @@ export function ProjectsView({
   setSortBy,
   onOpenNewProjectModal,
   onSelectProject,
+  onDeleteProject,
 }: ProjectsViewProps) {
   const [isTechOpen, setIsTechOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -212,12 +214,22 @@ export function ProjectsView({
 
                   <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1">
                     <span>★ {project.stars} Stars</span>
-                    <button
-                      onClick={() => onSelectProject && onSelectProject(project)}
-                      className="text-zinc-900 font-bold hover:underline cursor-pointer"
-                    >
-                      Details ➔
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {onDeleteProject && (
+                        <button
+                          onClick={() => onDeleteProject(project.id)}
+                          className="text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer text-[10px]"
+                        >
+                          Delete 🗑️
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onSelectProject && onSelectProject(project)}
+                        className="text-zinc-900 font-bold hover:underline cursor-pointer"
+                      >
+                        Details ➔
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
