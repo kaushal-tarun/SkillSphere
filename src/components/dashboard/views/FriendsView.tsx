@@ -331,7 +331,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                               onClick={() => handleAddFriendToggle(friend)}
                               className="px-2.5 py-1 rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-600 hover:text-white text-xs font-bold transition-all cursor-pointer"
                             >
-                              Unfriend ✕
+                              Unfriend
                             </button>
                             <button
                               onClick={() => {
@@ -497,7 +497,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
           {pendingRequests.length > 0 && (
             <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 shadow-xs space-y-3 font-mono text-xs">
               <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
-                <span>📩 Incoming Friend Requests ({pendingRequests.length})</span>
+                <span>Incoming Friend Requests ({pendingRequests.length})</span>
               </h3>
               <div className="space-y-2">
                 {pendingRequests.map((req) => (
@@ -511,13 +511,13 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                         onClick={() => handleAcceptRequest(req.username)}
                         className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer"
                       >
-                        Accept ✓
+                        Accept
                       </button>
                       <button
                         onClick={() => handleDeclineRequest(req.username)}
                         className="px-3 py-1 rounded-xl bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold transition-all cursor-pointer"
                       >
-                        Decline ✕
+                        Decline
                       </button>
                     </div>
                   </div>
@@ -593,7 +593,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                           : "bg-zinc-900 text-white shadow-sm hover:bg-black cursor-pointer"
                       }`}
                     >
-                      {isAlreadyFriend ? "Added ✓ (Unfriend)" : isRequestSent ? "Pending Request ⏳" : "+ Add Friend"}
+                      {isAlreadyFriend ? "Added (Unfriend)" : isRequestSent ? "Pending Request" : "+ Add Friend"}
                     </button>
                   </div>
                 );

@@ -344,7 +344,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                       onClick={() => handleDeletePost(post.id)}
                       className="px-2 py-0.5 rounded text-[10px] font-mono text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer"
                     >
-                      Delete 🗑️
+                      Delete
                     </button>
                   )}
                   {post.projectTag && (

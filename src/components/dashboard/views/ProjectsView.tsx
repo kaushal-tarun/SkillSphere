@@ -220,7 +220,7 @@ export function ProjectsView({
                           onClick={() => onDeleteProject(project.id)}
                           className="text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer text-[10px]"
                         >
-                          Delete 🗑️
+                          Delete
                         </button>
                       )}
                       <button
