@@ -67,7 +67,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   const [themeMode, setThemeMode] = useState<"light" | "slate" | "system">("light");
   const [codeTheme, setCodeTheme] = useState<"github" | "monokai" | "onedark">("github");
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated = {
       ...user,
@@ -80,7 +80,23 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
     };
 
     setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
+    try {
+      localStorage.setItem("user", JSON.stringify(updated));
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user.username,
+          name: profileForm.name,
+          university: profileForm.university,
+          role: profileForm.role,
+          location: profileForm.location,
+          bio: profileForm.bio,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to update profile in PostgreSQL", err);
+    }
     triggerSuccessToast();
   };
 
