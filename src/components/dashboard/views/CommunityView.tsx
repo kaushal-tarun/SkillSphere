@@ -204,6 +204,40 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     }
   };
 
+  const [openCommentMenu, setOpenCommentMenu] = useState<string | null>(null);
+
+  const handleDeleteComment = async (commentId: string, postId: string) => {
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: p.comments.filter((c) => c.id !== commentId),
+          };
+        }
+        return p;
+      })
+    );
+
+    try {
+      await fetch(`/api/comments?id=${encodeURIComponent(commentId)}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to delete comment in PostgreSQL", e);
+    }
+  };
+
+  const handleCopyComment = (text: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      }
+    } catch (e) {
+      console.warn("Failed to copy comment text", e);
+    }
+  };
+
   const trendingTopics = [
     { tag: "#BuildInPublic", posts: "1.4k posts" },
     { tag: "#NextJS16", posts: "890 posts" },
@@ -451,10 +485,45 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   {post.comments.length > 0 && (
                     <div className="space-y-2">
                       {post.comments.map((comm) => (
-                        <div key={comm.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
+                        <div key={comm.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1 relative">
                           <div className="flex items-center justify-between text-[11px]">
                             <span className="font-bold text-zinc-900">{comm.authorName} <span className="text-zinc-500 font-normal">@{comm.authorHandle}</span></span>
-                            <span className="text-[9px] text-zinc-500">{comm.time}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] text-zinc-500">{comm.time}</span>
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenCommentMenu((prev) => (prev === comm.id ? null : comm.id))}
+                                  className="text-zinc-500 hover:text-zinc-900 font-extrabold text-xs px-1 cursor-pointer"
+                                >
+                                  •••
+                                </button>
+                                {openCommentMenu === comm.id && (
+                                  <div className="absolute right-0 top-full mt-1 w-32 p-1.5 rounded-xl bg-white border border-[#e8e2d8] shadow-lg z-30 font-mono text-xs space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleCopyComment(comm.text);
+                                        setOpenCommentMenu(null);
+                                      }}
+                                      className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-[#f4efe6] text-zinc-800 text-[11px] cursor-pointer"
+                                    >
+                                      Copy Text
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleDeleteComment(comm.id, post.id);
+                                        setOpenCommentMenu(null);
+                                      }}
+                                      className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-rose-50 text-red-600 font-bold text-[11px] cursor-pointer"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                           <p className="text-xs text-zinc-800 font-sans">{comm.text}</p>
                         </div>

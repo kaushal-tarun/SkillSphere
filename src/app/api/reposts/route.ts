@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
 
 // POST /api/reposts - Toggle repost count on a post in Neon PostgreSQL
 export async function POST(request: Request) {
@@ -12,19 +11,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "postId is required" }, { status: 400 });
     }
 
-    if (isReposted) {
-      await prisma.post.update({
-        where: { id: postId },
-        data: { repostsCount: { increment: 1 } },
-      });
-    } else {
-      await prisma.post.update({
-        where: { id: postId },
-        data: { repostsCount: { decrement: 1 } },
-      });
+    const targetPost = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!targetPost) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    const newCount = isReposted
+      ? targetPost.repostsCount + 1
+      : Math.max(0, targetPost.repostsCount - 1);
+
+    await prisma.post.update({
+      where: { id: postId },
+      data: { repostsCount: newCount },
+    });
+
+    return NextResponse.json({ success: true, repostsCount: newCount }, { status: 200 });
   } catch (error) {
     console.error("POST /api/reposts error:", error);
     return NextResponse.json({ error: "Failed to update repost" }, { status: 500 });

@@ -61,3 +61,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
   }
 }
+
+// DELETE /api/comments - Delete a comment in Neon PostgreSQL
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const commentId = searchParams.get("id");
+
+    if (!commentId) {
+      return NextResponse.json({ error: "Comment ID is required" }, { status: 400 });
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("DELETE /api/comments error:", error);
+    return NextResponse.json({ error: "Failed to delete comment" }, { status: 500 });
+  }
+}
