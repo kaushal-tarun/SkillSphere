@@ -18,32 +18,26 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = externalSetSearchQuery || setInternalSearchQuery;
 
-  // Added friends state - starts completely empty for new users
+  // Added friends state - connects to Neon PostgreSQL API
   const [addedFriends, setAddedFriends] = useState<FriendItem[]>([]);
 
-  // Load added friends for current logged-in user session
+  // Load added friends from Neon PostgreSQL API
   useEffect(() => {
-    try {
-      const storageKey = `skillsphere_added_friends_${user.username.toLowerCase()}`;
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setAddedFriends(JSON.parse(saved));
+    async function loadFriendsFromApi() {
+      try {
+        const res = await fetch(`/api/friends?username=${encodeURIComponent(user.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.friends && Array.isArray(data.friends)) {
+            setAddedFriends(data.friends);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load added friends from PostgreSQL", e);
       }
-    } catch (e) {
-      console.error("Failed to load added friends", e);
     }
+    loadFriendsFromApi();
   }, [user.username]);
-
-  // Save added friends
-  const saveFriends = (newFriends: FriendItem[]) => {
-    setAddedFriends(newFriends);
-    try {
-      const storageKey = `skillsphere_added_friends_${user.username.toLowerCase()}`;
-      localStorage.setItem(storageKey, JSON.stringify(newFriends));
-    } catch (e) {
-      console.error("Failed to save added friends", e);
-    }
-  };
 
   const [selectedFriend, setSelectedFriend] = useState<FriendItem | null>(null);
   const [inputMessage, setInputMessage] = useState("");
@@ -69,20 +63,41 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     setInputMessage("");
   };
 
-  const handleAddFriendToggle = (targetUser: FriendItem) => {
+  const handleAddFriendToggle = async (targetUser: FriendItem) => {
     const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === targetUser.username.toLowerCase());
-    let updated: FriendItem[];
+
     if (isAlreadyFriend) {
-      updated = addedFriends.filter((f) => f.username.toLowerCase() !== targetUser.username.toLowerCase());
+      // Remove friend in PostgreSQL
+      setAddedFriends((prev) => prev.filter((f) => f.username.toLowerCase() !== targetUser.username.toLowerCase()));
       if (selectedFriend && selectedFriend.username.toLowerCase() === targetUser.username.toLowerCase()) {
         setSelectedFriend(null);
       }
+      try {
+        await fetch(`/api/friends?username=${encodeURIComponent(user.username)}&targetUsername=${encodeURIComponent(targetUser.username)}`, {
+          method: "DELETE",
+        });
+      } catch (e) {
+        console.error("Failed to remove friend in PostgreSQL", e);
+      }
     } else {
+      // Add friend in PostgreSQL
       const friendToAdd = { ...targetUser, isFriend: true };
-      updated = [friendToAdd, ...addedFriends];
+      setAddedFriends((prev) => [friendToAdd, ...prev]);
       setSelectedFriend(friendToAdd);
+
+      try {
+        await fetch("/api/friends", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: user.username,
+            targetUsername: targetUser.username,
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to add friend in PostgreSQL", e);
+      }
     }
-    saveFriends(updated);
   };
 
   const realXp = projectsCount * 500;
