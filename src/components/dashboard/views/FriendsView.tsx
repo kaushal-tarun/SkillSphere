@@ -300,8 +300,16 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                       </td>
                       <td className="py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative">
-                            {friend.id === "me" ? "ME" : friend.avatar}
+                          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative overflow-hidden">
+                            {friend.id === "me" && user.avatar ? (
+                              <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : friend.avatar && (friend.avatar.startsWith("data:") || friend.avatar.startsWith("http")) ? (
+                              <img src={friend.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : friend.id === "me" ? (
+                              "ME"
+                            ) : (
+                              friend.avatar
+                            )}
                             <span className={`w-2 h-2 rounded-full absolute -top-0.5 -right-0.5 border border-white ${
                               friend.status === "online" ? "bg-emerald-500" : "bg-zinc-400"
                             }`} />
