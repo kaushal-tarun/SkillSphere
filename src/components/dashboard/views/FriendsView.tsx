@@ -44,23 +44,62 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
   const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({});
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const activeChatFriend = selectedFriend && addedFriends.some((f) => f.username.toLowerCase() === selectedFriend.username.toLowerCase())
+    ? selectedFriend
+    : addedFriends[0] || null;
+
+  // Load chat history from Neon PostgreSQL API whenever active chat friend changes
+  useEffect(() => {
+    if (!activeChatFriend) return;
+    async function loadMessages() {
+      try {
+        const res = await fetch(`/api/messages?username=${encodeURIComponent(user.username)}&friendUsername=${encodeURIComponent(activeChatFriend!.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && Array.isArray(data.messages)) {
+            setChatHistories((prev) => ({
+              ...prev,
+              [activeChatFriend!.username]: data.messages,
+            }));
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load messages from PostgreSQL", e);
+      }
+    }
+    loadMessages();
+  }, [user.username, activeChatFriend?.username]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !selectedFriend) return;
+    if (!inputMessage.trim() || !activeChatFriend) return;
 
-    const newMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      sender: "me",
-      text: inputMessage,
-      time: "Just now",
-    };
-
-    setChatHistories((prev) => ({
-      ...prev,
-      [selectedFriend.username]: [...(prev[selectedFriend.username] || []), newMsg],
-    }));
-
+    const msgText = inputMessage.trim();
     setInputMessage("");
+
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user.username,
+          friendUsername: activeChatFriend.username,
+          text: msgText,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.message) {
+          setChatHistories((prev) => ({
+            ...prev,
+            [activeChatFriend.username]: [...(prev[activeChatFriend.username] || []), data.message],
+          }));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to send message to PostgreSQL", e);
+    }
   };
 
   const handleAddFriendToggle = async (targetUser: FriendItem) => {
@@ -117,10 +156,6 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
   };
 
   const friendsRankingList = [...addedFriends, currentUserItem].sort((a, b) => b.xp - a.xp);
-
-  const activeChatFriend = selectedFriend && addedFriends.some((f) => f.username.toLowerCase() === selectedFriend.username.toLowerCase())
-    ? selectedFriend
-    : addedFriends[0] || null;
 
   // Load registered users from localStorage database (skillsphere_users_db)
   const getRegisteredUsersPool = (): FriendItem[] => {
