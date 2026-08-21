@@ -510,16 +510,18 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                                     >
                                       Copy Text
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleDeleteComment(comm.id, post.id);
-                                        setOpenCommentMenu(null);
-                                      }}
-                                      className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-rose-50 text-red-600 font-bold text-[11px] cursor-pointer"
-                                    >
-                                      Delete
-                                    </button>
+                                    {comm.authorHandle.toLowerCase() === user.username.toLowerCase() && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          handleDeleteComment(comm.id, post.id);
+                                          setOpenCommentMenu(null);
+                                        }}
+                                        className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-rose-50 text-red-600 font-bold text-[11px] cursor-pointer"
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
                                   </div>
                                 )}
                               </div>
