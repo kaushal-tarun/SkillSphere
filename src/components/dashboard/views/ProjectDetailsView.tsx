@@ -41,12 +41,23 @@ export function ProjectDetailsView({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const handleToggleStar = () => {
-    setIsStarred((prev) => {
-      const next = !prev;
-      setStarsCount((c) => (next ? c + 1 : Math.max(1, c - 1)));
-      return next;
-    });
+  const handleToggleStar = async () => {
+    const nextStarred = !isStarred;
+    setIsStarred(nextStarred);
+    setStarsCount((prev) => (nextStarred ? prev + 1 : Math.max(1, prev - 1)));
+
+    try {
+      await fetch("/api/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: project.id,
+          username: user.username,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to update project star in PostgreSQL", e);
+    }
   };
 
   return (
@@ -121,9 +132,9 @@ export function ProjectDetailsView({
         <div className="flex items-center gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
           <button
             onClick={handleToggleStar}
-            className={`p-3 px-5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
+            className={`p-3 px-5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer font-bold ${
               isStarred
-                ? "bg-amber-100 border-amber-300 text-amber-900 font-bold shadow-xs"
+                ? "bg-amber-100 border-amber-300 text-amber-900 shadow-xs"
                 : "bg-[#f4efe6] border-[#e2dacd] text-zinc-800 hover:bg-zinc-200"
             }`}
           >
@@ -140,12 +151,29 @@ export function ProjectDetailsView({
             Project Overview & Case Study
           </h2>
 
+          {/* SCREENSHOTS GALLERY AT THE TOP (ABOVE STATEMENTS) */}
+          {project.screenshots && project.screenshots.length > 0 && (
+            <div className="space-y-3 pb-4 border-b border-zinc-100">
+              <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider">
+                Project Screenshots ({project.screenshots.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {project.screenshots.map((imgSrc, idx) => (
+                  <div key={idx} className="rounded-xl border border-[#e2dacd] overflow-hidden shadow-xs">
+                    <img src={imgSrc} alt={`Screenshot ${idx + 1}`} className="w-full h-48 object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STATEMENTS (BELOW SCREENSHOTS) */}
           <div className="space-y-5 text-xs font-sans leading-relaxed">
             <div>
               <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
                 The Problem Statement
               </h3>
-              <p className={project.problemSolved ? "text-zinc-700" : "text-zinc-400 italic"}>
+              <p className={project.problemSolved ? "text-zinc-700 font-medium" : "text-zinc-400 italic"}>
                 {project.problemSolved || "No problem statement added for this project."}
               </p>
             </div>
@@ -154,7 +182,7 @@ export function ProjectDetailsView({
               <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
                 What Inspired This Project?
               </h3>
-              <p className={project.inspiration ? "text-zinc-700" : "text-zinc-400 italic"}>
+              <p className={project.inspiration ? "text-zinc-700 font-medium" : "text-zinc-400 italic"}>
                 {project.inspiration || "No inspiration story provided."}
               </p>
             </div>
@@ -163,27 +191,11 @@ export function ProjectDetailsView({
               <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
                 Biggest Challenge Faced
               </h3>
-              <p className={project.biggestChallenge ? "text-zinc-700" : "text-zinc-400 italic"}>
+              <p className={project.biggestChallenge ? "text-zinc-700 font-medium" : "text-zinc-400 italic"}>
                 {project.biggestChallenge || "No specific challenges noted."}
               </p>
             </div>
           </div>
-
-          {/* SCREENSHOTS GALLERY IF PRESENT */}
-          {project.screenshots && project.screenshots.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-zinc-100">
-              <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider">
-                Project Screenshots ({project.screenshots.length})
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {project.screenshots.map((imgSrc, idx) => (
-                  <div key={idx} className="rounded-xl border border-[#e2dacd] overflow-hidden shadow-xs">
-                    <img src={imgSrc} alt={`Screenshot ${idx + 1}`} className="w-full h-44 object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="lg:col-span-1 space-y-6">
