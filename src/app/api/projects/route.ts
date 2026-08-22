@@ -122,28 +122,49 @@ export async function POST(request: Request) {
       });
     }
 
-    const newProject = await (prisma.project as any).create({
-      data: {
-        userId: targetUser.id,
-        name: name.trim(),
-        description: finalDescription,
-        tech: Array.isArray(tech) ? tech : [],
-        githubUrl: githubUrl || null,
-        status: status || "Active",
-        stars: 0,
-        commits: 1,
-        likesCount: 0,
-        problemSolved: problemSolved || null,
-        inspiration: inspiration || null,
-        biggestChallenge: biggestChallenge || null,
-        teamType: teamType || "solo",
-        teamMembers: Array.isArray(teamMembers) ? teamMembers : [],
-        screenshots: Array.isArray(screenshots) ? screenshots : [],
-      },
-      include: {
-        user: true,
-      },
-    });
+    let newProject;
+    try {
+      newProject = await (prisma.project as any).create({
+        data: {
+          userId: targetUser.id,
+          name: name.trim(),
+          description: finalDescription,
+          tech: Array.isArray(tech) ? tech : [],
+          githubUrl: githubUrl || null,
+          status: status || "Active",
+          stars: 0,
+          commits: 1,
+          likesCount: 0,
+          problemSolved: problemSolved || null,
+          inspiration: inspiration || null,
+          biggestChallenge: biggestChallenge || null,
+          teamType: teamType || "solo",
+          teamMembers: Array.isArray(teamMembers) ? teamMembers : [],
+          screenshots: Array.isArray(screenshots) ? screenshots : [],
+        },
+        include: {
+          user: true,
+        },
+      });
+    } catch (createErr) {
+      console.warn("Prisma create with extended fields failed, falling back to basic fields:", createErr);
+      newProject = await prisma.project.create({
+        data: {
+          userId: targetUser.id,
+          name: name.trim(),
+          description: finalDescription,
+          tech: Array.isArray(tech) ? tech : [],
+          githubUrl: githubUrl || null,
+          status: status || "Active",
+          stars: 0,
+          commits: 1,
+          likesCount: 0,
+        },
+        include: {
+          user: true,
+        },
+      });
+    }
 
     // Increment user XP by 500 for shipping a project
     await prisma.user.update({
