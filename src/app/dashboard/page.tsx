@@ -216,9 +216,14 @@ export default function DashboardPage() {
         if (data.project) {
           setProjectsList((prev) => [data.project, ...prev]);
         }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.error("Failed to save project to PostgreSQL:", errData.error);
+        alert(errData.error || "Failed to publish project. Please check input.");
       }
     } catch (e) {
       console.error("Failed to save project to PostgreSQL", e);
+      alert("Network error: Failed to publish project.");
     } finally {
       setIsNewProjectModalOpen(false);
     }

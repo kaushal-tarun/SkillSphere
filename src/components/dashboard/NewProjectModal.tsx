@@ -150,24 +150,60 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
     setStep(3);
   };
 
+  // Compress screenshot to max width 800px & JPEG 0.7 quality (~40KB)
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle Screenshot Uploads
-  const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    files.forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`File ${file.name} is over 5MB.`);
-        return;
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} is over 10MB.`);
+        continue;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setScreenshots((prev) => [...prev, event.target!.result as string]);
+      try {
+        const compressedBase64 = await compressImage(file);
+        if (compressedBase64) {
+          setScreenshots((prev) => [...prev, compressedBase64]);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {
+        console.error("Failed to compress image", err);
+      }
+    }
   };
 
   const removeScreenshot = (index: number) => {
