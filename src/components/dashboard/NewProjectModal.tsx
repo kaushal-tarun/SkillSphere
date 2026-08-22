@@ -354,7 +354,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setProblemSolved(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="Students build amazing projects but have nowhere to showcase their work and connect with other builders."
+                placeholder="e.g. Students build amazing projects but have nowhere to showcase their work and connect with other builders."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
@@ -368,7 +368,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setInspiration(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="I wanted a platform where students could compete, share projects and gain recognition."
+                placeholder="e.g. I wanted a platform where students could compete, share projects and gain recognition."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
@@ -382,7 +382,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setBiggestChallenge(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="Designing a social platform database with friendships, likes and messaging."
+                placeholder="e.g. Designing a social platform database with friendships, likes and messaging."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
