@@ -17,6 +17,8 @@ export function ProjectDetailsView({
   onNavigateToProfile,
 }: ProjectDetailsViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [starsCount, setStarsCount] = useState(project.stars || 1);
+  const [isStarred, setIsStarred] = useState(false);
 
   const getInitials = (name: string) => {
     if (!name) return "US";
@@ -37,6 +39,14 @@ export function ProjectDetailsView({
     }
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handleToggleStar = () => {
+    setIsStarred((prev) => {
+      const next = !prev;
+      setStarsCount((c) => (next ? c + 1 : Math.max(1, c - 1)));
+      return next;
+    });
   };
 
   return (
@@ -86,15 +96,17 @@ export function ProjectDetailsView({
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 self-start font-mono text-xs shrink-0">
-            <a
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold shadow-sm transition-all flex items-center gap-1.5"
-            >
-              <span>GitHub Repository</span>
-              <span>↗</span>
-            </a>
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold shadow-sm transition-all flex items-center gap-1.5"
+              >
+                <span>GitHub Repository</span>
+                <span>↗</span>
+              </a>
+            )}
 
             <button
               onClick={handleShare}
@@ -105,20 +117,19 @@ export function ProjectDetailsView({
           </div>
         </div>
 
-        {/* STATS METRICS ROW */}
-        <div className="grid grid-cols-3 gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Likes</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.likes}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Commits</div>
-            <div className="text-zinc-900 font-bold mt-0.5">{project.commits}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-[10px] text-zinc-500">Stars</div>
-            <div className="text-zinc-900 font-bold mt-0.5">★ {project.stars}</div>
-          </div>
+        {/* STARS ONLY METRICS ROW */}
+        <div className="flex items-center gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
+          <button
+            onClick={handleToggleStar}
+            className={`p-3 px-5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
+              isStarred
+                ? "bg-amber-100 border-amber-300 text-amber-900 font-bold shadow-xs"
+                : "bg-[#f4efe6] border-[#e2dacd] text-zinc-800 hover:bg-zinc-200"
+            }`}
+          >
+            <span>{isStarred ? "★ Starred" : "☆ Star Project"}</span>
+            <span className="font-extrabold text-sm">{starsCount}</span>
+          </button>
         </div>
       </div>
 
@@ -129,78 +140,104 @@ export function ProjectDetailsView({
             Project Overview & Case Study
           </h2>
 
-          <div className="space-y-4 text-xs font-sans text-zinc-700 leading-relaxed">
+          <div className="space-y-5 text-xs font-sans leading-relaxed">
             <div>
               <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
                 The Problem Statement
               </h3>
-              <p>
-                Engineering students and university researchers often deal with hundreds of complex PDFs, research papers, and codebase repositories. Existing search engines only look at exact keyword matches, missing semantic context.
+              <p className={project.problemSolved ? "text-zinc-700" : "text-zinc-400 italic"}>
+                {project.problemSolved || "No problem statement added for this project."}
               </p>
             </div>
 
             <div>
               <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
-                The Solution
+                What Inspired This Project?
               </h3>
-              <p>
-                {project.name} indexes documents into a vector space with pgvector embeddings, enabling instant multi-document Q&A, automatic citation extraction, and natural language code exploration under 100ms.
+              <p className={project.inspiration ? "text-zinc-700" : "text-zinc-400 italic"}>
+                {project.inspiration || "No inspiration story provided."}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider mb-1">
+                Biggest Challenge Faced
+              </h3>
+              <p className={project.biggestChallenge ? "text-zinc-700" : "text-zinc-400 italic"}>
+                {project.biggestChallenge || "No specific challenges noted."}
               </p>
             </div>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider">
-              Core Architecture Features
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-              <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                <div className="text-zinc-900 font-bold">● Document Indexing Engine</div>
-                <div className="text-[11px] text-zinc-600">Parses PDF, Markdown, and source code into AST chunks.</div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                <div className="text-zinc-900 font-bold">● Vector Similarity RAG</div>
-                <div className="text-[11px] text-zinc-600">Performs cosine similarity searches across pgvector embeddings.</div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                <div className="text-zinc-900 font-bold">● Source Citation Verifier</div>
-                <div className="text-[11px] text-zinc-600">Attaches exact page and line number references to answers.</div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                <div className="text-zinc-900 font-bold">● Multi-Tenant Auth</div>
-                <div className="text-[11px] text-zinc-600">Secured via Prisma schema with JWT authorization.</div>
+          {/* SCREENSHOTS GALLERY IF PRESENT */}
+          {project.screenshots && project.screenshots.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-zinc-100">
+              <h3 className="text-xs font-mono font-bold text-zinc-900 uppercase tracking-wider">
+                Project Screenshots ({project.screenshots.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {project.screenshots.map((imgSrc, idx) => (
+                  <div key={idx} className="rounded-xl border border-[#e2dacd] overflow-hidden shadow-xs">
+                    <img src={imgSrc} alt={`Screenshot ${idx + 1}`} className="w-full h-44 object-cover" />
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="lg:col-span-1 space-y-6">
+          {/* TECH STACK CARD */}
           <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <h3 className="text-base font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-3">
               Technology Stack
             </h3>
 
             <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-              {project.tech.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium"
-                >
-                  {tech}
-                </span>
-              ))}
+              {project.tech && project.tech.length > 0 ? (
+                project.tech.map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium"
+                  >
+                    {tech}
+                  </span>
+                ))
+              ) : (
+                <span className="text-zinc-400 italic text-xs">No tech stack listed</span>
+              )}
             </div>
           </div>
 
+          {/* TEAM MEMBERS CARD IF TEAM PROJECT */}
+          {project.teamType === "team" && project.teamMembers && project.teamMembers.length > 0 && (
+            <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4 font-mono text-xs">
+              <h3 className="text-base font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-3">
+                Code Buddies ({project.teamMembers.length})
+              </h3>
+              <div className="space-y-2">
+                {project.teamMembers.map((member, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] font-bold text-zinc-800">
+                    @{member}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ABOUT THE CREATOR CARD */}
           <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
             <h3 className="text-base font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-3">
               About the Creator
             </h3>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase">
-                {getInitials(user.name)}
+              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden">
+                {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
+                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  getInitials(user.name)
+                )}
               </div>
               <div className="min-w-0">
                 <div className="text-zinc-900 font-bold truncate text-sm">{user.name}</div>
@@ -215,28 +252,6 @@ export function ProjectDetailsView({
             >
               View Full Profile ➔
             </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 tracking-tight border-b border-zinc-100 pb-3">
-          Engineering Challenges & Learnings
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-sans text-zinc-700 leading-relaxed">
-          <div className="space-y-2">
-            <h3 className="font-mono font-bold text-zinc-900 text-xs">What challenges were faced?</h3>
-            <p className="text-zinc-600">
-              When indexing multi-gigabyte research papers, embedding lookup latency spiked above 600ms due to un-indexed vector columns.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-mono font-bold text-zinc-900 text-xs">How were they solved?</h3>
-            <p className="text-zinc-600">
-              Configured HNSW indexing in PostgreSQL via pgvector and implemented an in-memory Redis cache for frequent query ASTs.
-            </p>
           </div>
         </div>
       </div>
