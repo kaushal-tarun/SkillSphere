@@ -17,7 +17,7 @@ export function ProjectDetailsView({
   onNavigateToProfile,
 }: ProjectDetailsViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
-  const [starsCount, setStarsCount] = useState(project.stars ?? 0);
+  const [starsCount, setStarsCount] = useState(typeof project.stars === "number" ? project.stars : 0);
   const [isStarred, setIsStarred] = useState(false);
 
   const getInitials = (name: string) => {
@@ -132,14 +132,13 @@ export function ProjectDetailsView({
         <div className="flex items-center gap-3 font-mono text-xs pt-4 border-t border-zinc-100">
           <button
             onClick={handleToggleStar}
-            className={`p-3 px-5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer font-bold ${
+            className={`p-3 px-5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer font-mono font-bold ${
               isStarred
                 ? "bg-amber-100 border-amber-300 text-amber-900 shadow-xs"
                 : "bg-[#f4efe6] border-[#e2dacd] text-zinc-800 hover:bg-zinc-200"
             }`}
           >
-            <span>{isStarred ? "★ Starred" : "☆ Star Project"}</span>
-            <span className="font-extrabold text-sm">{starsCount}</span>
+            <span>★ {starsCount} Stars</span>
           </button>
         </div>
       </div>
