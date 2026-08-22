@@ -91,6 +91,21 @@ export async function GET(request: Request) {
   }
 }
 
+const ABUSIVE_WORDS = [
+  "fuck", "shit", "bitch", "asshole", "bastard", "crap", "dick", "pussy",
+  "cock", "slut", "whore", "idiot", "stupid", "dumb", "hate", "scam",
+  "nigger", "faggot", "chink", "retard", "cunt"
+];
+
+function containsAbusiveWords(text: string): boolean {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return ABUSIVE_WORDS.some((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "i");
+    return regex.test(lower);
+  });
+}
+
 // POST /api/posts - Create a new community post in Neon PostgreSQL
 export async function POST(request: Request) {
   try {
@@ -99,6 +114,10 @@ export async function POST(request: Request) {
 
     if (!content || !content.trim()) {
       return NextResponse.json({ error: "Post content is required" }, { status: 400 });
+    }
+
+    if (containsAbusiveWords(content) || containsAbusiveWords(codeSnippet) || containsAbusiveWords(projectTag)) {
+      return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
     }
 
     const session = await auth();

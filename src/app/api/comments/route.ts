@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
+const ABUSIVE_WORDS = [
+  "fuck", "shit", "bitch", "asshole", "bastard", "crap", "dick", "pussy",
+  "cock", "slut", "whore", "idiot", "stupid", "dumb", "hate", "scam",
+  "nigger", "faggot", "chink", "retard", "cunt"
+];
+
+function containsAbusiveWords(text: string): boolean {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return ABUSIVE_WORDS.some((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "i");
+    return regex.test(lower);
+  });
+}
+
 // POST /api/comments - Create a comment on a post in Neon PostgreSQL
 export async function POST(request: Request) {
   try {
@@ -10,6 +25,10 @@ export async function POST(request: Request) {
 
     if (!postId || !text || !text.trim()) {
       return NextResponse.json({ error: "postId and comment text are required" }, { status: 400 });
+    }
+
+    if (containsAbusiveWords(text)) {
+      return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
     }
 
     const session = await auth();

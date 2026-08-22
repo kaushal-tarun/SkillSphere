@@ -57,11 +57,37 @@ export async function GET(request: Request) {
   }
 }
 
+const ABUSIVE_WORDS = [
+  "fuck", "shit", "bitch", "asshole", "bastard", "crap", "dick", "pussy",
+  "cock", "slut", "whore", "idiot", "stupid", "dumb", "hate", "scam",
+  "nigger", "faggot", "chink", "retard", "cunt"
+];
+
+function containsAbusiveWords(text: string): boolean {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return ABUSIVE_WORDS.some((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "i");
+    return regex.test(lower);
+  });
+}
+
 // PUT /api/profile - Update profile details in Neon PostgreSQL
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { name, username, bio, university, role, location, avatar } = body;
+
+    if (
+      containsAbusiveWords(name) ||
+      containsAbusiveWords(username) ||
+      containsAbusiveWords(bio) ||
+      containsAbusiveWords(university) ||
+      containsAbusiveWords(role) ||
+      containsAbusiveWords(location)
+    ) {
+      return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
+    }
 
     const session = await auth();
     let currentUser = null;
