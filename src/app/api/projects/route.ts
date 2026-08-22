@@ -67,13 +67,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, tech, githubUrl, demoUrl, status, problemSolved, inspiration, biggestChallenge, teamType, teamMembers, screenshots, username } = body;
 
-    if (!name || !description) {
-      return NextResponse.json({ error: "Project name and description are required" }, { status: 400 });
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Project name is required" }, { status: 400 });
     }
+
+    const finalDescription = description && description.trim() ? description.trim() : `${name.trim()} - Student Project built on SkillSphere.`;
 
     if (
       containsAbusiveWords(name) ||
-      containsAbusiveWords(description) ||
+      containsAbusiveWords(finalDescription) ||
       containsAbusiveWords(JSON.stringify(tech)) ||
       containsAbusiveWords(problemSolved) ||
       containsAbusiveWords(inspiration) ||
@@ -118,7 +120,7 @@ export async function POST(request: Request) {
       data: {
         userId: targetUser.id,
         name: name.trim(),
-        description: description.trim(),
+        description: finalDescription,
         tech: Array.isArray(tech) ? tech : [],
         githubUrl: githubUrl || null,
         status: status || "Active",

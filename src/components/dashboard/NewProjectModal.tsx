@@ -19,22 +19,10 @@ interface NewProjectModalProps {
   }) => void;
 }
 
-// List of recognized developer technologies
-const VALID_TECH_STACK = new Set([
-  "react", "react.js", "reactjs", "next.js", "nextjs", "vue", "vue.js", "vuejs",
-  "svelte", "sveltekit", "angular", "typescript", "ts", "javascript", "js",
-  "node.js", "nodejs", "express", "express.js", "nest.js", "nestjs",
-  "python", "django", "flask", "fastapi", "c++", "cpp", "c#", "csharp", "c",
-  "java", "spring", "spring boot", "kotlin", "swift", "go", "golang", "rust",
-  "ruby", "rails", "ruby on rails", "php", "laravel", "sql", "postgresql", "postgres",
-  "mysql", "sqlite", "mongodb", "mongo", "redis", "prisma", "orm", "graphql", "rest api",
-  "docker", "kubernetes", "k8s", "aws", "amazon web services", "firebase", "supabase",
-  "gcp", "google cloud", "azure", "tailwind", "tailwindcss", "css", "css3", "html", "html5",
-  "git", "github", "gitlab", "pytorch", "tensorflow", "opencv", "pandas", "numpy",
-  "scikit-learn", "scikit", "machine learning", "ml", "ai", "artificial intelligence",
-  "deep learning", "nlp", "webassembly", "wasm", "solidity", "web3", "blockchain",
-  "flutter", "react native", "android", "ios", "shell", "bash", "linux", "vite", "webpack",
-  "trpc", "zod", "drizzle", "truffle", "hardhat", "chakra ui", "shadcn", "mui", "material ui"
+// List of non-technical food/nonsense items to block in Tech Stack
+const NON_TECH_WORDS = new Set([
+  "pizza", "burger", "fries", "pasta", "sandwich", "food", "soda", "cookie",
+  "cake", "donut", "junk", "apple", "banana", "cat", "dog", "garbage", "trash", "random"
 ]);
 
 // Profanity / Abusive Words Filter List
@@ -56,7 +44,7 @@ function containsAbusiveWords(text: string): boolean {
 function isValidTechItem(item: string): boolean {
   const normalized = item.toLowerCase().trim();
   if (!normalized) return true;
-  return VALID_TECH_STACK.has(normalized);
+  return !NON_TECH_WORDS.has(normalized);
 }
 
 function isValidGithubLink(url: string): boolean {
@@ -94,9 +82,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
 
   if (!isOpen) return null;
 
-  // Step 1 Validation & Next
-  const handleNextStep1 = (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateStep1 = (): boolean => {
     setErrorMessage("");
 
     const trimmedName = name.trim();
@@ -106,7 +92,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
 
     if (!trimmedName) {
       setErrorMessage("Project name is required.");
-      return;
+      return false;
     }
 
     if (
@@ -116,7 +102,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       containsAbusiveWords(trimmedGithub)
     ) {
       setErrorMessage("Inappropriate or abusive language is not allowed.");
-      return;
+      return false;
     }
 
     if (trimmedTech) {
@@ -127,16 +113,24 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
         setErrorMessage(
           `Invalid technology "${invalidItems[0]}". Please enter real developer technologies (e.g. Next.js, React, Python, PostgreSQL).`
         );
-        return;
+        return false;
       }
     }
 
     if (trimmedGithub && !isValidGithubLink(trimmedGithub)) {
       setErrorMessage("Please enter a valid GitHub repository URL (e.g. https://github.com/username/project).");
-      return;
+      return false;
     }
 
-    setStep(2);
+    return true;
+  };
+
+  // Step 1 Validation & Next
+  const handleNextStep1 = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateStep1()) {
+      setStep(2);
+    }
   };
 
   // Step 2 Validation & Next
@@ -184,8 +178,17 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
   const handleFinalPublish = () => {
     setErrorMessage("");
 
-    if (containsAbusiveWords(codeBuddies)) {
-      setErrorMessage("Inappropriate or abusive language is not allowed in team usernames.");
+    if (!validateStep1()) {
+      return;
+    }
+
+    if (
+      containsAbusiveWords(problemSolved) ||
+      containsAbusiveWords(inspiration) ||
+      containsAbusiveWords(biggestChallenge) ||
+      containsAbusiveWords(codeBuddies)
+    ) {
+      setErrorMessage("Inappropriate or abusive language is not allowed.");
       return;
     }
 
@@ -195,7 +198,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
 
     onSubmit({
       name: name.trim(),
-      description: description.trim(),
+      description: description.trim() || `${name.trim()} - Student Project built on SkillSphere.`,
       tech: tech.trim(),
       github: github.trim(),
       problemSolved: problemSolved.trim() || undefined,
@@ -332,13 +335,23 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
-              >
-                <span>Next</span>
-                <span>➔</span>
-              </button>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleFinalPublish}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer shadow-xs"
+                >
+                  Publish Now
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>Next</span>
+                  <span>➔</span>
+                </button>
+              </div>
             </div>
           </form>
         )}
@@ -354,7 +367,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setProblemSolved(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="e.g. Students build amazing projects but have nowhere to showcase their work and connect with other builders."
+                placeholder="Students build amazing projects but have nowhere to showcase their work and connect with other builders."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
@@ -368,7 +381,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setInspiration(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="e.g. I wanted a platform where students could compete, share projects and gain recognition."
+                placeholder="I wanted a platform where students could compete, share projects and gain recognition."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
@@ -382,7 +395,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setBiggestChallenge(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="e.g. Designing a social platform database with friendships, likes and messaging."
+                placeholder="Designing a social platform database with friendships, likes and messaging."
                 rows={2.5}
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs resize-none"
               />
