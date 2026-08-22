@@ -65,13 +65,21 @@ function containsAbusiveWords(text: string): boolean {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, tech, githubUrl, demoUrl, status, username } = body;
+    const { name, description, tech, githubUrl, demoUrl, status, problemSolved, inspiration, biggestChallenge, teamType, teamMembers, screenshots, username } = body;
 
     if (!name || !description) {
       return NextResponse.json({ error: "Project name and description are required" }, { status: 400 });
     }
 
-    if (containsAbusiveWords(name) || containsAbusiveWords(description) || containsAbusiveWords(JSON.stringify(tech))) {
+    if (
+      containsAbusiveWords(name) ||
+      containsAbusiveWords(description) ||
+      containsAbusiveWords(JSON.stringify(tech)) ||
+      containsAbusiveWords(problemSolved) ||
+      containsAbusiveWords(inspiration) ||
+      containsAbusiveWords(biggestChallenge) ||
+      containsAbusiveWords(JSON.stringify(teamMembers))
+    ) {
       return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
     }
 
@@ -147,6 +155,12 @@ export async function POST(request: Request) {
       creatorHandle: targetUser.username,
       university: targetUser.university || "University",
       updatedAt: "Just now",
+      problemSolved,
+      inspiration,
+      biggestChallenge,
+      teamType,
+      teamMembers,
+      screenshots,
     };
 
     return NextResponse.json({ project: formatted }, { status: 201 });

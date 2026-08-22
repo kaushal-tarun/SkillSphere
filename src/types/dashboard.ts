@@ -26,6 +26,12 @@ export interface ProjectItem {
   status: "Shipped" | "Active" | "In Development";
   tech: string[];
   github: string;
+  problemSolved?: string;
+  inspiration?: string;
+  biggestChallenge?: string;
+  teamType?: "solo" | "team";
+  teamMembers?: string[];
+  screenshots?: string[];
 }
 
 export interface CommunityProject {

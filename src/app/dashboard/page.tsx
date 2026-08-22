@@ -178,7 +178,18 @@ export default function DashboardPage() {
     loadProjects();
   }, []);
 
-  const handleCreateProject = async (projectData: { name: string; description: string; tech: string; github: string }) => {
+  const handleCreateProject = async (projectData: {
+    name: string;
+    description: string;
+    tech: string;
+    github: string;
+    problemSolved?: string;
+    inspiration?: string;
+    biggestChallenge?: string;
+    teamType?: "solo" | "team";
+    teamMembers?: string[];
+    screenshots?: string[];
+  }) => {
     const techArray = projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : ["TypeScript", "Next.js"];
 
     try {
@@ -190,6 +201,12 @@ export default function DashboardPage() {
           description: projectData.description,
           tech: techArray,
           githubUrl: projectData.github,
+          problemSolved: projectData.problemSolved,
+          inspiration: projectData.inspiration,
+          biggestChallenge: projectData.biggestChallenge,
+          teamType: projectData.teamType,
+          teamMembers: projectData.teamMembers,
+          screenshots: projectData.screenshots,
           username: user.username,
         }),
       });
