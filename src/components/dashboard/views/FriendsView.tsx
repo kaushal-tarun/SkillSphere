@@ -54,7 +54,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     ? selectedFriend
     : addedFriends[0] || null;
 
-  // Load chat history from Neon PostgreSQL API whenever active chat friend changes
+  // Load chat history from Neon PostgreSQL API whenever active chat friend changes or on interval
   useEffect(() => {
     if (!activeChatFriend) return;
     async function loadMessages() {
@@ -74,6 +74,10 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
       }
     }
     loadMessages();
+
+    // Poll every 3 seconds for new messages
+    const interval = setInterval(loadMessages, 3000);
+    return () => clearInterval(interval);
   }, [user.username, activeChatFriend?.username]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -83,8 +87,21 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     const msgText = inputMessage.trim();
     setInputMessage("");
 
+    // Optimistic UI Update
+    const optimisticMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: "me",
+      text: msgText,
+      time: "Just now",
+    };
+
+    setChatHistories((prev) => ({
+      ...prev,
+      [activeChatFriend.username]: [...(prev[activeChatFriend.username] || []), optimisticMessage],
+    }));
+
     try {
-      const res = await fetch("/api/messages", {
+      await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -93,16 +110,6 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
           text: msgText,
         }),
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.message) {
-          setChatHistories((prev) => ({
-            ...prev,
-            [activeChatFriend.username]: [...(prev[activeChatFriend.username] || []), data.message],
-          }));
-        }
-      }
     } catch (e) {
       console.error("Failed to send message to PostgreSQL", e);
     }
