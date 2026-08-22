@@ -17,7 +17,7 @@ export function ProjectDetailsView({
   onNavigateToProfile,
 }: ProjectDetailsViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
-  const [starsCount, setStarsCount] = useState(project.stars || 1);
+  const [starsCount, setStarsCount] = useState(project.stars ?? 0);
   const [isStarred, setIsStarred] = useState(false);
 
   const getInitials = (name: string) => {
@@ -44,7 +44,7 @@ export function ProjectDetailsView({
   const handleToggleStar = async () => {
     const nextStarred = !isStarred;
     setIsStarred(nextStarred);
-    setStarsCount((prev) => (nextStarred ? prev + 1 : Math.max(1, prev - 1)));
+    setStarsCount((prev) => (nextStarred ? prev + 1 : Math.max(0, prev - 1)));
 
     try {
       await fetch("/api/likes", {

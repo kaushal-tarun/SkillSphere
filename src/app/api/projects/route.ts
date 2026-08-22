@@ -21,13 +21,13 @@ export async function GET() {
       },
     });
 
-    const formatted = projects.map((p) => ({
+    const formatted = projects.map((p: any) => ({
       id: p.id,
       name: p.name,
       description: p.description,
       status: p.status,
       visibility: p.visibility,
-      stars: p.stars,
+      stars: p.stars || 0,
       commits: p.commits,
       likes: p.likesCount,
       daysActive: Math.max(1, Math.floor((Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24))),
@@ -37,6 +37,12 @@ export async function GET() {
       creatorHandle: p.user?.username || "builder",
       university: p.user?.university || "University",
       updatedAt: new Date(p.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      problemSolved: p.problemSolved || undefined,
+      inspiration: p.inspiration || undefined,
+      biggestChallenge: p.biggestChallenge || undefined,
+      teamType: p.teamType || undefined,
+      teamMembers: p.teamMembers || [],
+      screenshots: p.screenshots || [],
     }));
 
     return NextResponse.json({ projects: formatted }, { status: 200 });
@@ -116,7 +122,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const newProject = await prisma.project.create({
+    const newProject = await (prisma.project as any).create({
       data: {
         userId: targetUser.id,
         name: name.trim(),
@@ -124,9 +130,15 @@ export async function POST(request: Request) {
         tech: Array.isArray(tech) ? tech : [],
         githubUrl: githubUrl || null,
         status: status || "Active",
-        stars: 1,
+        stars: 0,
         commits: 1,
         likesCount: 0,
+        problemSolved: problemSolved || null,
+        inspiration: inspiration || null,
+        biggestChallenge: biggestChallenge || null,
+        teamType: teamType || "solo",
+        teamMembers: Array.isArray(teamMembers) ? teamMembers : [],
+        screenshots: Array.isArray(screenshots) ? screenshots : [],
       },
       include: {
         user: true,

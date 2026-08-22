@@ -61,13 +61,19 @@ model Project {
   description String
   status      String   @default("Active")
   visibility  String   @default("Public")
-  stars       Int      @default(0)
-  commits     Int      @default(1)
-  likesCount  Int      @default(0)
-  tech        String[] @default([])
-  githubUrl   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  stars            Int      @default(0)
+  commits          Int      @default(1)
+  likesCount       Int      @default(0)
+  tech             String[] @default([])
+  githubUrl        String?
+  problemSolved    String?
+  inspiration      String?
+  biggestChallenge String?
+  teamType         String?  @default("solo")
+  teamMembers      String[] @default([])
+  screenshots      String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
 
   likes       Like[]
 }
