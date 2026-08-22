@@ -35,6 +35,13 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
         if (data.pendingRequests && Array.isArray(data.pendingRequests)) {
           setPendingRequests(data.pendingRequests);
         }
+        if (data.sentRequests && Array.isArray(data.sentRequests)) {
+          const sentMap: Record<string, boolean> = {};
+          data.sentRequests.forEach((u: string) => {
+            sentMap[u.toLowerCase()] = true;
+          });
+          setSentRequests(sentMap);
+        }
       }
     } catch (e) {
       console.error("Failed to load added friends from PostgreSQL", e);
@@ -116,12 +123,14 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
   };
 
   const handleAddFriendToggle = async (targetUser: FriendItem) => {
-    const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === targetUser.username.toLowerCase());
+    const targetKey = targetUser.username.toLowerCase();
+    const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === targetKey);
+    const isRequestSent = sentRequests[targetKey];
 
     if (isAlreadyFriend) {
       // Unfriend in PostgreSQL
-      setAddedFriends((prev) => prev.filter((f) => f.username.toLowerCase() !== targetUser.username.toLowerCase()));
-      if (selectedFriend && selectedFriend.username.toLowerCase() === targetUser.username.toLowerCase()) {
+      setAddedFriends((prev) => prev.filter((f) => f.username.toLowerCase() !== targetKey));
+      if (selectedFriend && selectedFriend.username.toLowerCase() === targetKey) {
         setSelectedFriend(null);
       }
       try {
@@ -131,9 +140,24 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
       } catch (e) {
         console.error("Failed to remove friend in PostgreSQL", e);
       }
+    } else if (isRequestSent) {
+      // Cancel Friend Request (Delete PENDING request) in PostgreSQL
+      setSentRequests((prev) => {
+        const copy = { ...prev };
+        delete copy[targetKey];
+        return copy;
+      });
+
+      try {
+        await fetch(`/api/friends?username=${encodeURIComponent(user.username)}&targetUsername=${encodeURIComponent(targetUser.username)}`, {
+          method: "DELETE",
+        });
+      } catch (e) {
+        console.error("Failed to cancel friend request in PostgreSQL", e);
+      }
     } else {
       // Send Friend Request (Pending) in PostgreSQL
-      setSentRequests((prev) => ({ ...prev, [targetUser.username.toLowerCase()]: true }));
+      setSentRequests((prev) => ({ ...prev, [targetKey]: true }));
 
       try {
         await fetch("/api/friends", {
@@ -218,7 +242,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
         projects: u.projects || 0,
         status: "online" as const,
         isFriend: false,
-        avatar: (u.name || u.username).slice(0, 2).toUpperCase(),
+        avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
       }));
     } catch (e) {
       console.error(e);
@@ -611,16 +635,19 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
                     <button
                       onClick={() => handleAddFriendToggle(friend)}
-                      disabled={isRequestSent && !isAlreadyFriend}
-                      className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all shrink-0 ${
+                      className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all shrink-0 cursor-pointer ${
                         isAlreadyFriend
-                          ? "bg-[#f4efe6] border border-[#e2dacd] text-zinc-700 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                          ? "bg-[#f4efe6] border border-[#e2dacd] text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
                           : isRequestSent
-                          ? "bg-amber-100 text-amber-900 border border-amber-300 font-bold"
-                          : "bg-zinc-900 text-white shadow-sm hover:bg-black cursor-pointer"
+                          ? "bg-amber-100 text-amber-900 border border-amber-300 hover:bg-rose-50 hover:text-rose-700 font-bold"
+                          : "bg-zinc-900 text-white shadow-sm hover:bg-black"
                       }`}
                     >
-                      {isAlreadyFriend ? "Added (Unfriend)" : isRequestSent ? "Pending Request" : "+ Add Friend"}
+                      {isAlreadyFriend
+                        ? "Added (Unfriend)"
+                        : isRequestSent
+                        ? "Cancel Request"
+                        : "+ Add Friend"}
                     </button>
                   </div>
                 );

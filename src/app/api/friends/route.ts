@@ -87,7 +87,20 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ friends: friendsList, pendingRequests }, { status: 200 });
+    // Pending outgoing friend requests (where current user is sender)
+    const outgoingPending = await prisma.friendship.findMany({
+      where: {
+        senderId: targetUser.id,
+        status: "PENDING",
+      },
+      include: {
+        receiver: true,
+      },
+    });
+
+    const sentRequests = outgoingPending.map((f) => f.receiver.username.toLowerCase());
+
+    return NextResponse.json({ friends: friendsList, pendingRequests, sentRequests }, { status: 200 });
   } catch (error) {
     console.error("GET /api/friends error:", error);
     return NextResponse.json({ error: "Failed to fetch friends" }, { status: 500 });
