@@ -126,6 +126,24 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     }
   };
 
+  const handleUnsendMessage = async (msgId: string) => {
+    if (!activeChatFriend) return;
+    const friendUserKey = activeChatFriend.username;
+
+    setChatHistories((prev) => ({
+      ...prev,
+      [friendUserKey]: (prev[friendUserKey] || []).filter((m) => m.id !== msgId),
+    }));
+
+    try {
+      await fetch(`/api/messages?id=${encodeURIComponent(msgId)}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to unsend message in PostgreSQL", e);
+    }
+  };
+
   const handleAddFriendToggle = async (targetUser: FriendItem) => {
     const targetKey = targetUser.username.toLowerCase();
     const isAlreadyFriend = addedFriends.some((f) => f.username.toLowerCase() === targetKey);
@@ -559,14 +577,26 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                       (chatHistories[activeChatFriend.username] || []).map((msg) => (
                         <div
                           key={msg.id}
-                          className={`flex flex-col ${msg.sender === "me" ? "items-end" : "items-start"}`}
+                          className={`flex flex-col group relative ${msg.sender === "me" ? "items-end" : "items-start"}`}
                         >
-                          <div className={`max-w-[75%] p-3 rounded-2xl ${
-                            msg.sender === "me"
-                              ? "bg-zinc-900 text-white shadow-sm"
-                              : "bg-[#f4efe6] border border-[#e2dacd] text-zinc-900"
-                          }`}>
-                            <p>{msg.text}</p>
+                          <div className="flex items-center gap-1.5 max-w-[85%]">
+                            {msg.sender === "me" && (
+                              <button
+                                type="button"
+                                onClick={() => handleUnsendMessage(msg.id)}
+                                title="Unsend message"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-red-600 transition-all cursor-pointer text-xs shrink-0"
+                              >
+                                🗑️
+                              </button>
+                            )}
+                            <div className={`p-3 rounded-2xl ${
+                              msg.sender === "me"
+                                ? "bg-zinc-900 text-white shadow-sm"
+                                : "bg-[#f4efe6] border border-[#e2dacd] text-zinc-900"
+                            }`}>
+                              <p className="break-words">{msg.text}</p>
+                            </div>
                           </div>
                           <span className="text-[10px] font-mono text-zinc-400 mt-1 px-1">{msg.time}</span>
                         </div>
