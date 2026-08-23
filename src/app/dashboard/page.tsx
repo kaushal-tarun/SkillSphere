@@ -295,6 +295,11 @@ export default function DashboardPage() {
                 setSelectedProject(null);
                 setActiveNav("profile");
               }}
+              onNavigateToUser={(username) => {
+                setSelectedProject(null);
+                setSearchQuery(username);
+                setActiveNav("friends");
+              }}
             />
           ) : (
             <>

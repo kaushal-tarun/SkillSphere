@@ -8,6 +8,7 @@ interface ProjectDetailsViewProps {
   user: UserProfile;
   onBack: () => void;
   onNavigateToProfile: () => void;
+  onNavigateToUser?: (username: string) => void;
 }
 
 export function ProjectDetailsView({
@@ -15,6 +16,7 @@ export function ProjectDetailsView({
   user,
   onBack,
   onNavigateToProfile,
+  onNavigateToUser,
 }: ProjectDetailsViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [starsCount, setStarsCount] = useState(typeof project.stars === "number" ? project.stars : 0);
@@ -261,10 +263,20 @@ export function ProjectDetailsView({
             </div>
 
             <button
-              onClick={onNavigateToProfile}
+              onClick={() => {
+                if (creatorHandle.toLowerCase() === user.username.toLowerCase()) {
+                  onNavigateToProfile();
+                } else if (onNavigateToUser) {
+                  onNavigateToUser(creatorHandle);
+                } else {
+                  onNavigateToProfile();
+                }
+              }}
               className="w-full py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-mono font-bold transition-all cursor-pointer shadow-sm"
             >
-              View Full Profile ➔
+              {creatorHandle.toLowerCase() === user.username.toLowerCase()
+                ? "View Full Profile ➔"
+                : `View ${creatorName}'s Profile ➔`}
             </button>
           </div>
         </div>
