@@ -60,6 +60,7 @@ export async function GET(request: Request) {
       githubUrl: p.githubUrl || undefined,
       creatorName: p.user?.name || "Student Builder",
       creatorHandle: p.user?.username || "builder",
+      creatorAvatar: p.user?.avatar || undefined,
       university: p.user?.university || "University",
       updatedAt: new Date(p.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       problemSolved: p.problemSolved || undefined,

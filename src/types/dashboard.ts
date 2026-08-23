@@ -32,6 +32,10 @@ export interface ProjectItem {
   teamType?: "solo" | "team";
   teamMembers?: string[];
   screenshots?: string[];
+  creatorName?: string;
+  creatorHandle?: string;
+  creatorAvatar?: string;
+  university?: string;
 }
 
 export interface CommunityProject {

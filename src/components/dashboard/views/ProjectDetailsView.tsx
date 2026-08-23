@@ -60,6 +60,11 @@ export function ProjectDetailsView({
     }
   };
 
+  const creatorName = project.creatorName || user.name;
+  const creatorHandle = project.creatorHandle || user.username;
+  const creatorUniversity = project.university || user.university;
+  const creatorAvatar = project.creatorAvatar || (creatorHandle.toLowerCase() === user.username.toLowerCase() ? user.avatar : undefined);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
@@ -95,9 +100,9 @@ export function ProjectDetailsView({
             </p>
 
             <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-zinc-500 pt-1">
-              <span>Created by <strong className="text-zinc-900 font-bold">{user.name}</strong></span>
+              <span>Created by <strong className="text-zinc-900 font-bold">{creatorName}</strong></span>
               <span>•</span>
-              <span>{user.university}</span>
+              <span>{creatorUniversity}</span>
               <span>•</span>
               <span>Updated {project.updatedAt}</span>
             </div>
@@ -242,16 +247,16 @@ export function ProjectDetailsView({
 
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden">
-                {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
-                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                {creatorAvatar && (creatorAvatar.startsWith("data:") || creatorAvatar.startsWith("http") || creatorAvatar.startsWith("/")) ? (
+                  <img src={creatorAvatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  getInitials(user.name)
+                  getInitials(creatorName)
                 )}
               </div>
               <div className="min-w-0">
-                <div className="text-zinc-900 font-bold truncate text-sm">{user.name}</div>
-                <div className="text-xs font-mono text-zinc-500 truncate">@{user.username}</div>
-                <div className="text-[11px] font-mono text-zinc-500 truncate">{user.university}</div>
+                <div className="text-zinc-900 font-bold truncate text-sm">{creatorName}</div>
+                <div className="text-xs font-mono text-zinc-500 truncate">@{creatorHandle}</div>
+                <div className="text-[11px] font-mono text-zinc-500 truncate">{creatorUniversity}</div>
               </div>
             </div>
 
