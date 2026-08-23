@@ -7,6 +7,7 @@ interface CommunityViewProps {
   user: UserProfile;
   onNavigateToProfile?: () => void;
   onSelectProject?: (project: ProjectItem) => void;
+  onNavigateToUser?: (username: string) => void;
 }
 
 interface CommentItem {
@@ -35,7 +36,7 @@ interface PostItem {
   comments: CommentItem[];
 }
 
-export function CommunityView({ user, onNavigateToProfile, onSelectProject }: CommunityViewProps) {
+export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNavigateToUser }: CommunityViewProps) {
   const [activeTab, setActiveTab] = useState<"foryou" | "launches" | "campus" | "trending">("foryou");
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -581,8 +582,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
               className="p-5 rounded-2xl bg-white border border-[#e8e2d8] text-zinc-900 shadow-sm space-y-3.5 hover:border-zinc-400 transition-all"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden">
+                <div
+                  onClick={() => onNavigateToUser && onNavigateToUser(post.authorHandle)}
+                  className="flex items-center gap-3 cursor-pointer group/author"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden group-hover/author:opacity-80 transition-opacity">
                     {post.authorHandle.toLowerCase() === user.username.toLowerCase() && user.avatar ? (
                       <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                     ) : post.avatar && (post.avatar.startsWith("data:") || post.avatar.startsWith("http")) ? (
@@ -593,7 +597,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-zinc-900">{post.authorName}</span>
+                      <span className="text-sm font-bold text-zinc-900 group-hover/author:underline">{post.authorName}</span>
                       <span className="text-xs font-mono text-zinc-500">@{post.authorHandle}</span>
                     </div>
                     <div className="text-[10px] font-mono text-zinc-500">

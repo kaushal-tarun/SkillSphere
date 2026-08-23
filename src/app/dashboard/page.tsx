@@ -383,6 +383,7 @@ export default function DashboardPage() {
                   setSearchQuery={setSearchQuery}
                   onSelectProject={(proj) => setSelectedProject(proj)}
                   onNavigateToProfile={() => setActiveNav("profile")}
+                  onNavigateToUser={(username) => handleNavigateToUser(username)}
                 />
               )}
 
@@ -423,7 +424,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "community" && (
-                <CommunityView user={user} onSelectProject={(proj) => setSelectedProject(proj)} />
+                <CommunityView user={user} onSelectProject={(proj) => setSelectedProject(proj)} onNavigateToUser={(username) => handleNavigateToUser(username)} />
               )}
 
               {activeNav === "settings" && (

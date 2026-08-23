@@ -9,6 +9,7 @@ interface DiscoverViewProps {
   setSearchQuery?: (q: string) => void;
   onSelectProject?: (proj: ProjectItem) => void;
   onNavigateToProfile?: () => void;
+  onNavigateToUser?: (username: string) => void;
 }
 
 export function DiscoverView({
@@ -16,6 +17,7 @@ export function DiscoverView({
   searchQuery: externalSearchQuery,
   setSearchQuery: externalSetSearchQuery,
   onSelectProject,
+  onNavigateToUser,
 }: DiscoverViewProps) {
   const [internalSearchQuery, setInternalSearchQuery] = useState<string>("");
   
@@ -147,7 +149,16 @@ export function DiscoverView({
                     </div>
 
                     <div className="text-xs font-mono text-zinc-500 flex items-center gap-2">
-                      <span>Built by <strong className="text-zinc-900 font-bold">@{project.creatorHandle}</strong></span>
+                      <span>
+                        Built by{" "}
+                        <button
+                          type="button"
+                          onClick={() => onNavigateToUser && onNavigateToUser(project.creatorHandle || "")}
+                          className="text-zinc-900 font-bold hover:underline cursor-pointer"
+                        >
+                          @{project.creatorHandle}
+                        </button>
+                      </span>
                       <span>•</span>
                       <span>{project.campus}</span>
                       <span>•</span>

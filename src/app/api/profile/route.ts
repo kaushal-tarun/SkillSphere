@@ -11,16 +11,16 @@ export async function GET(request: Request) {
     const session = await auth();
     let targetUser = null;
 
-    if (session?.user?.email) {
+    if (username && username.trim()) {
       targetUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
+        where: { username: username.toLowerCase().trim() },
         include: { profile: true, projects: true },
       });
     }
 
-    if (!targetUser && username) {
+    if (!targetUser && session?.user?.email) {
       targetUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
+        where: { email: session.user.email },
         include: { profile: true, projects: true },
       });
     }

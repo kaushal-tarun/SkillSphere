@@ -102,7 +102,24 @@ export function ProjectDetailsView({
             </p>
 
             <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-zinc-500 pt-1">
-              <span>Created by <strong className="text-zinc-900 font-bold">{creatorName}</strong></span>
+              <span>
+                Created by{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (creatorHandle.toLowerCase() === user.username.toLowerCase()) {
+                      onNavigateToProfile();
+                    } else if (onNavigateToUser) {
+                      onNavigateToUser(creatorHandle);
+                    } else {
+                      onNavigateToProfile();
+                    }
+                  }}
+                  className="text-zinc-900 font-bold hover:underline cursor-pointer"
+                >
+                  {creatorName}
+                </button>
+              </span>
               <span>•</span>
               <span>{creatorUniversity}</span>
               <span>•</span>
