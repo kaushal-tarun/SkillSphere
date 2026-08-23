@@ -204,13 +204,15 @@ export function ProjectsView({
                 </div>
 
                 <div className="space-y-3 pt-2 border-t border-zinc-100 font-mono text-xs">
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.tech.map((t, idx) => (
-                      <span key={idx} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] text-zinc-800 font-medium">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+                  {project.tech && project.tech.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tech.map((t, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] text-zinc-800 font-medium">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1">
                     <span>★ {project.stars} Stars</span>

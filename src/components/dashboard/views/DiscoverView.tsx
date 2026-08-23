@@ -183,16 +183,18 @@ export function DiscoverView({
                 </p>
 
                 {/* Tech Stack */}
-                <div className="flex flex-wrap gap-2 font-mono text-xs">
-                  {project.tech.map((t, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium group-hover:border-zinc-300 transition-colors"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
+                {project.tech && project.tech.length > 0 && (
+                  <div className="flex flex-wrap gap-2 font-mono text-xs">
+                    {project.tech.map((t, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium group-hover:border-zinc-300 transition-colors"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Bottom Metrics */}
                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">

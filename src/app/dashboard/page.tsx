@@ -191,7 +191,7 @@ export default function DashboardPage() {
     teamMembers?: string[];
     screenshots?: string[];
   }) => {
-    const techArray = projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : ["TypeScript", "Next.js"];
+    const techArray = projectData.tech ? projectData.tech.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
     try {
       const res = await fetch("/api/projects", {
