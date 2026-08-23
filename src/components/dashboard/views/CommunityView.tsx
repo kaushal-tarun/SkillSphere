@@ -40,6 +40,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
   const [postImage, setPostImage] = useState<string | null>(null);
   const [selectedProjectTag, setSelectedProjectTag] = useState<string | null>(null);
   const [isProjectTagDropdownOpen, setIsProjectTagDropdownOpen] = useState(false);
@@ -146,7 +147,9 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPostText.trim()) return;
+    if (isPosting || !newPostText.trim()) return;
+
+    setIsPosting(true);
 
     try {
       const res = await fetch("/api/posts", {
@@ -173,6 +176,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       setPostImage(null);
       setSelectedProjectTag(null);
       setIsProjectTagDropdownOpen(false);
+      setIsPosting(false);
     }
   };
 
@@ -544,14 +548,14 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
 
           <button
             type="submit"
-            disabled={!newPostText.trim()}
+            disabled={isPosting || !newPostText.trim()}
             className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all cursor-pointer ${
-              newPostText.trim()
+              newPostText.trim() && !isPosting
                 ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
                 : "bg-zinc-100 text-zinc-400 border border-[#e8e2d8]"
             }`}
           >
-            Post Update
+            {isPosting ? "Posting..." : "Post Update"}
           </button>
         </div>
       </form>
