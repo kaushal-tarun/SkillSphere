@@ -110,7 +110,7 @@ function containsAbusiveWords(text: string): boolean {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { content, codeSnippet, projectTag, username } = body;
+    const { content, image, codeSnippet, projectTag, username } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json({ error: "Post content is required" }, { status: 400 });
@@ -154,6 +154,7 @@ export async function POST(request: Request) {
       data: {
         userId: targetUser.id,
         content: content.trim(),
+        image: image || null,
         codeSnippet: codeSnippet || null,
         projectTag: projectTag || null,
         likesCount: 0,
@@ -173,6 +174,7 @@ export async function POST(request: Request) {
       avatar: targetUser.avatar || (targetUser.name || targetUser.username).slice(0, 2).toUpperCase(),
       time: "Just now",
       content: newPost.content,
+      image: newPost.image || undefined,
       codeSnippet: newPost.codeSnippet || undefined,
       projectTag: newPost.projectTag || undefined,
       likes: 0,

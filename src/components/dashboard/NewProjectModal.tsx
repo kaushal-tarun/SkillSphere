@@ -95,6 +95,11 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       return false;
     }
 
+    if (/\s/.test(trimmedName)) {
+      setErrorMessage("Project name cannot contain spaces. Use camelCase or hyphens (e.g. KnowledgeVaultAI or my-project).");
+      return false;
+    }
+
     if (
       containsAbusiveWords(trimmedName) ||
       containsAbusiveWords(trimmedDesc) ||
@@ -315,7 +320,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   setName(e.target.value);
                   if (errorMessage) setErrorMessage("");
                 }}
-                placeholder="e.g. KnowledgeVault AI"
+                placeholder="e.g. KnowledgeVaultAI or my-project"
                 className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
               />
             </div>

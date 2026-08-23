@@ -585,9 +585,12 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                                 type="button"
                                 onClick={() => handleUnsendMessage(msg.id)}
                                 title="Unsend message"
-                                className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-red-600 transition-all cursor-pointer text-xs shrink-0"
+                                className="opacity-0 group-hover:opacity-100 px-2 py-1 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all font-mono text-[10px] font-bold shrink-0 flex items-center gap-1 shadow-2xs cursor-pointer"
                               >
-                                🗑️
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span>Unsend</span>
                               </button>
                             )}
                             <div className={`p-3 rounded-2xl ${

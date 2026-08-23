@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
 
 interface CommunityViewProps {
@@ -40,8 +40,14 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
+  const [postImage, setPostImage] = useState<string | null>(null);
+  const [selectedProjectTag, setSelectedProjectTag] = useState<string | null>(null);
+  const [isProjectTagDropdownOpen, setIsProjectTagDropdownOpen] = useState(false);
+  const [userProjects, setUserProjects] = useState<ProjectItem[]>([]);
   const [openCommentInput, setOpenCommentInput] = useState<Record<string, boolean>>({});
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name: string) => {
     if (!name) return "US";
@@ -54,6 +60,26 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
 
   const [posts, setPosts] = useState<PostItem[]>([]);
 
+  // Load user's published projects for Tag Project feature
+  useEffect(() => {
+    async function loadUserProjects() {
+      if (!user.username) return;
+      try {
+        const res = await fetch(`/api/projects?username=${encodeURIComponent(user.username)}&scope=user`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.projects && Array.isArray(data.projects)) {
+            setUserProjects(data.projects);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load user projects for tagging", e);
+      }
+    }
+    loadUserProjects();
+  }, [user.username]);
+
+  // Load posts
   useEffect(() => {
     async function loadCommunityPosts() {
       try {
@@ -80,6 +106,44 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
     loadCommunityPosts();
   }, [user.username]);
 
+  // Handle Post Image Upload & Canvas Compression (~40KB)
+  const handlePostImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image is over 10MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (!event.target?.result) return;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          setPostImage(canvas.toDataURL("image/jpeg", 0.7));
+        } else {
+          setPostImage(event.target!.result as string);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPostText.trim()) return;
@@ -90,6 +154,8 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newPostText,
+          image: postImage || undefined,
+          projectTag: selectedProjectTag || undefined,
           username: user.username,
         }),
       });
@@ -104,6 +170,9 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       console.error("Failed to save post to PostgreSQL", e);
     } finally {
       setNewPostText("");
+      setPostImage(null);
+      setSelectedProjectTag(null);
+      setIsProjectTagDropdownOpen(false);
     }
   };
 
@@ -153,86 +222,72 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
       userReposts = JSON.parse(localStorage.getItem(storageKey) || "{}");
     } catch (e) {}
 
-    const isCurrentlyReposted = !!userReposts[id];
-    const action = isCurrentlyReposted ? "DECREMENT" : "INCREMENT";
+    const currentlyReposted = !!userReposts[id];
+    const nextReposted = !currentlyReposted;
 
-    if (isCurrentlyReposted) {
-      delete userReposts[id];
-    } else {
+    if (nextReposted) {
       userReposts[id] = true;
+    } else {
+      delete userReposts[id];
     }
-
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(userReposts));
-    } catch (e) {}
+    localStorage.setItem(storageKey, JSON.stringify(userReposts));
 
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id === id) {
           return {
             ...p,
-            reposts: isCurrentlyReposted ? Math.max(0, p.reposts - 1) : p.reposts + 1,
-            isReposted: !isCurrentlyReposted,
+            reposts: nextReposted ? p.reposts + 1 : Math.max(0, p.reposts - 1),
+            isReposted: nextReposted,
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const handleAddComment = async (postId: string) => {
+    const text = commentInputs[postId];
+    if (!text || !text.trim()) return;
+
+    const optimisticComment: CommentItem = {
+      id: `tmp_${Date.now()}`,
+      authorName: user.name,
+      authorHandle: user.username,
+      text: text.trim(),
+      time: "Just now",
+    };
+
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: [...p.comments, optimisticComment],
           };
         }
         return p;
       })
     );
 
-    try {
-      await fetch("/api/reposts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: id,
-          action,
-        }),
-      });
-    } catch (e) {
-      console.error("Failed to update repost in PostgreSQL", e);
-    }
-  };
-
-  const handleAddComment = async (postId: string, text: string) => {
-    if (!text.trim()) return;
-    const commentText = text.trim();
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
 
     try {
-      const res = await fetch("/api/comments", {
+      await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           postId,
-          text: commentText,
+          text: text.trim(),
           username: user.username,
         }),
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.comment) {
-          setPosts((prev) =>
-            prev.map((p) => {
-              if (p.id === postId) {
-                return {
-                  ...p,
-                  comments: [...p.comments, data.comment],
-                };
-              }
-              return p;
-            })
-          );
-        }
-      }
     } catch (e) {
-      console.error("Failed to save comment to PostgreSQL", e);
+      console.error("Failed to post comment to PostgreSQL", e);
     }
   };
 
-  const [openCommentMenu, setOpenCommentMenu] = useState<string | null>(null);
-
-  const handleDeleteComment = async (commentId: string, postId: string) => {
+  const handleDeleteComment = async (postId: string, commentId: string) => {
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id === postId) {
@@ -349,7 +404,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                   }}
                   className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-zinc-100 text-zinc-500 text-[11px] cursor-pointer"
                 >
-                  ✕ Clear Topic Filter
+                  Clear filter
                 </button>
               )}
               {trendingTopics.map((topic) => (
@@ -392,17 +447,92 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           />
         </div>
 
+        {/* ATTACHED IMAGE PREVIEW */}
+        {postImage && (
+          <div className="relative rounded-xl overflow-hidden border border-[#e2dacd] max-h-56 w-fit">
+            <img src={postImage} alt="Post attachment" className="h-44 object-cover rounded-xl" />
+            <button
+              type="button"
+              onClick={() => setPostImage(null)}
+              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-bold hover:bg-black transition-all cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* TAGGED PROJECT PREVIEW BADGE */}
+        {selectedProjectTag && (
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-zinc-500 font-bold">Tagged Project:</span>
+            <span className="px-2.5 py-1 rounded-xl bg-zinc-900 text-white font-bold flex items-center gap-1.5 shadow-xs">
+              <span>@{selectedProjectTag}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedProjectTag(null)}
+                className="hover:text-red-400 cursor-pointer font-extrabold"
+              >
+                ✕
+              </button>
+            </span>
+          </div>
+        )}
+
+        {/* HIDDEN FILE INPUT FOR IMAGE UPLOAD */}
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePostImageUpload}
+        />
+
         <div className="flex items-center justify-between pt-3 border-t border-zinc-100 font-mono text-xs">
-          <div className="flex items-center gap-3 text-zinc-500">
-            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-              <span>Image</span>
+          <div className="flex items-center gap-3 text-zinc-500 relative">
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-bold"
+            >
+              <span>📷 Image</span>
             </button>
-            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-              <span>Code Snippet</span>
-            </button>
-            <button type="button" className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
-              <span>Tag Project</span>
-            </button>
+
+            {/* TAG PROJECT POPOVER BUTTON & DROPDOWN */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsProjectTagDropdownOpen(!isProjectTagDropdownOpen)}
+                className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-bold"
+              >
+                <span>🏷️ Tag Project</span>
+              </button>
+
+              {isProjectTagDropdownOpen && (
+                <div className="absolute left-0 bottom-full mb-2 w-56 p-2 rounded-2xl bg-white border border-[#e8e2d8] shadow-xl z-40 space-y-1 font-mono text-xs animate-in fade-in zoom-in-95 duration-150">
+                  <div className="text-[10px] text-zinc-400 font-bold px-2 py-1 uppercase">Select your project</div>
+                  {userProjects.length > 0 ? (
+                    userProjects.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedProjectTag(p.name);
+                          if (!newPostText.includes(`@${p.name}`)) {
+                            setNewPostText((prev) => (prev ? `${prev} @${p.name}` : `@${p.name}`));
+                          }
+                          setIsProjectTagDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-[#f4efe6] text-zinc-900 font-bold truncate transition-colors cursor-pointer"
+                      >
+                        @{p.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-2 text-[11px] text-zinc-400 italic">No projects published yet</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <button
@@ -461,8 +591,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                     </button>
                   )}
                   {post.projectTag && (
-                    <span className="px-2.5 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-[10px] font-mono text-zinc-800 font-bold">
-                      {post.projectTag}
+                    <span
+                      onClick={() => onSelectProject && onSelectProject({ id: `proj_${post.projectTag}`, name: post.projectTag || "", description: "", progress: 100, updatedAt: "Just now", visibility: "Public", stars: 0, forks: 0, commits: 0, daysActive: 1, likes: 0, status: "Active", tech: [], github: "" })}
+                      className="px-2.5 py-0.5 rounded bg-zinc-900 text-white text-[10px] font-mono font-bold shadow-xs hover:bg-black cursor-pointer"
+                    >
+                      @{post.projectTag}
                     </span>
                   )}
                 </div>
@@ -472,9 +605,10 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                 {post.content}
               </p>
 
-              {post.codeSnippet && (
-                <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] font-mono text-[11px] text-zinc-900 overflow-x-auto shadow-inner">
-                  <pre>{post.codeSnippet}</pre>
+              {/* POST ATTACHED IMAGE */}
+              {post.image && (
+                <div className="rounded-xl overflow-hidden border border-[#e2dacd] max-h-72 w-fit shadow-xs">
+                  <img src={post.image} alt="Post media" className="w-full max-h-72 object-cover" />
                 </div>
               )}
 
@@ -498,97 +632,81 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                     post.isReposted ? "text-zinc-900 font-bold" : "text-zinc-500 hover:text-zinc-900"
                   }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M4.5 12c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l-2.25 2.25M4.5 12l2.25-2.25m15 2.25l2.25 2.25m-2.25-2.25l-2.25-2.25" />
+                  <svg className={`w-4 h-4 ${post.isReposted ? "text-emerald-600 font-bold stroke-[2.5]" : "stroke-current"}`} fill="none" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M4.5 12c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3-3m-3 3l3 3m12-3l-3-3m3 3l-3 3" />
                   </svg>
                   <span>{post.reposts}</span>
                 </button>
 
                 <button
-                  onClick={() => setOpenCommentInput((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                  onClick={() =>
+                    setOpenCommentInput((prev) => ({
+                      ...prev,
+                      [post.id]: !prev[post.id],
+                    }))
+                  }
                   className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 0012 20.25z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 007.5 20.25c.677 0 1.341-.122 1.968-.355.617-.229 1.306-.184 1.884.093A8.932 8.932 0 0012 20.25z" />
                   </svg>
-                  <span>{post.comments.length} Comments</span>
+                  <span>{post.comments ? post.comments.length : 0} Comments</span>
                 </button>
               </div>
 
-              {/* COMMENTS THREAD & INPUT */}
+              {/* COMMENTS SECTION */}
               {isCommentOpen && (
-                <div className="pt-3 border-t border-zinc-100 space-y-3 font-mono text-xs animate-in fade-in duration-200">
-                  {post.comments.length > 0 && (
-                    <div className="space-y-2">
-                      {post.comments.map((comm) => (
-                        <div key={comm.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1 relative">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-bold text-zinc-900">{comm.authorName} <span className="text-zinc-500 font-normal">@{comm.authorHandle}</span></span>
+                <div className="pt-3 border-t border-zinc-100 space-y-3 animate-in fade-in duration-200">
+                  <div className="flex gap-2 font-mono text-xs">
+                    <input
+                      type="text"
+                      value={commentInputs[post.id] || ""}
+                      onChange={(e) =>
+                        setCommentInputs((prev) => ({
+                          ...prev,
+                          [post.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Write a comment..."
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400"
+                    />
+                    <button
+                      onClick={() => handleAddComment(post.id)}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-xs cursor-pointer"
+                    >
+                      Post
+                    </button>
+                  </div>
+
+                  {post.comments && post.comments.length > 0 && (
+                    <div className="space-y-2 pt-1 font-mono text-xs">
+                      {post.comments.map((comment) => (
+                        <div key={comment.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
+                          <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                            <span className="font-bold text-zinc-900">{comment.authorName} <span className="font-normal opacity-70">@{comment.authorHandle}</span></span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[9px] text-zinc-500">{comm.time}</span>
-                              <div className="relative">
+                              <span>{comment.time}</span>
+                              <button
+                                onClick={() => handleCopyComment(comment.text)}
+                                className="text-zinc-500 hover:text-zinc-900 text-[10px] hover:underline cursor-pointer"
+                              >
+                                Copy
+                              </button>
+                              {comment.authorHandle.toLowerCase() === user.username.toLowerCase() && (
                                 <button
-                                  type="button"
-                                  onClick={() => setOpenCommentMenu((prev) => (prev === comm.id ? null : comm.id))}
-                                  className="text-zinc-500 hover:text-zinc-900 font-extrabold text-xs px-1 cursor-pointer"
+                                  onClick={() => handleDeleteComment(post.id, comment.id)}
+                                  className="text-red-600 hover:text-red-800 text-[10px] hover:underline cursor-pointer font-bold"
                                 >
-                                  •••
+                                  Delete
                                 </button>
-                                {openCommentMenu === comm.id && (
-                                  <div className="absolute right-0 top-full mt-1 w-32 p-1.5 rounded-xl bg-white border border-[#e8e2d8] shadow-lg z-30 font-mono text-xs space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleCopyComment(comm.text);
-                                        setOpenCommentMenu(null);
-                                      }}
-                                      className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-[#f4efe6] text-zinc-800 text-[11px] cursor-pointer"
-                                    >
-                                      Copy Text
-                                    </button>
-                                    {comm.authorHandle.toLowerCase() === user.username.toLowerCase() && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          handleDeleteComment(comm.id, post.id);
-                                          setOpenCommentMenu(null);
-                                        }}
-                                        className="w-full text-left px-2.5 py-1 rounded-lg hover:bg-rose-50 text-red-600 font-bold text-[11px] cursor-pointer"
-                                      >
-                                        Delete
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                              )}
                             </div>
                           </div>
-                          <p className="text-xs text-zinc-800 font-sans">{comm.text}</p>
+                          <p className="text-zinc-800 font-sans text-xs">{comment.text}</p>
                         </div>
                       ))}
                     </div>
                   )}
-
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={commentInputs[post.id] || ""}
-                      onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddComment(post.id, commentInputs[post.id] || "");
-                        }
-                      }}
-                      placeholder="Write a comment..."
-                      className="flex-1 px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans"
-                    />
-                    <button
-                      onClick={() => handleAddComment(post.id, commentInputs[post.id] || "")}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-900 text-white font-bold text-xs hover:bg-black transition-all cursor-pointer"
-                    >
-                      Comment
-                    </button>
-                  </div>
                 </div>
               )}
             </div>

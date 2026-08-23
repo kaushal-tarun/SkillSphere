@@ -102,6 +102,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Project name is required" }, { status: 400 });
     }
 
+    if (/\s/.test(name.trim())) {
+      return NextResponse.json({ error: "Project name cannot contain spaces. Use camelCase or hyphens." }, { status: 400 });
+    }
+
     const finalDescription = description && description.trim() ? description.trim() : `${name.trim()} - Student Project built on SkillSphere.`;
 
     if (
