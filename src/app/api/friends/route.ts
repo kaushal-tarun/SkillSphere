@@ -100,7 +100,33 @@ export async function GET(request: Request) {
 
     const sentRequests = outgoingPending.map((f) => f.receiver.username.toLowerCase());
 
-    return NextResponse.json({ friends: friendsList, pendingRequests, sentRequests }, { status: 200 });
+    // All registered users in Neon PostgreSQL with live DB avatars & project counts
+    const registeredUsersDb = await prisma.user.findMany({
+      include: {
+        projects: true,
+      },
+    });
+
+    const registeredUsersPool = registeredUsersDb.map((u) => {
+      const projCount = u.projects ? u.projects.length : 0;
+      const xp = projCount * 500;
+      const level = Math.floor(xp / 500) + 1;
+
+      return {
+        id: u.id,
+        name: u.name,
+        username: u.username,
+        university: u.university || "University Student",
+        xp,
+        level,
+        projects: projCount,
+        status: "online" as const,
+        isFriend: false,
+        avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
+      };
+    });
+
+    return NextResponse.json({ friends: friendsList, pendingRequests, sentRequests, registeredUsers: registeredUsersPool }, { status: 200 });
   } catch (error) {
     console.error("GET /api/friends error:", error);
     return NextResponse.json({ error: "Failed to fetch friends" }, { status: 500 });

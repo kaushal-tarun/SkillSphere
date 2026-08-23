@@ -22,6 +22,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
   const [addedFriends, setAddedFriends] = useState<FriendItem[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
+  const [registeredUsersDbList, setRegisteredUsersDbList] = useState<FriendItem[]>([]);
 
   // Load added friends and incoming requests from Neon PostgreSQL API
   const loadFriendsFromApi = async () => {
@@ -41,6 +42,9 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
             sentMap[u.toLowerCase()] = true;
           });
           setSentRequests(sentMap);
+        }
+        if (data.registeredUsers && Array.isArray(data.registeredUsers)) {
+          setRegisteredUsersDbList(data.registeredUsers);
         }
       }
     } catch (e) {
@@ -227,56 +231,82 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
   const friendsRankingList = [...addedFriends, currentUserItem].sort((a, b) => b.xp - a.xp);
 
-  // Load registered users pool combining Neon DB friends + registered local users
+  // Load registered users pool combining Neon DB friends + registered DB users
   const getRegisteredUsersPool = (): FriendItem[] => {
     let poolMap = new Map<string, FriendItem>();
 
-    // 1. Populate with accepted/pending friends from Neon DB (has latest avatar & real DB stats)
-    addedFriends.forEach((f) => {
-      const projCount = typeof f.projects === "number" ? f.projects : 0;
+    // 1. First populate with all registered users live from Neon DB
+    registeredUsersDbList.forEach((u) => {
+      const uKey = (u.username || "").toLowerCase();
+      if (!uKey) return;
+
+      const projCount = typeof u.projects === "number" ? u.projects : 0;
       const realXp = projCount * 500;
       const realLevel = Math.floor(realXp / 500) + 1;
 
-      poolMap.set(f.username.toLowerCase(), {
+      poolMap.set(uKey, {
+        id: u.id || `usr_${u.username}`,
+        name: u.name || u.username,
+        username: u.username,
+        university: u.university || "University Student",
+        xp: realXp,
+        level: realLevel,
+        projects: projCount,
+        status: "online" as const,
+        isFriend: addedFriends.some((f) => f.username.toLowerCase() === uKey),
+        avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
+      });
+    });
+
+    // 2. Also merge accepted/pending friends from Neon DB (to preserve avatar image URLs)
+    addedFriends.forEach((f) => {
+      const uKey = (f.username || "").toLowerCase();
+      if (!uKey) return;
+
+      const existing = poolMap.get(uKey);
+      const projCount = typeof f.projects === "number" ? f.projects : (existing ? existing.projects : 0);
+      const realXp = projCount * 500;
+      const realLevel = Math.floor(realXp / 500) + 1;
+
+      poolMap.set(uKey, {
         ...f,
         xp: realXp,
         level: realLevel,
         projects: projCount,
+        avatar: f.avatar || existing?.avatar || (f.name || f.username).slice(0, 2).toUpperCase(),
         isFriend: true,
       });
     });
 
-    // 2. Also populate with registered users from localStorage
+    // 3. Fallback: Also merge registered users from localStorage if any local offline users exist
     try {
       const stored = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
       stored.forEach((u: any) => {
         const uKey = (u.username || "").toLowerCase();
-        if (!uKey) return;
+        if (!uKey || poolMap.has(uKey)) return;
 
-        const existing = poolMap.get(uKey);
-        const projCount = typeof u.projects === "number" ? u.projects : (existing ? existing.projects : 0);
+        const projCount = typeof u.projects === "number" ? u.projects : 0;
         const realXp = projCount * 500;
         const realLevel = Math.floor(realXp / 500) + 1;
-        const userAvatar = u.avatar || existing?.avatar || (u.name || u.username).slice(0, 2).toUpperCase();
 
         poolMap.set(uKey, {
-          id: u.id || existing?.id || `usr_${u.username}`,
-          name: u.name || existing?.name || u.username,
+          id: u.id || `usr_${u.username}`,
+          name: u.name || u.username,
           username: u.username,
-          university: u.university || existing?.university || "University Student",
+          university: u.university || "University Student",
           xp: realXp,
           level: realLevel,
           projects: projCount,
           status: "online" as const,
-          isFriend: existing ? existing.isFriend : false,
-          avatar: userAvatar,
+          isFriend: false,
+          avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
         });
       });
     } catch (e) {
       console.error(e);
     }
 
-    // 3. Filter out current logged-in user from Add Friends search pool
+    // 4. Filter out current logged-in user from Add Friends search pool
     return Array.from(poolMap.values()).filter(
       (f) => f.username.toLowerCase() !== user.username.toLowerCase()
     );

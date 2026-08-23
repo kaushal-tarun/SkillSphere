@@ -163,8 +163,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadProjects() {
+      if (!user.username) return;
       try {
-        const res = await fetch("/api/projects");
+        const res = await fetch(`/api/projects?username=${encodeURIComponent(user.username)}&scope=user`);
         if (res.ok) {
           const data = await res.json();
           if (data.projects && Array.isArray(data.projects)) {
@@ -176,7 +177,7 @@ export default function DashboardPage() {
       }
     }
     loadProjects();
-  }, []);
+  }, [user.username]);
 
   const handleCreateProject = async (projectData: {
     name: string;

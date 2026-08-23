@@ -2,10 +2,35 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-// GET /api/projects - Fetch all projects from Neon PostgreSQL
-export async function GET() {
+// GET /api/projects - Fetch projects from Neon PostgreSQL (filtered by user or all)
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get("username");
+    const scope = searchParams.get("scope"); // "user" | "all"
+
+    const session = await auth();
+    let currentUser = null;
+
+    if (session?.user?.email) {
+      currentUser = await prisma.user.findFirst({
+        where: { email: session.user.email },
+      });
+    }
+
+    if (!currentUser && username) {
+      currentUser = await prisma.user.findFirst({
+        where: { username: username.toLowerCase().trim() },
+      });
+    }
+
+    let whereClause: any = {};
+    if (scope === "user" && currentUser) {
+      whereClause = { userId: currentUser.id };
+    }
+
     const projects = await prisma.project.findMany({
+      where: whereClause,
       include: {
         user: {
           select: {
