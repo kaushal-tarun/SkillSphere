@@ -227,35 +227,59 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
   const friendsRankingList = [...addedFriends, currentUserItem].sort((a, b) => b.xp - a.xp);
 
-  // Load registered users from localStorage database (skillsphere_users_db)
+  // Load registered users pool combining Neon DB friends + registered local users
   const getRegisteredUsersPool = (): FriendItem[] => {
-    let registeredUsers: FriendItem[] = [];
+    let poolMap = new Map<string, FriendItem>();
+
+    // 1. Populate with accepted/pending friends from Neon DB (has latest avatar & real DB stats)
+    addedFriends.forEach((f) => {
+      const projCount = typeof f.projects === "number" ? f.projects : 0;
+      const realXp = projCount * 500;
+      const realLevel = Math.floor(realXp / 500) + 1;
+
+      poolMap.set(f.username.toLowerCase(), {
+        ...f,
+        xp: realXp,
+        level: realLevel,
+        projects: projCount,
+        isFriend: true,
+      });
+    });
+
+    // 2. Also populate with registered users from localStorage
     try {
       const stored = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
-      registeredUsers = stored.map((u: any) => {
-        const projCount = typeof u.projects === "number" ? u.projects : 0;
+      stored.forEach((u: any) => {
+        const uKey = (u.username || "").toLowerCase();
+        if (!uKey) return;
+
+        const existing = poolMap.get(uKey);
+        const projCount = typeof u.projects === "number" ? u.projects : (existing ? existing.projects : 0);
         const realXp = projCount * 500;
         const realLevel = Math.floor(realXp / 500) + 1;
+        const userAvatar = u.avatar || existing?.avatar || (u.name || u.username).slice(0, 2).toUpperCase();
 
-        return {
-          id: u.id || `usr_${u.username}`,
-          name: u.name || u.username,
+        poolMap.set(uKey, {
+          id: u.id || existing?.id || `usr_${u.username}`,
+          name: u.name || existing?.name || u.username,
           username: u.username,
-          university: u.university || "University Student",
+          university: u.university || existing?.university || "University Student",
           xp: realXp,
           level: realLevel,
           projects: projCount,
           status: "online" as const,
-          isFriend: false,
-          avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
-        };
+          isFriend: existing ? existing.isFriend : false,
+          avatar: userAvatar,
+        });
       });
     } catch (e) {
       console.error(e);
     }
 
-    // Filter out current logged-in user from Add Friends search pool
-    return registeredUsers.filter((f) => f.username.toLowerCase() !== user.username.toLowerCase());
+    // 3. Filter out current logged-in user from Add Friends search pool
+    return Array.from(poolMap.values()).filter(
+      (f) => f.username.toLowerCase() !== user.username.toLowerCase()
+    );
   };
 
   const registeredPool = getRegisteredUsersPool();
