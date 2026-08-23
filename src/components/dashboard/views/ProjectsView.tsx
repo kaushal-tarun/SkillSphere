@@ -36,6 +36,7 @@ export function ProjectsView({
 }: ProjectsViewProps) {
   const [isTechOpen, setIsTechOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<ProjectItem | null>(null);
 
   const techOptions = [
     { value: "all", label: "All Tech Stack" },
@@ -219,7 +220,7 @@ export function ProjectsView({
                     <div className="flex items-center gap-3">
                       {onDeleteProject && (
                         <button
-                          onClick={() => onDeleteProject(project.id)}
+                          onClick={() => setProjectToDelete(project)}
                           className="text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer text-[10px]"
                         >
                           Delete
@@ -362,6 +363,49 @@ export function ProjectsView({
           ))}
         </div>
       </div>
+
+      {/* DELETE PROJECT CONFIRMATION WARNING MODAL */}
+      {projectToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-[#e8e2d8] rounded-2xl p-6 shadow-xl space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 border-b border-zinc-100 pb-3">
+              <div className="w-9 h-9 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold text-lg shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 tracking-tight">Delete Project?</h3>
+                <p className="text-xs font-mono text-zinc-500">This action is permanent and cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 leading-relaxed font-sans">
+              Are you sure you want to delete <strong className="font-bold text-red-950">"{projectToDelete.name}"</strong> from your portfolio? It will be removed from community showcase and standings.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 font-mono text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => setProjectToDelete(null)}
+                className="px-4 py-2 rounded-xl bg-white border border-[#e8e2d8] hover:bg-zinc-100 text-zinc-700 font-bold transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteProject) {
+                    onDeleteProject(projectToDelete.id);
+                  }
+                  setProjectToDelete(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
