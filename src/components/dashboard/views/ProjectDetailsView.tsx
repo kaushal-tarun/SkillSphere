@@ -71,8 +71,6 @@ export function ProjectDetailsView({
         >
           <span>‹ Back to Projects</span>
         </button>
-
-        <span>Project ID: {project.id}</span>
       </div>
 
       {/* HERO SECTION */}
