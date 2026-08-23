@@ -9,9 +9,10 @@ interface FriendsViewProps {
   projectsCount?: number;
   searchQuery?: string;
   setSearchQuery?: (q: string) => void;
+  onNavigateToUser?: (username: string) => void;
 }
 
-export function FriendsView({ user, projectsCount = 0, searchQuery: externalSearchQuery, setSearchQuery: externalSetSearchQuery }: FriendsViewProps) {
+export function FriendsView({ user, projectsCount = 0, searchQuery: externalSearchQuery, setSearchQuery: externalSetSearchQuery, onNavigateToUser }: FriendsViewProps) {
   const [activeTab, setActiveTab] = useState<"ranking" | "chat" | "add">("chat");
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
 
@@ -408,8 +409,11 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                         </span>
                       </td>
                       <td className="py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative overflow-hidden">
+                        <div
+                          onClick={() => onNavigateToUser && onNavigateToUser(friend.username)}
+                          className="flex items-center gap-3 cursor-pointer group/friend"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 uppercase relative overflow-hidden group-hover/friend:opacity-80 transition-opacity">
                             {friend.id === "me" && user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
                               <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                             ) : friend.avatar && (friend.avatar.startsWith("data:") || friend.avatar.startsWith("http") || friend.avatar.startsWith("/")) ? (
@@ -424,7 +428,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                             }`} />
                           </div>
                           <div>
-                            <div className="text-zinc-900 font-bold flex items-center gap-1.5">
+                            <div className="text-zinc-900 font-bold flex items-center gap-1.5 group-hover/friend:underline">
                               <span>{friend.name}</span>
                               {friend.id === "me" && <span className="text-[10px] text-zinc-500 font-normal">(YOU)</span>}
                             </div>

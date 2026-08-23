@@ -420,7 +420,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "friends" && (
-                <FriendsView user={user} projectsCount={projectsList.length} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <FriendsView user={user} projectsCount={projectsList.length} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onNavigateToUser={(username) => handleNavigateToUser(username)} />
               )}
 
               {activeNav === "community" && (

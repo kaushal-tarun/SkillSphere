@@ -234,7 +234,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Campus Rank</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">#1 Leader</div>
+            <div className="text-base font-extrabold text-zinc-900 mt-0.5">#{projectsList.length > 0 ? "1 Leader" : "Active"}</div>
           </div>
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
@@ -244,7 +244,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Member Since</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">Feb 2026</div>
+            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{(user as any).createdAt || "Feb 2026"}</div>
           </div>
         </div>
       </div>
