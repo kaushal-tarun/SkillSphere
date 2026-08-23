@@ -16,21 +16,20 @@ export function DiscoverView({
   searchQuery: externalSearchQuery,
   setSearchQuery: externalSetSearchQuery,
   onSelectProject,
-  onNavigateToProfile,
 }: DiscoverViewProps) {
   const [internalSearchQuery, setInternalSearchQuery] = useState<string>("");
   
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = externalSetSearchQuery || setInternalSearchQuery;
-  const [sortBy, setSortBy] = useState<"trending" | "newest" | "likes">("trending");
-  const [likedProjects, setLikedProjects] = useState<Record<string, boolean>>({});
+  const [sortBy, setSortBy] = useState<"trending" | "newest" | "stars">("trending");
+  const [starredProjects, setStarredProjects] = useState<Record<string, boolean>>({});
 
   const [discoverProjects, setDiscoverProjects] = useState<(ProjectItem & { campus?: string; creatorHandle?: string })[]>([]);
 
   React.useEffect(() => {
     async function fetchDiscoverProjects() {
       try {
-        const res = await fetch("/api/projects");
+        const res = await fetch("/api/projects?scope=all");
         if (res.ok) {
           const data = await res.json();
           if (data.projects && Array.isArray(data.projects)) {
@@ -44,8 +43,8 @@ export function DiscoverView({
     fetchDiscoverProjects();
   }, []);
 
-  const toggleLike = async (id: string) => {
-    setLikedProjects((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleStar = async (id: string) => {
+    setStarredProjects((prev) => ({ ...prev, [id]: !prev[id] }));
     try {
       await fetch("/api/likes", {
         method: "POST",
@@ -53,7 +52,7 @@ export function DiscoverView({
         body: JSON.stringify({ projectId: id, username: user.username }),
       });
     } catch (e) {
-      console.error("Failed to update like in PostgreSQL", e);
+      console.error("Failed to update star in PostgreSQL", e);
     }
   };
 
@@ -69,9 +68,11 @@ export function DiscoverView({
   });
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
-    if (sortBy === "likes") return (b.likes + (likedProjects[b.id] ? 1 : 0)) - (a.likes + (likedProjects[a.id] ? 1 : 0));
+    const starsA = (a.stars || 0) + (starredProjects[a.id] ? 1 : 0);
+    const starsB = (b.stars || 0) + (starredProjects[b.id] ? 1 : 0);
+    if (sortBy === "stars") return starsB - starsA;
     if (sortBy === "newest") return b.daysActive - a.daysActive;
-    return b.stars - a.stars;
+    return starsB - starsA;
   });
 
   return (
@@ -92,7 +93,7 @@ export function DiscoverView({
         </div>
 
         <div className="flex gap-2 font-mono text-xs">
-          {(["trending", "newest", "likes"] as const).map((tab) => (
+          {(["trending", "newest", "stars"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setSortBy(tab)}
@@ -118,8 +119,8 @@ export function DiscoverView({
         <div className="space-y-5">
           {sortedProjects.length > 0 ? (
             sortedProjects.map((project) => {
-              const isLiked = likedProjects[project.id];
-              const currentLikes = project.likes + (isLiked ? 1 : 0);
+              const isStarred = starredProjects[project.id];
+              const currentStars = (project.stars || 0) + (isStarred ? 1 : 0);
 
               return (
                 <div
@@ -156,15 +157,15 @@ export function DiscoverView({
 
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     <button
-                      onClick={() => toggleLike(project.id)}
-                      className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isLiked
-                          ? "bg-zinc-900 text-white border-zinc-900 shadow-xs scale-105"
-                          : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd] hover:bg-zinc-900 hover:text-white"
+                      onClick={() => toggleStar(project.id)}
+                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isStarred
+                          ? "bg-amber-100 border-amber-300 text-amber-900 shadow-xs"
+                          : "bg-[#f4efe6] text-zinc-800 border-[#e2dacd] hover:bg-zinc-200"
                       }`}
                     >
-                      <span className={isLiked ? "animate-heart-pulse text-red-400" : ""}>♥</span>
-                      <span>{currentLikes}</span>
+                      <span>★</span>
+                      <span>{currentStars}</span>
                     </button>
 
                     <button
@@ -194,27 +195,23 @@ export function DiscoverView({
                 </div>
 
                 {/* Bottom Metrics */}
-                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-100 font-mono text-xs text-zinc-600">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-zinc-900 font-bold">★ {project.stars}</span>
+                    <span className="text-zinc-900 font-bold">★ {currentStars}</span>
                     <span>Stars</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-zinc-900 font-bold">{currentLikes}</span>
-                    <span>Likes</span>
                   </div>
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="p-8 sm:p-12 rounded-3xl bg-white border border-[#e8e2d8] text-center space-y-3 font-mono text-xs">
-            <h3 className="text-base font-extrabold text-zinc-900 font-sans tracking-tight">No discoverable repositories yet</h3>
-            <p className="text-zinc-600 font-sans text-xs max-w-md mx-auto leading-relaxed">
-              Be the first builder to publish a project portfolio! Switch to Projects tab and click + New Project.
-            </p>
-          </div>
-        )}
+              );
+            })
+          ) : (
+            <div className="p-12 rounded-3xl bg-white border border-[#e8e2d8] text-center space-y-3 shadow-sm">
+              <h3 className="text-base font-bold text-zinc-900 tracking-tight">No discoverable repositories found</h3>
+              <p className="text-xs text-zinc-600 font-sans">
+                Try adjusting your search query or switching filter tabs.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
