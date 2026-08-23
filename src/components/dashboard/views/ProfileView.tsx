@@ -1,19 +1,64 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
 import { getBuilderTitle } from "@/lib/titles";
 
 interface ProfileViewProps {
   user: UserProfile;
+  currentUser?: UserProfile;
   projectsList: ProjectItem[];
   onSelectProject?: (proj: ProjectItem) => void;
   isOwnProfile?: boolean;
   onBackToOwnProfile?: () => void;
 }
 
-export function ProfileView({ user, projectsList, onSelectProject, isOwnProfile = true, onBackToOwnProfile }: ProfileViewProps) {
+export function ProfileView({ user, currentUser, projectsList, onSelectProject, isOwnProfile = true, onBackToOwnProfile }: ProfileViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [friendshipState, setFriendshipState] = useState<"NONE" | "SENT" | "FRIENDS" | "PENDING">("NONE");
+
+  useEffect(() => {
+    async function checkFriendStatus() {
+      if (isOwnProfile || !currentUser?.username) return;
+      try {
+        const res = await fetch(`/api/friends?username=${encodeURIComponent(currentUser.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const targetLower = user.username.toLowerCase();
+          
+          if (data.friends && Array.isArray(data.friends) && data.friends.some((f: any) => f.username.toLowerCase() === targetLower)) {
+            setFriendshipState("FRIENDS");
+          } else if (data.sentRequests && Array.isArray(data.sentRequests) && data.sentRequests.some((u: string) => u.toLowerCase() === targetLower)) {
+            setFriendshipState("SENT");
+          } else if (data.pendingRequests && Array.isArray(data.pendingRequests) && data.pendingRequests.some((p: any) => p.username?.toLowerCase() === targetLower)) {
+            setFriendshipState("PENDING");
+          } else {
+            setFriendshipState("NONE");
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check friend status", e);
+      }
+    }
+    checkFriendStatus();
+  }, [isOwnProfile, currentUser?.username, user.username]);
+
+  const handleAddFriend = async () => {
+    if (!currentUser?.username) return;
+    setFriendshipState("SENT");
+    try {
+      await fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetUsername: user.username,
+          username: currentUser.username,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to send friend request to PostgreSQL", e);
+    }
+  };
 
   const getInitials = (name: string) => {
     if (!name) return "US";
@@ -121,6 +166,48 @@ export function ProfileView({ user, projectsList, onSelectProject, isOwnProfile 
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start font-mono text-xs">
+            {!isOwnProfile && currentUser && currentUser.username.toLowerCase() !== user.username.toLowerCase() && (
+              <button
+                type="button"
+                onClick={handleAddFriend}
+                disabled={friendshipState !== "NONE"}
+                className={`px-3.5 py-1.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
+                  friendshipState === "FRIENDS"
+                    ? "bg-emerald-800 text-white border border-emerald-700 cursor-default"
+                    : friendshipState === "SENT"
+                    ? "bg-zinc-100 text-zinc-500 border border-[#e8e2d8] cursor-default"
+                    : friendshipState === "PENDING"
+                    ? "bg-amber-600 text-white"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                }`}
+              >
+                {friendshipState === "FRIENDS" && (
+                  <>
+                    <span>✓</span>
+                    <span>Friends</span>
+                  </>
+                )}
+                {friendshipState === "SENT" && (
+                  <>
+                    <span>⏳</span>
+                    <span>Request Sent</span>
+                  </>
+                )}
+                {friendshipState === "PENDING" && (
+                  <>
+                    <span>✉️</span>
+                    <span>Accept Request</span>
+                  </>
+                )}
+                {friendshipState === "NONE" && (
+                  <>
+                    <span>+</span>
+                    <span>Add Friend</span>
+                  </>
+                )}
+              </button>
+            )}
+
             <button
               onClick={handleCopyProfileLink}
               className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold shadow-sm transition-all cursor-pointer"

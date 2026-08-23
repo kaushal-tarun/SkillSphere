@@ -407,6 +407,7 @@ export default function DashboardPage() {
               {activeNav === "profile" && (
                 <ProfileView
                   user={viewingProfileUser || user}
+                  currentUser={user}
                   projectsList={viewingProfileUser ? viewingProfileProjects : projectsList}
                   onSelectProject={(proj) => setSelectedProject(proj)}
                   isOwnProfile={!viewingProfileUser || viewingProfileUser.username.toLowerCase() === user.username.toLowerCase()}
@@ -422,7 +423,7 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "community" && (
-                <CommunityView user={user} />
+                <CommunityView user={user} onSelectProject={(proj) => setSelectedProject(proj)} />
               )}
 
               {activeNav === "settings" && (
