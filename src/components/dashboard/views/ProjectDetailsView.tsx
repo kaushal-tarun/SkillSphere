@@ -72,7 +72,7 @@ export function ProjectDetailsView({
           <span>‹ Back to Projects</span>
         </button>
 
-        <span>Case Study ID: {project.id}</span>
+        <span>Project ID: {project.id}</span>
       </div>
 
       {/* HERO SECTION */}
@@ -123,7 +123,7 @@ export function ProjectDetailsView({
               onClick={handleShare}
               className="px-4 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] hover:bg-zinc-100 text-zinc-800 font-bold transition-all cursor-pointer"
             >
-              {copiedLink ? "✓ Link Copied" : "Share Case Study"}
+              {copiedLink ? "✓ Link Copied" : "Share Project"}
             </button>
           </div>
         </div>

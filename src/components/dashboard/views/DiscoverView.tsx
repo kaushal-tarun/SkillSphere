@@ -172,7 +172,7 @@ export function DiscoverView({
                       onClick={() => onSelectProject && onSelectProject(project)}
                       className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono transition-all shrink-0 shadow-sm cursor-pointer"
                     >
-                      View Case Study ➔
+                      View ➔
                     </button>
                   </div>
                 </div>

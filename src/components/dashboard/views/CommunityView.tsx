@@ -61,12 +61,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
 
   const [posts, setPosts] = useState<PostItem[]>([]);
 
-  // Load user's published projects for Tag Project feature
+  // Load all public projects so users can tag any project
   useEffect(() => {
-    async function loadUserProjects() {
-      if (!user.username) return;
+    async function loadAllProjects() {
       try {
-        const res = await fetch(`/api/projects?username=${encodeURIComponent(user.username)}&scope=user`);
+        const res = await fetch("/api/projects?scope=all");
         if (res.ok) {
           const data = await res.json();
           if (data.projects && Array.isArray(data.projects)) {
@@ -74,11 +73,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           }
         }
       } catch (e) {
-        console.error("Failed to load user projects for tagging", e);
+        console.error("Failed to load projects for tagging", e);
       }
     }
-    loadUserProjects();
-  }, [user.username]);
+    loadAllProjects();
+  }, []);
 
   // Load posts
   useEffect(() => {
@@ -528,9 +527,6 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                         type="button"
                         onClick={() => {
                           setSelectedProjectTag(p.name);
-                          if (!newPostText.includes(`@${p.name}`)) {
-                            setNewPostText((prev) => (prev ? `${prev} @${p.name}` : `@${p.name}`));
-                          }
                           setIsProjectTagDropdownOpen(false);
                         }}
                         className="w-full text-left px-3 py-1.5 rounded-xl hover:bg-[#f4efe6] text-zinc-900 font-bold truncate transition-colors cursor-pointer"
@@ -602,12 +598,36 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
                     </button>
                   )}
                   {post.projectTag && (
-                    <span
-                      onClick={() => onSelectProject && onSelectProject({ id: `proj_${post.projectTag}`, name: post.projectTag || "", description: "", progress: 100, updatedAt: "Just now", visibility: "Public", stars: 0, forks: 0, commits: 0, daysActive: 1, likes: 0, status: "Active", tech: [], github: "" })}
-                      className="px-2.5 py-0.5 rounded bg-zinc-900 text-white text-[10px] font-mono font-bold shadow-xs hover:bg-black cursor-pointer"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!onSelectProject) return;
+                        const found = userProjects.find((p) => p.name.toLowerCase() === post.projectTag?.toLowerCase());
+                        if (found) {
+                          onSelectProject(found);
+                        } else {
+                          onSelectProject({
+                            id: `proj_${post.projectTag}`,
+                            name: post.projectTag || "",
+                            description: "Community project tagged in post.",
+                            progress: 100,
+                            updatedAt: "Just now",
+                            visibility: "Public",
+                            stars: 0,
+                            forks: 0,
+                            commits: 0,
+                            daysActive: 1,
+                            likes: 0,
+                            status: "Active",
+                            tech: [],
+                            github: "",
+                          });
+                        }
+                      }}
+                      className="px-2.5 py-0.5 rounded bg-zinc-900 text-white text-[10px] font-mono font-bold shadow-xs hover:bg-black cursor-pointer transition-all"
                     >
                       @{post.projectTag}
-                    </span>
+                    </button>
                   )}
                 </div>
               </div>
