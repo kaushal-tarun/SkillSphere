@@ -61,11 +61,12 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
 
   const [posts, setPosts] = useState<PostItem[]>([]);
 
-  // Load all public projects so users can tag any project
+  // Load user's own published projects for Tag Project dropdown
   useEffect(() => {
-    async function loadAllProjects() {
+    async function loadUserProjects() {
+      if (!user.username) return;
       try {
-        const res = await fetch("/api/projects?scope=all");
+        const res = await fetch(`/api/projects?username=${encodeURIComponent(user.username)}&scope=user`);
         if (res.ok) {
           const data = await res.json();
           if (data.projects && Array.isArray(data.projects)) {
@@ -73,11 +74,11 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
           }
         }
       } catch (e) {
-        console.error("Failed to load projects for tagging", e);
+        console.error("Failed to load user projects for tagging", e);
       }
     }
-    loadAllProjects();
-  }, []);
+    loadUserProjects();
+  }, [user.username]);
 
   // Load posts
   useEffect(() => {
