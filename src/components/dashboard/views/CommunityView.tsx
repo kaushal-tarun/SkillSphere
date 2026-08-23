@@ -492,9 +492,12 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
             <button
               type="button"
               onClick={() => imageInputRef.current?.click()}
-              className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-bold"
+              className="hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer font-bold transition-colors"
             >
-              <span>📷 Image</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <span>Image</span>
             </button>
 
             {/* TAG PROJECT POPOVER BUTTON & DROPDOWN */}
@@ -502,9 +505,13 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject }: Co
               <button
                 type="button"
                 onClick={() => setIsProjectTagDropdownOpen(!isProjectTagDropdownOpen)}
-                className="hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-bold"
+                className="hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer font-bold transition-colors"
               >
-                <span>🏷️ Tag Project</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                </svg>
+                <span>Tag Project</span>
               </button>
 
               {isProjectTagDropdownOpen && (
