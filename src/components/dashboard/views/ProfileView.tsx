@@ -8,9 +8,11 @@ interface ProfileViewProps {
   user: UserProfile;
   projectsList: ProjectItem[];
   onSelectProject?: (proj: ProjectItem) => void;
+  isOwnProfile?: boolean;
+  onBackToOwnProfile?: () => void;
 }
 
-export function ProfileView({ user, projectsList, onSelectProject }: ProfileViewProps) {
+export function ProfileView({ user, projectsList, onSelectProject, isOwnProfile = true, onBackToOwnProfile }: ProfileViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const getInitials = (name: string) => {
@@ -69,6 +71,21 @@ export function ProfileView({ user, projectsList, onSelectProject }: ProfileView
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      {/* NAVIGATION BANNER WHEN VIEWING ANOTHER DEVELOPER'S PROFILE */}
+      {!isOwnProfile && onBackToOwnProfile && (
+        <div className="flex items-center justify-between font-mono text-xs text-zinc-500">
+          <button
+            onClick={onBackToOwnProfile}
+            className="hover:text-zinc-900 flex items-center gap-1.5 transition-colors cursor-pointer font-bold"
+          >
+            <span>‹ Back to My Profile</span>
+          </button>
+          <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold text-[10px] shadow-xs">
+            Viewing @{user.username}'s Profile
+          </span>
+        </div>
+      )}
+
       {/* PROFILE HERO HEADER */}
       <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">

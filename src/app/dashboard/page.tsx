@@ -259,20 +259,76 @@ export default function DashboardPage() {
     { id: 5, actor: "Tushar Somani", action: "merged pull request in", target: "CodeCollab", time: "2 days ago" },
   ];
 
+  // Viewing another user's profile state
+  const [viewingProfileUser, setViewingProfileUser] = useState<UserProfile | null>(null);
+  const [viewingProfileProjects, setViewingProfileProjects] = useState<ProjectItem[]>([]);
+
+  const handleNavigateToUser = async (targetUsername: string) => {
+    const cleanUsername = targetUsername.replace(/^@/, "").toLowerCase().trim();
+    if (cleanUsername === user.username.toLowerCase()) {
+      setViewingProfileUser(null);
+      setViewingProfileProjects([]);
+      setSelectedProject(null);
+      setActiveNav("profile");
+      return;
+    }
+
+    try {
+      const profRes = await fetch(`/api/profile?username=${encodeURIComponent(cleanUsername)}`);
+      let fetchedUser: UserProfile | null = null;
+      if (profRes.ok) {
+        const profData = await profRes.json();
+        if (profData.profile) {
+          fetchedUser = profData.profile;
+        }
+      }
+
+      if (!fetchedUser) {
+        fetchedUser = {
+          name: targetUsername.replace(/^@/, ""),
+          username: cleanUsername,
+          email: `${cleanUsername}@skillsphere.dev`,
+          university: "University Student",
+          role: "Full-Stack Engineer & AI Developer",
+          bio: "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+        };
+      }
+
+      const projRes = await fetch(`/api/projects?username=${encodeURIComponent(cleanUsername)}&scope=user`);
+      let fetchedProjects: ProjectItem[] = [];
+      if (projRes.ok) {
+        const projData = await projRes.json();
+        if (projData.projects && Array.isArray(projData.projects)) {
+          fetchedProjects = projData.projects;
+        }
+      }
+
+      setViewingProfileUser(fetchedUser);
+      setViewingProfileProjects(fetchedProjects);
+      setSelectedProject(null);
+      setActiveNav("profile");
+    } catch (e) {
+      console.error("Failed to load user profile", e);
+      setViewingProfileUser(null);
+      setActiveNav("profile");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#faf6f0] text-zinc-900 font-sans flex selection:bg-zinc-900 selection:text-white">
-      {/* 1. SIDEBAR (HIDDEN WHEN IN SETTINGS TO LOOK LIKE A STANDALONE PAGE) */}
-      {activeNav !== "settings" && (
-        <Sidebar
-          activeNav={activeNav}
-          setActiveNav={(tab) => {
-            setSelectedProject(null);
-            setActiveNav(tab);
-          }}
-          user={user}
-          projectsCount={projectsList.length}
-        />
-      )}
+    <div className="min-h-screen flex bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white">
+      {/* 1. SIDEBAR NAVIGATION */}
+      <Sidebar
+        activeNav={activeNav}
+        setActiveNav={(tab) => {
+          if (tab === "profile") {
+            setViewingProfileUser(null);
+            setViewingProfileProjects([]);
+          }
+          setActiveNav(tab);
+        }}
+        user={user}
+        projectsCount={projectsList.length}
+      />
 
       {/* 2. MAIN CONTENT WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -293,12 +349,11 @@ export default function DashboardPage() {
               onBack={() => setSelectedProject(null)}
               onNavigateToProfile={() => {
                 setSelectedProject(null);
+                setViewingProfileUser(null);
                 setActiveNav("profile");
               }}
               onNavigateToUser={(username) => {
-                setSelectedProject(null);
-                setSearchQuery(username);
-                setActiveNav("friends");
+                handleNavigateToUser(username);
               }}
             />
           ) : (
@@ -350,7 +405,16 @@ export default function DashboardPage() {
               )}
 
               {activeNav === "profile" && (
-                <ProfileView user={user} projectsList={projectsList} onSelectProject={(proj) => setSelectedProject(proj)} />
+                <ProfileView
+                  user={viewingProfileUser || user}
+                  projectsList={viewingProfileUser ? viewingProfileProjects : projectsList}
+                  onSelectProject={(proj) => setSelectedProject(proj)}
+                  isOwnProfile={!viewingProfileUser || viewingProfileUser.username.toLowerCase() === user.username.toLowerCase()}
+                  onBackToOwnProfile={() => {
+                    setViewingProfileUser(null);
+                    setViewingProfileProjects([]);
+                  }}
+                />
               )}
 
               {activeNav === "friends" && (
