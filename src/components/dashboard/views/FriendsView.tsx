@@ -232,18 +232,24 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
     let registeredUsers: FriendItem[] = [];
     try {
       const stored = JSON.parse(localStorage.getItem("skillsphere_users_db") || "[]");
-      registeredUsers = stored.map((u: any) => ({
-        id: u.id || `usr_${u.username}`,
-        name: u.name || u.username,
-        username: u.username,
-        university: u.university || "University Student",
-        xp: u.xp || 1000,
-        level: u.level || 1,
-        projects: u.projects || 0,
-        status: "online" as const,
-        isFriend: false,
-        avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
-      }));
+      registeredUsers = stored.map((u: any) => {
+        const projCount = typeof u.projects === "number" ? u.projects : 0;
+        const realXp = projCount * 500;
+        const realLevel = Math.floor(realXp / 500) + 1;
+
+        return {
+          id: u.id || `usr_${u.username}`,
+          name: u.name || u.username,
+          username: u.username,
+          university: u.university || "University Student",
+          xp: realXp,
+          level: realLevel,
+          projects: projCount,
+          status: "online" as const,
+          isFriend: false,
+          avatar: u.avatar || (u.name || u.username).slice(0, 2).toUpperCase(),
+        };
+      });
     } catch (e) {
       console.error(e);
     }
