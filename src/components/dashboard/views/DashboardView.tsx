@@ -188,7 +188,7 @@ export function DashboardView({
                 onClick={onNavigateToDiscover}
                 className="px-4 py-2.5 rounded-xl bg-[#f4efe6] hover:bg-zinc-900 hover:text-white border border-[#e2dacd] text-zinc-800 font-mono text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs"
               >
-                Exp ➔
+                Expl ➔
               </button>
             )}
           </div>
