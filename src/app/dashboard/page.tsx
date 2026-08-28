@@ -314,8 +314,44 @@ export default function DashboardPage() {
 
   if (activeNav === "settings") {
     return (
-      <div className="min-h-screen bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white p-6 sm:p-12">
-        <SettingsView user={user} setUser={setUser} onBackToDashboard={() => setActiveNav("dashboard")} />
+      <div className="min-h-screen bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col">
+        {/* Dedicated Standalone Settings Top Navigation Bar */}
+        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#e8e2d8] px-6 sm:px-12 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setActiveNav("dashboard")}
+              className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] hover:bg-[#e8e2d8] border border-[#e2dacd] text-zinc-800 font-mono text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <span>←</span>
+              <span>Back to Dashboard</span>
+            </button>
+            <div className="h-4 w-px bg-zinc-300" />
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="font-extrabold text-zinc-900 tracking-tight text-sm">SkillSphere</span>
+              <span className="text-zinc-400">/</span>
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 font-bold text-[11px]">Settings</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold flex items-center justify-center uppercase overflow-hidden shrink-0">
+              {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http")) ? (
+                <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                user.avatar || user.name.slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <div className="hidden sm:block font-mono text-xs">
+              <div className="font-bold text-zinc-900 leading-tight">{user.name}</div>
+              <div className="text-[10px] text-zinc-500">@{user.username}</div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dedicated Standalone Settings Content Area */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-12 py-8">
+          <SettingsView user={user} setUser={setUser} />
+        </main>
       </div>
     );
   }

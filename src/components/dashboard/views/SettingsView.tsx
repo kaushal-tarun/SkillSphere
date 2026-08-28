@@ -193,19 +193,11 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-5xl mx-auto font-sans">
+    <div className="space-y-6 animate-in fade-in duration-300 w-full font-sans">
       
       {/* PAGE HEADER */}
       <div className="border-b border-[#e8e2d8] pb-5 flex items-center justify-between">
         <div className="space-y-1">
-          {onBackToDashboard && (
-            <button
-              onClick={onBackToDashboard}
-              className="text-xs font-mono font-bold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1 cursor-pointer mb-1.5"
-            >
-              <span>← Back to Dashboard</span>
-            </button>
-          )}
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Settings</h1>
           <p className="text-xs font-mono text-zinc-500">
             Manage your account options, security preferences, and integration settings.
