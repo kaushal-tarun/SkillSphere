@@ -572,7 +572,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                   </div>
 
                   {/* Messages Feed */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3 font-sans text-xs my-3">
+                  <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 font-sans text-xs my-3 min-w-0">
                     {(chatHistories[activeChatFriend.username] || []).length === 0 ? (
                       <div className="h-full flex items-center justify-center text-zinc-400 font-mono text-xs">
                         Start your conversation with @{activeChatFriend.username}!
@@ -581,9 +581,16 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                       (chatHistories[activeChatFriend.username] || []).map((msg) => (
                         <div
                           key={msg.id}
-                          className={`flex flex-col group relative ${msg.sender === "me" ? "items-end" : "items-start"}`}
+                          className={`flex flex-col group relative ${msg.sender === "me" ? "items-end" : "items-start"} min-w-0 max-w-full`}
                         >
-                          <div className="flex items-center gap-1.5 max-w-[85%]">
+                          <div className={`flex items-center gap-1.5 max-w-[85%] sm:max-w-[75%] min-w-0 ${msg.sender === "me" ? "flex-row-reverse" : "flex-row"}`}>
+                            <div className={`p-3 rounded-2xl min-w-0 max-w-full ${
+                              msg.sender === "me"
+                                ? "bg-zinc-900 text-white shadow-sm"
+                                : "bg-[#f4efe6] border border-[#e2dacd] text-zinc-900"
+                            }`}>
+                              <p className="break-all whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed">{msg.text}</p>
+                            </div>
                             {msg.sender === "me" && (
                               <button
                                 type="button"
@@ -597,13 +604,6 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
                                 <span>Unsend</span>
                               </button>
                             )}
-                            <div className={`p-3 rounded-2xl ${
-                              msg.sender === "me"
-                                ? "bg-zinc-900 text-white shadow-sm"
-                                : "bg-[#f4efe6] border border-[#e2dacd] text-zinc-900"
-                            }`}>
-                              <p className="break-words">{msg.text}</p>
-                            </div>
                           </div>
                           <span className="text-[10px] font-mono text-zinc-400 mt-1 px-1">{msg.time}</span>
                         </div>
