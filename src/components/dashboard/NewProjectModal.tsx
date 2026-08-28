@@ -368,7 +368,7 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-white border border-[#e8e2d8] rounded-2xl shadow-xl p-6 space-y-5 font-mono text-xs text-zinc-900 overflow-hidden relative">
+      <div className="w-full max-w-lg bg-white border border-[#e8e2d8] rounded-2xl shadow-xl p-6 space-y-5 font-mono text-xs text-zinc-900 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
         
         {/* Header & Step Indicator */}
         <div className="border-b border-zinc-100 pb-3 space-y-3">
@@ -696,9 +696,9 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
                     </svg>
                   </div>
 
-                  {/* Dropdown Menu */}
+                  {/* Upward Floating Dropdown Menu */}
                   {buddyDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-2xl bg-white border border-[#e8e2d8] shadow-xl z-50 max-h-56 overflow-y-auto space-y-1 text-xs">
+                    <div className="absolute bottom-full mb-2 left-0 right-0 p-2.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-2xl z-50 max-h-52 overflow-y-auto space-y-1.5 text-xs animate-in fade-in slide-in-from-bottom-2 duration-150">
                       {/* Search / Manual Input */}
                       <div className="p-1">
                         <input
