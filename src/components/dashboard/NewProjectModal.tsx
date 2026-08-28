@@ -524,9 +524,9 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
                   </svg>
                 </div>
 
-                {/* Dropdown Options List */}
+                {/* Upward Floating Dropdown Options List */}
                 {techDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-2xl z-50 max-h-56 overflow-y-auto space-y-1.5 text-xs animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute bottom-full mb-2 left-0 right-0 p-2.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-2xl z-50 max-h-52 overflow-y-auto space-y-1.5 text-xs animate-in fade-in slide-in-from-bottom-2 duration-150">
                     {/* Search / Custom Tag Bar */}
                     <div className="p-1">
                       <input
