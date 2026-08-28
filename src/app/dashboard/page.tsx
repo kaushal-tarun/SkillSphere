@@ -312,6 +312,14 @@ export default function DashboardPage() {
     }
   };
 
+  if (activeNav === "settings") {
+    return (
+      <div className="min-h-screen bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white p-6 sm:p-12">
+        <SettingsView user={user} setUser={setUser} onBackToDashboard={() => setActiveNav("dashboard")} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white">
       {/* 1. SIDEBAR NAVIGATION */}
@@ -424,10 +432,6 @@ export default function DashboardPage() {
 
               {activeNav === "community" && (
                 <CommunityView user={user} onSelectProject={(proj) => setSelectedProject(proj)} onNavigateToUser={(username) => handleNavigateToUser(username)} />
-              )}
-
-              {activeNav === "settings" && (
-                <SettingsView user={user} setUser={setUser} onBackToDashboard={() => setActiveNav("dashboard")} />
               )}
             </>
           )}
