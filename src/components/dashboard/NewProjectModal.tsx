@@ -612,22 +612,13 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
                 Cancel
               </button>
               
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleFinalPublish}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all cursor-pointer shadow-xs"
-                >
-                  Publish Now
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Next</span>
-                  <span>➔</span>
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Next</span>
+                <span>➔</span>
+              </button>
             </div>
           </form>
         )}
