@@ -193,25 +193,15 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 w-full font-sans">
+    <div className="space-y-6 animate-in fade-in duration-300 w-full font-sans relative">
       
-      {/* PAGE HEADER */}
-      <div className="border-b border-[#e8e2d8] pb-5 flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">Settings</h1>
-          <p className="text-xs font-mono text-zinc-500">
-            Manage your account options, security preferences, and integration settings.
-          </p>
+      {/* Saved Success Toast */}
+      {savedSuccess && (
+        <div className="fixed top-5 right-5 z-50 px-4 py-2.5 rounded-2xl bg-zinc-900 text-white font-mono text-xs font-bold shadow-2xl flex items-center gap-2 animate-in slide-in-from-top duration-200 border border-zinc-700">
+          <span>✓</span>
+          <span>Settings saved successfully</span>
         </div>
-
-        {/* Saved Success Toast */}
-        {savedSuccess && (
-          <div className="px-3.5 py-1.5 rounded-xl bg-zinc-900 text-white font-mono text-xs flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
-            <span>✓</span>
-            <span>Settings saved</span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* DISTINCT LEFT-ALIGNED FLEX LAYOUT */}
       <div className="flex flex-col md:flex-row gap-8 sm:gap-10 items-start">
