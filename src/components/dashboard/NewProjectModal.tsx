@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { UserProfile } from "@/types/dashboard";
 
 interface NewProjectModalProps {
   isOpen: boolean;
+  user?: UserProfile;
   onClose: () => void;
   onSubmit: (projectData: {
     name: string;
@@ -54,7 +56,7 @@ function isValidGithubLink(url: string): boolean {
   return GITHUB_URL_REGEX.test(trimmed);
 }
 
-export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalProps) {
+export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectModalProps) {
   // Step Control (1: Basic Info, 2: Deep Dive, 3: Screenshots & Team)
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -72,12 +74,70 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
   // Step 3 State (Screenshots & Team Setup)
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [teamType, setTeamType] = useState<"solo" | "team">("solo");
-  const [codeBuddies, setCodeBuddies] = useState("");
+
+  // Code Buddies Interactive Multi-Select Dropdown State
+  const [dbFriendsList, setDbFriendsList] = useState<any[]>([]);
+  const [selectedBuddies, setSelectedBuddies] = useState<any[]>([]);
+  const [buddyDropdownOpen, setBuddyDropdownOpen] = useState(false);
+  const [buddySearchInput, setBuddySearchInput] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const screenshotInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch accepted friends from Neon PostgreSQL when modal opens
+  useEffect(() => {
+    if (!isOpen || !user?.username) return;
+    async function fetchFriends() {
+      try {
+        const res = await fetch(`/api/friends?username=${encodeURIComponent(user!.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.friends && Array.isArray(data.friends)) {
+            setDbFriendsList(data.friends);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load friends for code buddies dropdown", e);
+      }
+    }
+    fetchFriends();
+  }, [isOpen, user?.username]);
+
+  const handleSelectBuddy = (friend: any) => {
+    setErrorMessage("");
+    if (selectedBuddies.length >= 5) {
+      setErrorMessage("Maximum 5 code buddies allowed per team.");
+      return;
+    }
+    const exists = selectedBuddies.some((b) => b.username.toLowerCase() === friend.username.toLowerCase());
+    if (!exists) {
+      setSelectedBuddies((prev) => [...prev, friend]);
+    }
+    setBuddyDropdownOpen(false);
+    setBuddySearchInput("");
+  };
+
+  const handleAddCustomBuddy = (inputUsername: string) => {
+    setErrorMessage("");
+    const clean = inputUsername.replace(/^@/, "").trim().toLowerCase();
+    if (!clean) return;
+    if (selectedBuddies.length >= 5) {
+      setErrorMessage("Maximum 5 code buddies allowed per team.");
+      return;
+    }
+    const exists = selectedBuddies.some((b) => b.username.toLowerCase() === clean);
+    if (!exists) {
+      setSelectedBuddies((prev) => [...prev, { name: clean, username: clean }]);
+    }
+    setBuddyDropdownOpen(false);
+    setBuddySearchInput("");
+  };
+
+  const handleRemoveBuddy = (targetUsername: string) => {
+    setSelectedBuddies((prev) => prev.filter((b) => b.username.toLowerCase() !== targetUsername.toLowerCase()));
+  };
 
   if (!isOpen) return null;
 
@@ -92,8 +152,9 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
     setBiggestChallenge("");
     setScreenshots([]);
     setTeamType("solo");
-    setCodeBuddies("");
-    setErrorMessage("");
+    setSelectedBuddies([]);
+    setBuddySearchInput("");
+    setBuddyDropdownOpen(false);
     setIsSubmitting(false);
   };
 
@@ -267,18 +328,8 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       return;
     }
 
-    if (
-      containsAbusiveWords(problemSolved) ||
-      containsAbusiveWords(inspiration) ||
-      containsAbusiveWords(biggestChallenge) ||
-      containsAbusiveWords(codeBuddies)
-    ) {
-      setErrorMessage("Inappropriate or abusive language is not allowed.");
-      return;
-    }
-
-    const teamMembersList = teamType === "team" && codeBuddies.trim()
-      ? codeBuddies.split(",").map((u) => u.trim()).filter(Boolean)
+    const teamMembersList = teamType === "team"
+      ? selectedBuddies.map((b) => b.username)
       : [];
 
     setIsSubmitting(true);
@@ -587,20 +638,141 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               </div>
             </div>
 
-            {/* Code Buddies Input (If Team) */}
+            {/* Code Buddies Multi-Select Dropdown Selector */}
             {teamType === "team" && (
-              <div className="animate-in fade-in duration-150">
-                <label className="block text-zinc-600 mb-1 font-bold">Add Code Buddies (comma separated usernames)</label>
-                <input
-                  type="text"
-                  value={codeBuddies}
-                  onChange={(e) => {
-                    setCodeBuddies(e.target.value);
-                    if (errorMessage) setErrorMessage("");
-                  }}
-                  placeholder="tanvi_kulkarni, tushar_somani"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
-                />
+              <div className="space-y-2 animate-in fade-in duration-150 relative font-mono text-xs">
+                <div className="flex items-center justify-between text-zinc-600 font-bold">
+                  <label>Add Code Buddies</label>
+                  <span className="text-[10px] text-zinc-400 font-normal">Max 5 team members</span>
+                </div>
+
+                {/* Selected Buddies Pills */}
+                {selectedBuddies.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                    {selectedBuddies.map((buddy) => (
+                      <span
+                        key={buddy.username}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-mono text-xs font-bold shadow-2xs"
+                      >
+                        <span className="w-4 h-4 rounded-full bg-zinc-700 text-[9px] flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                          {buddy.avatar && (buddy.avatar.startsWith("data:") || buddy.avatar.startsWith("http")) ? (
+                            <img src={buddy.avatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            buddy.username.slice(0, 2).toUpperCase()
+                          )}
+                        </span>
+                        <span>@{buddy.username}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBuddy(buddy.username)}
+                          className="hover:text-red-300 ml-0.5 cursor-pointer text-xs font-bold"
+                          title="Remove buddy"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dropdown Input Toggle */}
+                <div className="relative">
+                  <div
+                    onClick={() => setBuddyDropdownOpen(!buddyDropdownOpen)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 flex items-center justify-between cursor-pointer text-xs hover:border-zinc-400 transition-colors"
+                  >
+                    <span className={selectedBuddies.length === 0 ? "text-zinc-400" : "text-zinc-900 font-bold"}>
+                      {selectedBuddies.length === 0
+                        ? "Select friends or search @username..."
+                        : `${selectedBuddies.length} Buddy${selectedBuddies.length > 1 ? "ies" : ""} Selected`}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 text-zinc-500 transition-transform ${buddyDropdownOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {buddyDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-2xl bg-white border border-[#e8e2d8] shadow-xl z-50 max-h-56 overflow-y-auto space-y-1 text-xs">
+                      {/* Search / Manual Input */}
+                      <div className="p-1">
+                        <input
+                          type="text"
+                          value={buddySearchInput}
+                          onChange={(e) => setBuddySearchInput(e.target.value)}
+                          placeholder="Search friends or type handle..."
+                          className="w-full px-3 py-1.5 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 text-xs focus:outline-none"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (buddySearchInput.trim()) {
+                                handleAddCustomBuddy(buddySearchInput.trim());
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+
+                      {/* Filtered Available Friends */}
+                      {dbFriendsList.filter(
+                        (f) =>
+                          !selectedBuddies.some((sb) => sb.username.toLowerCase() === f.username.toLowerCase()) &&
+                          (f.name.toLowerCase().includes(buddySearchInput.toLowerCase()) ||
+                            f.username.toLowerCase().includes(buddySearchInput.toLowerCase()))
+                      ).length > 0 ? (
+                        dbFriendsList
+                          .filter(
+                            (f) =>
+                              !selectedBuddies.some((sb) => sb.username.toLowerCase() === f.username.toLowerCase()) &&
+                              (f.name.toLowerCase().includes(buddySearchInput.toLowerCase()) ||
+                                f.username.toLowerCase().includes(buddySearchInput.toLowerCase()))
+                          )
+                          .map((friend) => (
+                            <button
+                              key={friend.username}
+                              type="button"
+                              onClick={() => handleSelectBuddy(friend)}
+                              className="w-full p-2 rounded-xl hover:bg-[#f4efe6] text-left flex items-center justify-between transition-colors cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-6 h-6 rounded-lg bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                                  {friend.avatar && (friend.avatar.startsWith("data:") || friend.avatar.startsWith("http")) ? (
+                                    <img src={friend.avatar} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    friend.avatar || friend.username.slice(0, 2).toUpperCase()
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-zinc-900 text-xs">{friend.name}</div>
+                                  <div className="text-[10px] text-zinc-500">@{friend.username}</div>
+                                </div>
+                              </div>
+                              <span className="text-emerald-700 font-bold text-xs">+ Add</span>
+                            </button>
+                          ))
+                      ) : (
+                        <div className="p-3 text-center text-zinc-500 text-xs">
+                          {buddySearchInput.trim() ? (
+                            <button
+                              type="button"
+                              onClick={() => handleAddCustomBuddy(buddySearchInput.trim())}
+                              className="text-zinc-900 font-bold underline cursor-pointer"
+                            >
+                              Add "@{buddySearchInput.trim()}" to team
+                            </button>
+                          ) : (
+                            "No more friends available to add."
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

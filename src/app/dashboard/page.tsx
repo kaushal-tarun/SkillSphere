@@ -437,6 +437,7 @@ export default function DashboardPage() {
       {/* 3. NEW PROJECT MODAL */}
       <NewProjectModal
         isOpen={isNewProjectModalOpen}
+        user={user}
         onClose={() => setIsNewProjectModalOpen(false)}
         onSubmit={handleCreateProject}
       />
