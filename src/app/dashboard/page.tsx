@@ -220,13 +220,11 @@ export default function DashboardPage() {
       } else {
         const errData = await res.json().catch(() => ({}));
         console.error("Failed to save project to PostgreSQL:", errData.error);
-        alert(errData.error || "Failed to publish project. Please check input.");
+        throw new Error(errData.error || "Failed to publish project. Please check input.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to save project to PostgreSQL", e);
-      alert("Network error: Failed to publish project.");
-    } finally {
-      setIsNewProjectModalOpen(false);
+      throw e;
     }
   };
 

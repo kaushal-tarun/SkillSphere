@@ -93,34 +93,15 @@ function containsAbusiveWords(text: string): boolean {
   });
 }
 
-// POST /api/projects - Create a new project in Neon PostgreSQL
+const GITHUB_URL_REGEX = /^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+(\/.*)?$/i;
+
+// POST /api/projects - Create a new project in Neon PostgreSQL with professional validation & security
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, description, tech, githubUrl, demoUrl, status, problemSolved, inspiration, biggestChallenge, teamType, teamMembers, screenshots, username } = body;
 
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: "Project name is required" }, { status: 400 });
-    }
-
-    if (/\s/.test(name.trim())) {
-      return NextResponse.json({ error: "Project name cannot contain spaces. Use camelCase or hyphens." }, { status: 400 });
-    }
-
-    const finalDescription = description && description.trim() ? description.trim() : `${name.trim()} - Student Project built on SkillSphere.`;
-
-    if (
-      containsAbusiveWords(name) ||
-      containsAbusiveWords(finalDescription) ||
-      containsAbusiveWords(JSON.stringify(tech)) ||
-      containsAbusiveWords(problemSolved) ||
-      containsAbusiveWords(inspiration) ||
-      containsAbusiveWords(biggestChallenge) ||
-      containsAbusiveWords(JSON.stringify(teamMembers))
-    ) {
-      return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
-    }
-
+    // Rule 5: Must Be Logged In (401 Unauthorized)
     const session = await auth();
     let targetUser = null;
 
@@ -136,20 +117,77 @@ export async function POST(request: Request) {
       });
     }
 
-    // Fallback: if user doesn't exist in DB yet, create or find first user
     if (!targetUser) {
-      const fallbackUsername = username ? username.toLowerCase().trim() : "builder";
-      targetUser = await prisma.user.upsert({
-        where: { username: fallbackUsername },
-        update: {},
-        create: {
-          name: username || "Student Builder",
-          username: fallbackUsername,
-          email: `${fallbackUsername}@skillsphere.dev`,
-          password: "hashed_placeholder",
-          university: "University Student",
-        },
-      });
+      return NextResponse.json({ error: "Unauthorized. Please log in to publish a project." }, { status: 401 });
+    }
+
+    // Rule 1: Project Name Validation (Min 3, Max 100, Trim, No Spaces)
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Project name is required" }, { status: 400 });
+    }
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 3 || trimmedName.length > 100) {
+      return NextResponse.json({ error: "Project name must be between 3 and 100 characters long." }, { status: 400 });
+    }
+
+    if (/\s/.test(trimmedName)) {
+      return NextResponse.json({ error: "Project name cannot contain spaces. Use camelCase or hyphens." }, { status: 400 });
+    }
+
+    // Rule 8: Prevent Empty Descriptions (Min 10, Max 2000)
+    if (!description || !description.trim()) {
+      return NextResponse.json({ error: "Project description is required." }, { status: 400 });
+    }
+
+    const trimmedDescription = description.trim();
+    if (trimmedDescription.length < 10 || trimmedDescription.length > 2000) {
+      return NextResponse.json({ error: "Project description must be between 10 and 2000 characters long." }, { status: 400 });
+    }
+
+    // Rule 2: GitHub Link Validation (Format: https://github.com/user/repo)
+    const trimmedGithub = githubUrl ? githubUrl.trim() : "";
+    if (trimmedGithub && !GITHUB_URL_REGEX.test(trimmedGithub)) {
+      return NextResponse.json({ error: "Invalid GitHub URL format. Must be a valid link like https://github.com/username/repo" }, { status: 400 });
+    }
+
+    // Rule 3: Tech Stack Validation (Min 1, Max 10)
+    const techArray = Array.isArray(tech)
+      ? tech.map((t: string) => t.trim()).filter(Boolean)
+      : typeof tech === "string"
+      ? tech.split(",").map((t: string) => t.trim()).filter(Boolean)
+      : [];
+
+    if (techArray.length < 1) {
+      return NextResponse.json({ error: "At least 1 technology tag is required." }, { status: 400 });
+    }
+
+    if (techArray.length > 10) {
+      return NextResponse.json({ error: "Maximum 10 technology tags allowed." }, { status: 400 });
+    }
+
+    // Rule 4: Duplicate Project Prevention (Same Title + Same Owner)
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        userId: targetUser.id,
+        name: { equals: trimmedName, mode: "insensitive" },
+      },
+    });
+
+    if (existingProject) {
+      return NextResponse.json({ error: "You have already published a project with this name." }, { status: 409 });
+    }
+
+    if (
+      containsAbusiveWords(trimmedName) ||
+      containsAbusiveWords(trimmedDescription) ||
+      containsAbusiveWords(JSON.stringify(techArray)) ||
+      containsAbusiveWords(problemSolved) ||
+      containsAbusiveWords(inspiration) ||
+      containsAbusiveWords(biggestChallenge) ||
+      containsAbusiveWords(JSON.stringify(teamMembers))
+    ) {
+      return NextResponse.json({ error: "Inappropriate or abusive language is not allowed" }, { status: 400 });
     }
 
     let newProject;
@@ -157,10 +195,10 @@ export async function POST(request: Request) {
       newProject = await (prisma.project as any).create({
         data: {
           userId: targetUser.id,
-          name: name.trim(),
-          description: finalDescription,
-          tech: Array.isArray(tech) ? tech : [],
-          githubUrl: githubUrl || null,
+          name: trimmedName,
+          description: trimmedDescription,
+          tech: techArray,
+          githubUrl: trimmedGithub || null,
           status: status || "Active",
           stars: 0,
           commits: 1,
@@ -181,10 +219,10 @@ export async function POST(request: Request) {
       newProject = await prisma.project.create({
         data: {
           userId: targetUser.id,
-          name: name.trim(),
-          description: finalDescription,
-          tech: Array.isArray(tech) ? tech : [],
-          githubUrl: githubUrl || null,
+          name: trimmedName,
+          description: trimmedDescription,
+          tech: techArray,
+          githubUrl: trimmedGithub || null,
           status: status || "Active",
           stars: 0,
           commits: 1,
@@ -235,21 +273,60 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/projects - Delete a project in Neon PostgreSQL
+// DELETE /api/projects - Delete a project in Neon PostgreSQL with 403 Ownership check & Delete Cascade
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("id");
+    const username = searchParams.get("username");
 
     if (!projectId) {
       return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
     }
 
+    // Rule 5: Security — Must Be Logged In (401 Unauthorized)
+    const session = await auth();
+    let currentUser = null;
+
+    if (session?.user?.email) {
+      currentUser = await prisma.user.findFirst({
+        where: { email: session.user.email },
+      });
+    }
+
+    if (!currentUser && username) {
+      currentUser = await prisma.user.findFirst({
+        where: { username: username.toLowerCase().trim() },
+      });
+    }
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // Rule 6: Ownership Check (403 Forbidden)
+    if (project.userId !== currentUser.id) {
+      return NextResponse.json({ error: "Forbidden. You do not have permission to delete this project." }, { status: 403 });
+    }
+
+    // Rule 7: Delete Cascade (Delete associated Likes before deleting project)
+    await prisma.like.deleteMany({
+      where: { projectId: projectId },
+    });
+
     await prisma.project.delete({
       where: { id: projectId },
     });
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true, message: "Project deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("DELETE /api/projects error:", error);
     return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });

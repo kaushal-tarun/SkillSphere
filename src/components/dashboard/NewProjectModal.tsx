@@ -49,12 +49,9 @@ function isValidTechItem(item: string): boolean {
 
 function isValidGithubLink(url: string): boolean {
   if (!url || !url.trim()) return true;
-  const trimmed = url.trim().toLowerCase();
-  return (
-    trimmed.startsWith("https://github.com/") ||
-    trimmed.startsWith("http://github.com/") ||
-    trimmed.startsWith("github.com/")
-  );
+  const trimmed = url.trim();
+  const GITHUB_URL_REGEX = /^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+(\/.*)?$/i;
+  return GITHUB_URL_REGEX.test(trimmed);
 }
 
 export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalProps) {
@@ -78,9 +75,27 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
   const [codeBuddies, setCodeBuddies] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const screenshotInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  const resetForm = () => {
+    setStep(1);
+    setName("");
+    setDescription("");
+    setTech("");
+    setGithub("");
+    setProblemSolved("");
+    setInspiration("");
+    setBiggestChallenge("");
+    setScreenshots([]);
+    setTeamType("solo");
+    setCodeBuddies("");
+    setErrorMessage("");
+    setIsSubmitting(false);
+  };
 
   const validateStep1 = (): boolean => {
     setErrorMessage("");
@@ -95,8 +110,53 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       return false;
     }
 
+    if (trimmedName.length < 3 || trimmedName.length > 100) {
+      setErrorMessage("Project name must be between 3 and 100 characters long.");
+      return false;
+    }
+
     if (/\s/.test(trimmedName)) {
       setErrorMessage("Project name cannot contain spaces. Use camelCase or hyphens (e.g. KnowledgeVaultAI or my-project).");
+      return false;
+    }
+
+    if (!trimmedDesc) {
+      setErrorMessage("Project description is required.");
+      return false;
+    }
+
+    if (trimmedDesc.length < 10 || trimmedDesc.length > 2000) {
+      setErrorMessage("Project description must be between 10 and 2000 characters long.");
+      return false;
+    }
+
+    if (!trimmedTech) {
+      setErrorMessage("At least 1 technology tag is required.");
+      return false;
+    }
+
+    const techItems = trimmedTech.split(",").map((t) => t.trim()).filter(Boolean);
+
+    if (techItems.length < 1) {
+      setErrorMessage("At least 1 technology tag is required.");
+      return false;
+    }
+
+    if (techItems.length > 10) {
+      setErrorMessage("Maximum 10 technology tags allowed.");
+      return false;
+    }
+
+    const invalidItems = techItems.filter((t) => !isValidTechItem(t));
+    if (invalidItems.length > 0) {
+      setErrorMessage(
+        `Invalid technology "${invalidItems[0]}". Please enter real developer technologies (e.g. Next.js, React, Python, PostgreSQL).`
+      );
+      return false;
+    }
+
+    if (trimmedGithub && !isValidGithubLink(trimmedGithub)) {
+      setErrorMessage("Invalid GitHub URL format. Must be like https://github.com/user/repo");
       return false;
     }
 
@@ -107,23 +167,6 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       containsAbusiveWords(trimmedGithub)
     ) {
       setErrorMessage("Inappropriate or abusive language is not allowed.");
-      return false;
-    }
-
-    if (trimmedTech) {
-      const techItems = trimmedTech.split(",").map((t) => t.trim()).filter(Boolean);
-      const invalidItems = techItems.filter((t) => !isValidTechItem(t));
-
-      if (invalidItems.length > 0) {
-        setErrorMessage(
-          `Invalid technology "${invalidItems[0]}". Please enter real developer technologies (e.g. Next.js, React, Python, PostgreSQL).`
-        );
-        return false;
-      }
-    }
-
-    if (trimmedGithub && !isValidGithubLink(trimmedGithub)) {
-      setErrorMessage("Please enter a valid GitHub repository URL (e.g. https://github.com/username/project).");
       return false;
     }
 
@@ -216,7 +259,8 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
   };
 
   // Final Submit
-  const handleFinalPublish = () => {
+  const handleFinalPublish = async () => {
+    if (isSubmitting) return;
     setErrorMessage("");
 
     if (!validateStep1()) {
@@ -237,32 +281,32 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       ? codeBuddies.split(",").map((u) => u.trim()).filter(Boolean)
       : [];
 
-    onSubmit({
-      name: name.trim(),
-      description: description.trim() || `${name.trim()} - Student Project built on SkillSphere.`,
-      tech: tech.trim(),
-      github: github.trim(),
-      problemSolved: problemSolved.trim() || undefined,
-      inspiration: inspiration.trim() || undefined,
-      biggestChallenge: biggestChallenge.trim() || undefined,
-      teamType,
-      teamMembers: teamMembersList,
-      screenshots: screenshots.length > 0 ? screenshots : undefined,
-    });
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim(),
+        tech: tech.trim(),
+        github: github.trim(),
+        problemSolved: problemSolved.trim() || undefined,
+        inspiration: inspiration.trim() || undefined,
+        biggestChallenge: biggestChallenge.trim() || undefined,
+        teamType,
+        teamMembers: teamMembersList,
+        screenshots: screenshots.length > 0 ? screenshots : undefined,
+      });
 
-    // Reset Form
-    setName("");
-    setDescription("");
-    setTech("");
-    setGithub("");
-    setProblemSolved("");
-    setInspiration("");
-    setBiggestChallenge("");
-    setScreenshots([]);
-    setTeamType("solo");
-    setCodeBuddies("");
-    setStep(1);
-    setErrorMessage("");
+      setShowSuccessToast(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setShowSuccessToast(false);
+        resetForm();
+        onClose();
+      }, 1500);
+    } catch (e: any) {
+      setIsSubmitting(false);
+      setErrorMessage(e?.message || "Failed to publish project. Please try again.");
+    }
   };
 
   const handleResetAndClose = () => {
@@ -574,10 +618,35 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               <button
                 type="button"
                 onClick={handleFinalPublish}
-                className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-md cursor-pointer"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-xl bg-zinc-900 hover:bg-black disabled:bg-zinc-400 text-white font-mono text-xs font-bold transition-all shadow-md cursor-pointer disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Publish Project
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Publishing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🚀</span>
+                    <span>Publish Repository</span>
+                  </>
+                )}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Toast */}
+        {showSuccessToast && (
+          <div className="fixed top-5 right-5 z-50 p-4 rounded-2xl bg-emerald-900 text-white font-mono text-xs font-bold shadow-2xl border border-emerald-700 flex items-center gap-3 animate-in slide-in-from-top duration-300">
+            <span className="text-lg">✅</span>
+            <div>
+              <div className="text-sm font-bold">Project Published Successfully!</div>
+              <div className="text-[10px] text-emerald-200 font-normal">Your repository is now live on SkillSphere.</div>
             </div>
           </div>
         )}
