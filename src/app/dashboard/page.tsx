@@ -318,6 +318,7 @@ export default function DashboardPage() {
       <Sidebar
         activeNav={activeNav}
         setActiveNav={(tab) => {
+          setSelectedProject(null);
           if (tab === "profile") {
             setViewingProfileUser(null);
             setViewingProfileProjects([]);
