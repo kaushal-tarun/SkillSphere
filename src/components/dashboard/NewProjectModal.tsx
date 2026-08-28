@@ -552,7 +552,7 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
                         !selectedTechList.some((st) => st.toLowerCase() === t.toLowerCase()) &&
                         t.toLowerCase().includes(techSearchInput.toLowerCase())
                     ).length > 0 ? (
-                      <div className="grid grid-cols-2 gap-1 max-h-44 overflow-y-auto p-1">
+                      <div className="grid grid-cols-2 gap-1 p-1">
                         {ALL_POPULAR_TECH.filter(
                           (t) =>
                             !selectedTechList.some((st) => st.toLowerCase() === t.toLowerCase()) &&
