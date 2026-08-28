@@ -21,6 +21,21 @@ interface NewProjectModalProps {
   }) => void;
 }
 
+// Alphabetical list of popular technologies
+const ALL_POPULAR_TECH = [
+  "Angular", "Anthropic Claude", "Apache Kafka", "Astro", "AWS", "Azure",
+  "Bun", "C", "C++", "C#", "Cassandra", "ClickHouse", "Clojure", "CockroachDB", "CSS3", "CUDA",
+  "Dart", "Deno", "Django", "Docker", "Elasticsearch", "Elixir", "Expo", "Express.js",
+  "FastAPI", "Firebase", "Flask", "Flutter", "GCP", "Git", "Go", "GraphQL", "gRPC",
+  "Haskell", "HTML5", "HuggingFace", "Ionic", "Java", "JavaScript", "KMP", "Kotlin", "Kubernetes",
+  "LangChain", "Laravel", "LlamaIndex", "MongoDB", "MySQL", "Neo4j", "Neon DB", "NestJS", "Next.js", "Node.js", "Nuxt.js", "NumPy",
+  "OpenAI API", "Pandas", "PHP", "Pinecone", "PostgreSQL", "Prisma", "Python", "PyTorch",
+  "React", "React Native", "Redis", "Ruby", "Ruby on Rails", "Rust",
+  "Scala", "Scikit-Learn", "SolidJS", "Spring Boot", "SQLite", "Supabase", "Svelte", "SvelteKit", "Swift", "SwiftUI",
+  "TailwindCSS", "TensorFlow", "Three.js", "tRPC", "TypeScript",
+  "Vercel", "Vite", "Vue.js", "WebAssembly", "Zig"
+].sort((a, b) => a.localeCompare(b));
+
 // List of non-technical food/nonsense items to block in Tech Stack
 const NON_TECH_WORDS = new Set([
   "pizza", "burger", "fries", "pasta", "sandwich", "food", "soda", "cookie",
@@ -63,8 +78,12 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
   // Step 1 State
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [tech, setTech] = useState("");
   const [github, setGithub] = useState("");
+
+  // Tech Stack Interactive Multi-Select State
+  const [selectedTechList, setSelectedTechList] = useState<string[]>([]);
+  const [techDropdownOpen, setTechDropdownOpen] = useState(false);
+  const [techSearchInput, setTechSearchInput] = useState("");
 
   // Step 2 State (Optional Details)
   const [problemSolved, setProblemSolved] = useState("");
@@ -119,6 +138,42 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
     setBuddySearchInput("");
   };
 
+  const handleSelectTech = (item: string) => {
+    setErrorMessage("");
+    if (selectedTechList.length >= 10) {
+      setErrorMessage("Maximum 10 technology tags allowed.");
+      return;
+    }
+    const exists = selectedTechList.some((t) => t.toLowerCase() === item.toLowerCase());
+    if (!exists) {
+      setSelectedTechList((prev) => [...prev, item]);
+    }
+    setTechSearchInput("");
+  };
+
+  const handleAddCustomTech = (inputTech: string) => {
+    setErrorMessage("");
+    const clean = inputTech.trim();
+    if (!clean) return;
+    if (!isValidTechItem(clean)) {
+      setErrorMessage(`Invalid technology "${clean}". Please enter real developer technologies.`);
+      return;
+    }
+    if (selectedTechList.length >= 10) {
+      setErrorMessage("Maximum 10 technology tags allowed.");
+      return;
+    }
+    const exists = selectedTechList.some((t) => t.toLowerCase() === clean.toLowerCase());
+    if (!exists) {
+      setSelectedTechList((prev) => [...prev, clean]);
+    }
+    setTechSearchInput("");
+  };
+
+  const handleRemoveTech = (targetTech: string) => {
+    setSelectedTechList((prev) => prev.filter((t) => t.toLowerCase() !== targetTech.toLowerCase()));
+  };
+
   const handleAddCustomBuddy = (inputUsername: string) => {
     setErrorMessage("");
     const clean = inputUsername.replace(/^@/, "").trim().toLowerCase();
@@ -145,7 +200,9 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
     setStep(1);
     setName("");
     setDescription("");
-    setTech("");
+    setSelectedTechList([]);
+    setTechSearchInput("");
+    setTechDropdownOpen(false);
     setGithub("");
     setProblemSolved("");
     setInspiration("");
@@ -163,7 +220,6 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
 
     const trimmedName = name.trim();
     const trimmedDesc = description.trim();
-    const trimmedTech = tech.trim();
     const trimmedGithub = github.trim();
 
     if (!trimmedName) {
@@ -191,28 +247,13 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
       return false;
     }
 
-    if (!trimmedTech) {
+    if (selectedTechList.length < 1) {
       setErrorMessage("At least 1 technology tag is required.");
       return false;
     }
 
-    const techItems = trimmedTech.split(",").map((t) => t.trim()).filter(Boolean);
-
-    if (techItems.length < 1) {
-      setErrorMessage("At least 1 technology tag is required.");
-      return false;
-    }
-
-    if (techItems.length > 10) {
+    if (selectedTechList.length > 10) {
       setErrorMessage("Maximum 10 technology tags allowed.");
-      return false;
-    }
-
-    const invalidItems = techItems.filter((t) => !isValidTechItem(t));
-    if (invalidItems.length > 0) {
-      setErrorMessage(
-        `Invalid technology "${invalidItems[0]}". Please enter real developer technologies (e.g. Next.js, React, Python, PostgreSQL).`
-      );
       return false;
     }
 
@@ -224,7 +265,6 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
     if (
       containsAbusiveWords(trimmedName) ||
       containsAbusiveWords(trimmedDesc) ||
-      containsAbusiveWords(trimmedTech) ||
       containsAbusiveWords(trimmedGithub)
     ) {
       setErrorMessage("Inappropriate or abusive language is not allowed.");
@@ -337,7 +377,7 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
       await onSubmit({
         name: name.trim(),
         description: description.trim(),
-        tech: tech.trim(),
+        tech: selectedTechList.join(", "),
         github: github.trim(),
         problemSolved: problemSolved.trim() || undefined,
         inspiration: inspiration.trim() || undefined,
@@ -434,19 +474,119 @@ export function NewProjectModal({ isOpen, user, onClose, onSubmit }: NewProjectM
               />
             </div>
 
-            <div>
-              <label className="block text-zinc-600 mb-1 font-bold">Tech Stack (comma separated)</label>
-              <input
-                type="text"
-                value={tech}
-                onChange={(e) => {
-                  setTech(e.target.value);
-                  if (errorMessage) setErrorMessage("");
-                }}
-                placeholder="Next.js, TypeScript, PostgreSQL, Prisma"
-                className="w-full px-3.5 py-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs"
-              />
-              <p className="text-[10px] text-zinc-400 font-sans mt-1">Enter valid technologies (e.g. React, Python, Docker, PostgreSQL).</p>
+            {/* Tech Stack Multi-Select Dropdown Selector */}
+            <div className="space-y-2 relative font-mono text-xs">
+              <div className="flex items-center justify-between text-zinc-600 font-bold">
+                <label>Tech Stack *</label>
+                <span className="text-[10px] text-zinc-400 font-normal">Max 10 technologies</span>
+              </div>
+
+              {/* Selected Tech Pills */}
+              {selectedTechList.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                  {selectedTechList.map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-mono text-xs font-bold shadow-2xs"
+                    >
+                      <span>{t}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTech(t)}
+                        className="hover:text-red-300 ml-0.5 cursor-pointer text-xs font-bold"
+                        title="Remove technology"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Dropdown Input Toggle */}
+              <div className="relative">
+                <div
+                  onClick={() => setTechDropdownOpen(!techDropdownOpen)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 flex items-center justify-between cursor-pointer text-xs hover:border-zinc-400 transition-colors"
+                >
+                  <span className={selectedTechList.length === 0 ? "text-zinc-400" : "text-zinc-900 font-bold"}>
+                    {selectedTechList.length === 0
+                      ? "Select tech stack (e.g. Next.js, React, Python)..."
+                      : `${selectedTechList.length} Technolog${selectedTechList.length > 1 ? "ies" : "y"} Selected`}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-zinc-500 transition-transform ${techDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+
+                {/* Dropdown Options List */}
+                {techDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-2xl z-50 max-h-56 overflow-y-auto space-y-1.5 text-xs animate-in fade-in slide-in-from-top-2 duration-150">
+                    {/* Search / Custom Tag Bar */}
+                    <div className="p-1">
+                      <input
+                        type="text"
+                        value={techSearchInput}
+                        onChange={(e) => setTechSearchInput(e.target.value)}
+                        placeholder="Search technology (e.g. PyTorch, Rust)..."
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 text-xs focus:outline-none font-mono"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (techSearchInput.trim()) {
+                              handleAddCustomTech(techSearchInput.trim());
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Filtered Alphabetical List */}
+                    {ALL_POPULAR_TECH.filter(
+                      (t) =>
+                        !selectedTechList.some((st) => st.toLowerCase() === t.toLowerCase()) &&
+                        t.toLowerCase().includes(techSearchInput.toLowerCase())
+                    ).length > 0 ? (
+                      <div className="grid grid-cols-2 gap-1 max-h-44 overflow-y-auto p-1">
+                        {ALL_POPULAR_TECH.filter(
+                          (t) =>
+                            !selectedTechList.some((st) => st.toLowerCase() === t.toLowerCase()) &&
+                            t.toLowerCase().includes(techSearchInput.toLowerCase())
+                        ).map((techItem) => (
+                          <button
+                            key={techItem}
+                            type="button"
+                            onClick={() => handleSelectTech(techItem)}
+                            className="px-2.5 py-1.5 rounded-lg hover:bg-[#f4efe6] text-left flex items-center justify-between text-zinc-800 hover:text-zinc-900 font-mono text-xs transition-colors cursor-pointer"
+                          >
+                            <span>{techItem}</span>
+                            <span className="text-emerald-700 font-bold text-[10px]">+ Add</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 text-center text-zinc-500 text-xs">
+                        {techSearchInput.trim() ? (
+                          <button
+                            type="button"
+                            onClick={() => handleAddCustomTech(techSearchInput.trim())}
+                            className="text-zinc-900 font-bold underline cursor-pointer"
+                          >
+                            Add custom tech "{techSearchInput.trim()}"
+                          </button>
+                        ) : (
+                          "All technologies selected."
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
