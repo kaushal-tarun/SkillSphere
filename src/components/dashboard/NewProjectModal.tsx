@@ -631,7 +631,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                   </>
                 ) : (
                   <>
-                    <span>🚀</span>
+                    <span></span>
                     <span>Publish Repository</span>
                   </>
                 )}
