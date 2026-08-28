@@ -193,11 +193,11 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-6xl mx-auto font-sans -ml-2 sm:-ml-8">
+    <div className="space-y-6 animate-in fade-in duration-300 w-full max-w-5xl mx-auto font-sans">
       
-      {/* PAGE HEADER (SHIFTED TO THE WHOLE LEFT) */}
+      {/* PAGE HEADER */}
       <div className="border-b border-[#e8e2d8] pb-5 flex items-center justify-between">
-        <div className="space-y-1 relative -translate-x-2 sm:-translate-x-45">
+        <div className="space-y-1">
           {onBackToDashboard && (
             <button
               onClick={onBackToDashboard}
@@ -224,8 +224,8 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
       {/* DISTINCT LEFT-ALIGNED FLEX LAYOUT */}
       <div className="flex flex-col md:flex-row gap-8 sm:gap-10 items-start">
         
-        {/* LEFT SUB-NAVIGATION CARD (SHIFTED FURTHER LEFT) */}
-        <div className="p-3 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm w-full md:w-56 shrink-0 space-y-1 font-mono text-xs relative -translate-x-6 sm:-translate-x-40">
+        {/* LEFT SUB-NAVIGATION CARD */}
+        <div className="p-3 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm w-full md:w-56 shrink-0 space-y-1 font-mono text-xs">
           {navItems.map((item) => (
             <button
               key={item.id}
