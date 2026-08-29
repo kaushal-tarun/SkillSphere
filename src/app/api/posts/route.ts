@@ -61,28 +61,49 @@ export async function GET(request: Request) {
       },
     });
 
-    const formatted = posts.map((p) => ({
-      id: p.id,
-      authorName: p.user?.name || "Student Developer",
-      authorHandle: p.user?.username || "developer",
-      campus: p.user?.university || "University",
-      avatar: p.user?.avatar || (p.user?.name || p.user?.username || "US").slice(0, 2).toUpperCase(),
-      time: new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      content: p.content,
-      image: p.image || undefined,
-      codeSnippet: p.codeSnippet || undefined,
-      projectTag: p.projectTag || undefined,
-      likes: p.likesCount,
-      reposts: p.repostsCount,
-      isLiked: likedPostIdsSet.has(p.id),
-      comments: p.comments.map((c) => ({
-        id: c.id,
-        authorName: c.user?.name || "Developer",
-        authorHandle: c.user?.username || "user",
-        text: c.content,
-        time: new Date(c.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      })),
-    }));
+    const formatted = posts.map((p) => {
+      let postImages: string[] = [];
+      if (p.image) {
+        try {
+          if (p.image.startsWith("[")) {
+            const parsed = JSON.parse(p.image);
+            if (Array.isArray(parsed)) {
+              postImages = parsed.filter((img) => typeof img === "string" && Boolean(img.trim()));
+            } else {
+              postImages = [p.image];
+            }
+          } else {
+            postImages = [p.image];
+          }
+        } catch {
+          postImages = [p.image];
+        }
+      }
+
+      return {
+        id: p.id,
+        authorName: p.user?.name || "Student Developer",
+        authorHandle: p.user?.username || "developer",
+        campus: p.user?.university || "University",
+        avatar: p.user?.avatar || (p.user?.name || p.user?.username || "US").slice(0, 2).toUpperCase(),
+        time: new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        content: p.content,
+        image: postImages[0] || undefined,
+        images: postImages.length > 0 ? postImages.slice(0, 2) : undefined,
+        codeSnippet: p.codeSnippet || undefined,
+        projectTag: p.projectTag || undefined,
+        likes: p.likesCount,
+        reposts: p.repostsCount,
+        isLiked: likedPostIdsSet.has(p.id),
+        comments: p.comments.map((c) => ({
+          id: c.id,
+          authorName: c.user?.name || "Developer",
+          authorHandle: c.user?.username || "user",
+          text: c.content,
+          time: new Date(c.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        })),
+      };
+    });
 
     return NextResponse.json({ posts: formatted }, { status: 200 });
   } catch (error) {
@@ -110,7 +131,7 @@ function containsAbusiveWords(text: string): boolean {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { content, image, codeSnippet, projectTag, username } = body;
+    const { content, image, images, codeSnippet, projectTag, username } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json({ error: "Post content is required" }, { status: 400 });
@@ -150,11 +171,21 @@ export async function POST(request: Request) {
       });
     }
 
+    // Process images (up to 2 images)
+    let processedImages: string[] = [];
+    if (Array.isArray(images)) {
+      processedImages = images.filter((img) => typeof img === "string" && Boolean(img.trim())).slice(0, 2);
+    } else if (image && typeof image === "string" && image.trim()) {
+      processedImages = [image.trim()];
+    }
+
+    const storedImageData = processedImages.length > 0 ? JSON.stringify(processedImages) : null;
+
     const newPost = await prisma.post.create({
       data: {
         userId: targetUser.id,
         content: content.trim(),
-        image: image || null,
+        image: storedImageData,
         codeSnippet: codeSnippet || null,
         projectTag: projectTag || null,
         likesCount: 0,
@@ -174,7 +205,8 @@ export async function POST(request: Request) {
       avatar: targetUser.avatar || (targetUser.name || targetUser.username).slice(0, 2).toUpperCase(),
       time: "Just now",
       content: newPost.content,
-      image: newPost.image || undefined,
+      image: processedImages[0] || undefined,
+      images: processedImages.length > 0 ? processedImages : undefined,
       codeSnippet: newPost.codeSnippet || undefined,
       projectTag: newPost.projectTag || undefined,
       likes: 0,

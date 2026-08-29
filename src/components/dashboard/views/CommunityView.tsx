@@ -27,6 +27,7 @@ interface PostItem {
   time: string;
   content: string;
   image?: string;
+  images?: string[];
   codeSnippet?: string;
   likes: number;
   reposts: number;
@@ -42,7 +43,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const [postImage, setPostImage] = useState<string | null>(null);
+  const [postImages, setPostImages] = useState<string[]>([]);
   const [selectedProjectTag, setSelectedProjectTag] = useState<string | null>(null);
   const [isProjectTagDropdownOpen, setIsProjectTagDropdownOpen] = useState(false);
   const [userProjects, setUserProjects] = useState<ProjectItem[]>([]);
@@ -108,42 +109,80 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
     loadCommunityPosts();
   }, [user.username]);
 
-  // Handle Post Image Upload & Canvas Compression (~40KB)
-  const handlePostImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Helper to compress an image file to canvas JPEG (~40KB)
+  const compressImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (!event.target?.result) return resolve("");
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
+          } else {
+            resolve(event.target!.result as string);
+          }
+        };
+        img.onerror = () => resolve("");
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  };
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert("Image is over 10MB");
+  // Handle Post Images Upload & Canvas Compression (Up to 2 images)
+  const handlePostImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const availableSlots = 2 - postImages.length;
+    if (availableSlots <= 0) {
+      alert("You can only attach up to 2 images per post.");
+      if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (!event.target?.result) return;
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 800;
-        let width = img.width;
-        let height = img.height;
-        if (width > MAX_WIDTH) {
-          height = Math.round((height * MAX_WIDTH) / width);
-          width = MAX_WIDTH;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          setPostImage(canvas.toDataURL("image/jpeg", 0.7));
-        } else {
-          setPostImage(event.target!.result as string);
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    const filesToProcess = Array.from(files).slice(0, availableSlots);
+    if (files.length > availableSlots) {
+      alert(`Only ${availableSlots} more image${availableSlots > 1 ? "s" : ""} can be added. Maximum 2 images allowed.`);
+    }
+
+    const newCompressedImages: string[] = [];
+    for (const file of filesToProcess) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`Image "${file.name}" is over 10MB.`);
+        continue;
+      }
+      const dataUrl = await compressImageFile(file);
+      if (dataUrl) {
+        newCompressedImages.push(dataUrl);
+      }
+    }
+
+    if (newCompressedImages.length > 0) {
+      setPostImages((prev) => [...prev, ...newCompressedImages].slice(0, 2));
+    }
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setPostImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -158,7 +197,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newPostText,
-          image: postImage || undefined,
+          images: postImages,
           projectTag: selectedProjectTag || undefined,
           username: user.username,
         }),
@@ -174,7 +213,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
       console.error("Failed to save post to PostgreSQL", e);
     } finally {
       setNewPostText("");
-      setPostImage(null);
+      setPostImages([]);
       setSelectedProjectTag(null);
       setIsProjectTagDropdownOpen(false);
       setIsPosting(false);
@@ -465,17 +504,26 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
           />
         </div>
 
-        {/* ATTACHED IMAGE PREVIEW */}
-        {postImage && (
-          <div className="relative rounded-xl overflow-hidden border border-[#e2dacd] max-h-56 w-fit">
-            <img src={postImage} alt="Post attachment" className="h-44 object-cover rounded-xl" />
-            <button
-              type="button"
-              onClick={() => setPostImage(null)}
-              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-bold hover:bg-black transition-all cursor-pointer"
-            >
-              ✕
-            </button>
+        {/* ATTACHED IMAGES PREVIEW (UP TO 2 IMAGES) */}
+        {postImages.length > 0 && (
+          <div className={postImages.length === 1 ? "relative rounded-xl overflow-hidden border border-[#e2dacd] max-h-56 w-fit shadow-xs bg-zinc-50" : "grid grid-cols-2 gap-2 max-w-lg"}>
+            {postImages.map((imgSrc, idx) => (
+              <div key={idx} className="relative rounded-xl overflow-hidden border border-[#e2dacd] bg-zinc-50 shadow-xs">
+                <img
+                  src={imgSrc}
+                  alt={`Attachment ${idx + 1}`}
+                  className="w-full h-40 object-cover rounded-xl"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(idx)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-bold hover:bg-black transition-all cursor-pointer shadow-sm"
+                  title="Remove image"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
@@ -496,11 +544,12 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
           </div>
         )}
 
-        {/* HIDDEN FILE INPUT FOR IMAGE UPLOAD */}
+        {/* HIDDEN FILE INPUT FOR IMAGE UPLOAD (MULTIPLE, MAX 2) */}
         <input
           ref={imageInputRef}
           type="file"
           accept="image/*"
+          multiple
           className="hidden"
           onChange={handlePostImageUpload}
         />
@@ -509,13 +558,25 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
           <div className="flex items-center gap-3 text-zinc-500 relative">
             <button
               type="button"
-              onClick={() => imageInputRef.current?.click()}
-              className="hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer font-bold transition-colors"
+              onClick={() => {
+                if (postImages.length >= 2) {
+                  alert("You can attach a maximum of 2 images per post.");
+                  return;
+                }
+                imageInputRef.current?.click();
+              }}
+              disabled={postImages.length >= 2}
+              className={`flex items-center gap-1.5 font-bold transition-colors ${
+                postImages.length >= 2
+                  ? "text-zinc-300 cursor-not-allowed"
+                  : "hover:text-zinc-900 cursor-pointer"
+              }`}
+              title={postImages.length >= 2 ? "Maximum 2 images reached" : "Attach images (up to 2)"}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.75">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
-              <span>Image</span>
+              <span>{postImages.length > 0 ? `Images (${postImages.length}/2)` : "Images (max 2)"}</span>
             </button>
 
             {/* TAG PROJECT POPOVER BUTTON & DROPDOWN */}
@@ -654,12 +715,34 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
                 {post.content}
               </p>
 
-              {/* POST ATTACHED IMAGE */}
-              {post.image && (
-                <div className="rounded-xl overflow-hidden border border-[#e2dacd] max-h-72 w-fit shadow-xs">
-                  <img src={post.image} alt="Post media" className="w-full max-h-72 object-cover" />
-                </div>
-              )}
+              {/* POST ATTACHED IMAGES (SUPPORT 1 OR 2 IMAGES) */}
+              {(() => {
+                const displayImages = post.images && post.images.length > 0 
+                  ? post.images 
+                  : post.image 
+                    ? [post.image] 
+                    : [];
+
+                if (displayImages.length === 0) return null;
+
+                if (displayImages.length === 1) {
+                  return (
+                    <div className="rounded-xl overflow-hidden border border-[#e2dacd] max-h-72 w-fit shadow-xs bg-zinc-50">
+                      <img src={displayImages[0]} alt="Post media" className="w-full max-h-72 object-cover rounded-xl" />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden max-w-2xl">
+                    {displayImages.slice(0, 2).map((imgUrl, i) => (
+                      <div key={i} className="rounded-xl overflow-hidden border border-[#e2dacd] shadow-xs bg-zinc-50 h-48 sm:h-56">
+                        <img src={imgUrl} alt={`Post media ${i + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* LIKES, REPOSTS, & COMMENT ACTION BAR WITH SVG ICONS */}
               <div className="flex items-center gap-6 pt-3 border-t border-zinc-100 font-mono text-xs">
