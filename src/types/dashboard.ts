@@ -8,6 +8,10 @@ export interface UserProfile {
   location?: string;
   bio?: string;
   avatar?: string;
+  xp?: number;
+  level?: number;
+  createdAt?: string;
+  projectsCount?: number;
 }
 
 export interface ProjectItem {

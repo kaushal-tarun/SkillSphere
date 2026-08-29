@@ -10,23 +10,29 @@ export async function GET(request: Request) {
     const scope = searchParams.get("scope"); // "user" | "all"
 
     const session = await auth();
-    let currentUser = null;
+    let whereClause: any = {};
 
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
-    }
-
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
+    if (username && username.trim()) {
+      const targetUser = await prisma.user.findFirst({
         where: { username: username.toLowerCase().trim() },
       });
-    }
-
-    let whereClause: any = {};
-    if (scope === "user" && currentUser) {
-      whereClause = { userId: currentUser.id };
+      if (targetUser) {
+        whereClause = { userId: targetUser.id };
+      } else {
+        return NextResponse.json({ projects: [] }, { status: 200 });
+      }
+    } else if (scope === "user") {
+      let currentUser = null;
+      if (session?.user?.email) {
+        currentUser = await prisma.user.findFirst({
+          where: { email: session.user.email },
+        });
+      }
+      if (currentUser) {
+        whereClause = { userId: currentUser.id };
+      } else {
+        return NextResponse.json({ projects: [] }, { status: 200 });
+      }
     }
 
     const projects = await prisma.project.findMany({

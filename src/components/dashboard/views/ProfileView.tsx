@@ -112,7 +112,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const realXp = projectsList.length * 500;
+  const realXp = user.xp !== undefined ? user.xp : projectsList.length * 500;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -244,7 +244,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Member Since</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{(user as any).createdAt || "Feb 2026"}</div>
+            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{user.createdAt || "Feb 2026"}</div>
           </div>
         </div>
       </div>
