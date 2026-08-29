@@ -48,6 +48,7 @@ export async function GET(request: Request) {
               select: {
                 name: true,
                 username: true,
+                avatar: true,
               },
             },
           },
@@ -99,6 +100,7 @@ export async function GET(request: Request) {
           id: c.id,
           authorName: c.user?.name || "Developer",
           authorHandle: c.user?.username || "user",
+          avatar: c.user?.avatar || undefined,
           text: c.content,
           time: new Date(c.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
         })),

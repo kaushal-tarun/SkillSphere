@@ -14,6 +14,7 @@ interface CommentItem {
   id: string;
   authorName: string;
   authorHandle: string;
+  avatar?: string;
   text: string;
   time: string;
 }
@@ -311,6 +312,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
       id: `tmp_${Date.now()}`,
       authorName: user.name,
       authorHandle: user.username,
+      avatar: user.avatar,
       text: text.trim(),
       time: "Just now",
     };
@@ -786,57 +788,114 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
                 </button>
               </div>
 
-              {/* COMMENTS SECTION */}
+              {/* MODERN UPGRADED COMMENTS SECTION */}
               {isCommentOpen && (
-                <div className="pt-3 border-t border-zinc-100 space-y-3 animate-in fade-in duration-200">
-                  <div className="flex gap-2 font-mono text-xs">
-                    <input
-                      type="text"
-                      value={commentInputs[post.id] || ""}
-                      onChange={(e) =>
-                        setCommentInputs((prev) => ({
-                          ...prev,
-                          [post.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="Write a comment..."
-                      className="flex-1 px-3 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400"
-                    />
-                    <button
-                      onClick={() => handleAddComment(post.id)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold transition-all shadow-xs cursor-pointer"
-                    >
-                      Post
-                    </button>
+                <div className="pt-4 border-t border-zinc-100 space-y-3.5 animate-in fade-in duration-200">
+                  {/* Discussion Header */}
+                  <div className="flex items-center justify-between font-mono text-[11px] text-zinc-500 px-0.5">
+                    <span className="font-bold text-zinc-700 uppercase tracking-wider">
+                      Discussion ({post.comments ? post.comments.length : 0})
+                    </span>
+                    {post.comments && post.comments.length > 3 && (
+                      <span className="text-[10px] text-zinc-400">Scroll to view all</span>
+                    )}
                   </div>
 
-                  {post.comments && post.comments.length > 0 && (
-                    <div className="space-y-2 pt-1 font-mono text-xs">
+                  {/* Comment Input Bar */}
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-mono text-[10px] font-bold flex items-center justify-center uppercase shrink-0 overflow-hidden mt-0.5 shadow-2xs">
+                      {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        getInitials(user.name)
+                      )}
+                    </div>
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={commentInputs[post.id] || ""}
+                        onChange={(e) =>
+                          setCommentInputs((prev) => ({
+                            ...prev,
+                            [post.id]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment(post.id);
+                          }
+                        }}
+                        placeholder="Write a comment... (Press Enter to post)"
+                        className="flex-1 px-3.5 py-2 rounded-xl bg-[#f8f5ee] border border-[#e2dacd] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 font-sans text-xs transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={!commentInputs[post.id]?.trim()}
+                        className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white font-mono text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      >
+                        Reply
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scrollable Compact Comments List */}
+                  {post.comments && post.comments.length > 0 ? (
+                    <div className="max-h-64 overflow-y-auto pr-1 space-y-2 font-mono text-xs divide-y-0">
                       {post.comments.map((comment) => (
-                        <div key={comment.id} className="p-2.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                          <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                            <span className="font-bold text-zinc-900">{comment.authorName} <span className="font-normal opacity-70">@{comment.authorHandle}</span></span>
+                        <div
+                          key={comment.id}
+                          className="p-3 rounded-xl bg-[#fbf9f5] border border-[#e8e2d8] hover:border-[#ded5c7] transition-all space-y-1.5 group/comment"
+                        >
+                          <div className="flex items-center justify-between text-[11px]">
+                            <div
+                              onClick={() => onNavigateToUser && onNavigateToUser(comment.authorHandle)}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <div className="w-5 h-5 rounded-md bg-zinc-800 text-white font-bold text-[9px] flex items-center justify-center uppercase shrink-0 overflow-hidden">
+                                {comment.avatar && (comment.avatar.startsWith("data:") || comment.avatar.startsWith("http")) ? (
+                                  <img src={comment.avatar} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  (comment.authorName || comment.authorHandle).slice(0, 2).toUpperCase()
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-zinc-900 hover:underline">{comment.authorName}</span>
+                                <span className="text-[10px] text-zinc-400 font-normal">@{comment.authorHandle}</span>
+                                <span className="text-[10px] text-zinc-400">•</span>
+                                <span className="text-[10px] text-zinc-400">{comment.time}</span>
+                              </div>
+                            </div>
+
                             <div className="flex items-center gap-2">
-                              <span>{comment.time}</span>
                               <button
                                 onClick={() => handleCopyComment(comment.text)}
-                                className="text-zinc-500 hover:text-zinc-900 text-[10px] hover:underline cursor-pointer"
+                                className="text-zinc-400 hover:text-zinc-800 text-[10px] font-mono hover:underline cursor-pointer transition-colors"
+                                title="Copy comment"
                               >
                                 Copy
                               </button>
                               {comment.authorHandle.toLowerCase() === user.username.toLowerCase() && (
                                 <button
                                   onClick={() => handleDeleteComment(post.id, comment.id)}
-                                  className="text-red-600 hover:text-red-800 text-[10px] hover:underline cursor-pointer font-bold"
+                                  className="text-red-500 hover:text-red-700 text-[10px] font-mono hover:underline cursor-pointer font-bold transition-colors"
+                                  title="Delete comment"
                                 >
                                   Delete
                                 </button>
                               )}
                             </div>
                           </div>
-                          <p className="text-zinc-800 font-sans text-xs">{comment.text}</p>
+                          <p className="text-zinc-800 font-sans text-xs pl-7 leading-relaxed break-words whitespace-pre-wrap">
+                            {comment.text}
+                          </p>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="py-2.5 text-center text-zinc-400 font-mono text-[11px]">
+                      No comments yet. Start the discussion!
                     </div>
                   )}
                 </div>
