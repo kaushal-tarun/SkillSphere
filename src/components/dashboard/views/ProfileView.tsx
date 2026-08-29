@@ -112,7 +112,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const realXp = user.xp !== undefined ? user.xp : projectsList.length * 500;
+  const realXp = projectsList.length * 500;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

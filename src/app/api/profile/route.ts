@@ -30,8 +30,15 @@ export async function GET(request: Request) {
     }
 
     const projectsCount = targetUser.projects.length;
-    const totalXp = targetUser.xp || targetUser.profile?.totalXp || projectsCount * 500;
+    const totalXp = projectsCount * 500;
     const level = Math.floor(totalXp / 500) + 1;
+
+    if (targetUser.xp !== totalXp) {
+      await prisma.user.update({
+        where: { id: targetUser.id },
+        data: { xp: totalXp },
+      }).catch(() => {});
+    }
 
     return NextResponse.json({
       profile: {

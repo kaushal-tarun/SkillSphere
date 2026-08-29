@@ -332,6 +332,15 @@ export async function DELETE(request: Request) {
       where: { id: projectId },
     });
 
+    // Sync user XP after deletion
+    const remainingProjectsCount = await prisma.project.count({
+      where: { userId: currentUser.id },
+    });
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: { xp: remainingProjectsCount * 500 },
+    }).catch(() => {});
+
     return NextResponse.json({ success: true, message: "Project deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("DELETE /api/projects error:", error);
