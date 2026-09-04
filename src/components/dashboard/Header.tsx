@@ -62,21 +62,7 @@ export function Header({
   const titleInfo = getBuilderTitle(projectsCount);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#f8f5ee]/90 backdrop-blur-md border-b border-[#e8e2d8] px-4 sm:px-8 py-3.5 flex items-center justify-between">
-      {/* Left: Section Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 font-mono text-xs">
-        <button
-          onClick={() => setActiveNav("dashboard")}
-          className="font-extrabold text-zinc-900 tracking-tight hover:underline cursor-pointer flex items-center gap-1.5"
-        >
-          <span>SkillSphere</span>
-        </button>
-        <span className="text-zinc-400">/</span>
-        <span className="px-2 py-0.5 rounded-md bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-bold capitalize text-[11px] truncate max-w-[200px] sm:max-w-xs">
-          {selectedProjectName ? selectedProjectName : activeNav}
-        </span>
-      </div>
-
+    <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-end">
       {/* Right: Only the Avatar with Interactive Dropdown */}
       <div className="relative" ref={dropdownRef}>
         <button

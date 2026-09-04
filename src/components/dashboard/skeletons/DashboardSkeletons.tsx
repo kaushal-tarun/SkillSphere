@@ -40,12 +40,7 @@ export function DashboardStartupSkeleton() {
       {/* Main Content Area Skeleton */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar Skeleton */}
-        <header className="sticky top-0 z-30 bg-[#f8f5ee]/95 backdrop-blur-md border-b border-[#e8e2d8] px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <SkeletonBlock className="h-5 w-24 rounded-md !bg-zinc-800" />
-            <span className="text-zinc-300 font-mono text-xs">/</span>
-            <SkeletonBlock className="h-5 w-20 rounded-md" />
-          </div>
+        <header className="sticky top-0 z-30 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-end">
           <SkeletonBlock className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0" />
         </header>
 

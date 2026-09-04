@@ -372,12 +372,6 @@ export default function DashboardPage() {
               <span>←</span>
               <span>Back to Dashboard</span>
             </button>
-            <div className="h-4 w-px bg-zinc-300" />
-            <div className="flex items-center gap-2 font-mono text-xs">
-              <span className="font-extrabold text-zinc-900 tracking-tight text-sm">SkillSphere</span>
-              <span className="text-zinc-400">/</span>
-              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 font-bold text-[11px]">Settings</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
