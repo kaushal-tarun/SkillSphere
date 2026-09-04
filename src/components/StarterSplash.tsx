@@ -5,9 +5,19 @@ import React, { useState, useEffect } from "react";
 export default function StarterSplash({ onComplete }: { onComplete?: () => void }) {
   const [step, setStep] = useState(0); 
 
-  const [isDone, setIsDone] = useState(false);
+  const [isDone, setIsDone] = useState(() => {
+    if (typeof window !== "undefined") {
+      return Boolean(sessionStorage.getItem("skillsphere_splash_viewed"));
+    }
+    return false;
+  });
 
   useEffect(() => {
+    if (isDone) {
+      if (onComplete) onComplete();
+      return;
+    }
+
     // Animation timing sequence
     const t1 = setTimeout(() => setStep(1), 200);   // Show logo
     const t2 = setTimeout(() => setStep(2), 900);   // Show "SkillSphere"
@@ -16,6 +26,7 @@ export default function StarterSplash({ onComplete }: { onComplete?: () => void 
     const t5 = setTimeout(() => setStep(5), 3000);  // Show "Build & Grow"
     const t6 = setTimeout(() => setStep(6), 3900);  // Automatic zoom-in transition
     const t7 = setTimeout(() => {
+      sessionStorage.setItem("skillsphere_splash_viewed", "true");
       setIsDone(true);
       if (onComplete) onComplete();
     }, 4600); // Animation complete
@@ -29,11 +40,12 @@ export default function StarterSplash({ onComplete }: { onComplete?: () => void 
       clearTimeout(t6);
       clearTimeout(t7);
     };
-  }, [onComplete]);
+  }, [isDone, onComplete]);
 
   const handleSkip = () => {
     setStep(6);
     setTimeout(() => {
+      sessionStorage.setItem("skillsphere_splash_viewed", "true");
       setIsDone(true);
       if (onComplete) onComplete();
     }, 500);

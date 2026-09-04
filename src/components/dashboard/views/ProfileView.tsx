@@ -183,19 +183,26 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
               >
                 {friendshipState === "FRIENDS" && (
                   <>
-                    <span>✓</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
                     <span>Friends</span>
                   </>
                 )}
                 {friendshipState === "SENT" && (
                   <>
-                    <span>⏳</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
                     <span>Request Sent</span>
                   </>
                 )}
                 {friendshipState === "PENDING" && (
                   <>
-                    <span>✉️</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                     <span>Accept Request</span>
                   </>
                 )}
@@ -333,8 +340,11 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
                       ))}
                     </div>
 
-                    <div className="text-[11px] text-zinc-500 shrink-0">
-                      ★ {project.stars} Stars
+                    <div className="text-[11px] text-zinc-500 shrink-0 flex items-center gap-1">
+                      <svg className="w-3 h-3 text-amber-500 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span>{project.stars} Stars</span>
                     </div>
                   </div>
                 </div>

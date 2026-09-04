@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-export default function AuthPage() {
+function AuthContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isLoginPage = pathname === "/login" || searchParams.get("mode") === "login";
@@ -555,5 +555,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center font-mono text-xs text-zinc-500">Loading...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }
