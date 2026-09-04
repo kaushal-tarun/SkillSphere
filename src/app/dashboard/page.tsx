@@ -425,7 +425,7 @@ export default function DashboardPage() {
           activeNav={activeNav}
           setActiveNav={(tab) => {
             setSelectedProject(null);
-            if (tab === "profile") {
+            if (tab === "profile" || tab === "dashboard") {
               setViewingProfileUser(null);
               setViewingProfileProjects([]);
             }

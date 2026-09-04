@@ -117,14 +117,8 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* NAVIGATION BANNER WHEN VIEWING ANOTHER DEVELOPER'S PROFILE */}
-      {!isOwnProfile && onBackToOwnProfile && (
-        <div className="flex items-center justify-between font-mono text-xs text-zinc-500">
-          <button
-            onClick={onBackToOwnProfile}
-            className="hover:text-zinc-900 flex items-center gap-1.5 transition-colors cursor-pointer font-bold"
-          >
-            <span>‹ Back to My Profile</span>
-          </button>
+      {!isOwnProfile && (
+        <div className="flex items-center justify-end font-mono text-xs text-zinc-500">
           <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold text-[10px] shadow-xs">
             Viewing @{user.username}'s Profile
           </span>
