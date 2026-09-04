@@ -32,8 +32,9 @@ export function StatusBox({ user, isOwnProfile = true }: StatusBoxProps) {
 
   const storageKey = `skillsphere_dev_status_${user.username.toLowerCase()}`;
 
-  // Load saved status from localStorage
+  // 1. Load initial status (local cache for instant render + Neon DB for source of truth)
   useEffect(() => {
+    // A. Check local cache first to avoid any flicker
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
@@ -43,39 +44,71 @@ export function StatusBox({ user, isOwnProfile = true }: StatusBoxProps) {
             type: parsed.type,
             label: DEFAULT_LABELS[parsed.type as StatusType],
           });
-          return;
         }
       }
     } catch (e) {
-      console.warn("Failed to load developer status from localStorage", e);
+      console.warn("Local storage status read error", e);
     }
 
-    // Default fallback
-    setStatusData({
-      type: "busy",
-      label: "Busy",
-    });
+    // B. Fetch from Neon PostgreSQL database for the specific user
+    let isSubscribed = true;
+    async function fetchDatabaseStatus() {
+      try {
+        const res = await fetch(`/api/status?username=${encodeURIComponent(user.username)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status && DEFAULT_LABELS[data.status as StatusType] && isSubscribed) {
+            const dbStatus: DeveloperStatusData = {
+              type: data.status as StatusType,
+              label: DEFAULT_LABELS[data.status as StatusType],
+            };
+            setStatusData(dbStatus);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(dbStatus));
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch status from database", err);
+      }
+    }
+
+    fetchDatabaseStatus();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [storageKey, user.username]);
 
-  const handleSaveStatus = (newStatus: DeveloperStatusData) => {
-    setStatusData({
+  // 2. Save status to Neon PostgreSQL & sync local cache
+  const handleSaveStatus = async (newStatus: DeveloperStatusData) => {
+    const updatedStatus: DeveloperStatusData = {
       type: newStatus.type,
       label: DEFAULT_LABELS[newStatus.type] || newStatus.label,
-    });
+    };
+
+    // Optimistic UI update
+    setStatusData(updatedStatus);
     try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          type: newStatus.type,
-          label: DEFAULT_LABELS[newStatus.type] || newStatus.label,
-        })
-      );
+      localStorage.setItem(storageKey, JSON.stringify(updatedStatus));
+    } catch {}
+
+    // Persist to Neon PostgreSQL
+    try {
+      await fetch("/api/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user.username,
+          status: newStatus.type,
+        }),
+      });
     } catch (e) {
-      console.warn("Failed to persist developer status", e);
+      console.error("Failed to persist status to Neon database", e);
     }
   };
 
-  const handleClearStatus = () => {
+  const handleClearStatus = async () => {
     const cleared: DeveloperStatusData = {
       type: "busy",
       label: "Busy",
@@ -83,8 +116,19 @@ export function StatusBox({ user, isOwnProfile = true }: StatusBoxProps) {
     setStatusData(cleared);
     try {
       localStorage.removeItem(storageKey);
+    } catch {}
+
+    try {
+      await fetch("/api/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user.username,
+          status: "busy",
+        }),
+      });
     } catch (e) {
-      console.warn("Failed to clear developer status", e);
+      console.error("Failed to reset status in Neon database", e);
     }
   };
 
