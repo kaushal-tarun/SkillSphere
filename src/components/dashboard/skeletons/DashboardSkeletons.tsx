@@ -28,36 +28,25 @@ export function DashboardStartupSkeleton() {
 
         {/* Nav Items */}
         <div className="space-y-2 flex-1">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-transparent">
               <SkeletonBlock className="w-5 h-5 rounded-lg" />
               <SkeletonBlock className={`h-3.5 rounded-md ${i === 1 ? "w-24 !bg-zinc-400" : "w-20"}`} />
             </div>
           ))}
         </div>
-
-        {/* User Card Skeleton */}
-        <div className="p-3.5 rounded-2xl bg-white border border-[#e8e2d8] flex items-center gap-3">
-          <SkeletonBlock className="w-9 h-9 rounded-xl shrink-0" />
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <SkeletonBlock className="h-3.5 w-24 rounded-md" />
-            <SkeletonBlock className="h-2.5 w-16 rounded-md" />
-          </div>
-        </div>
       </aside>
 
       {/* Main Content Area Skeleton */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar Skeleton */}
-        <header className="sticky top-0 z-30 bg-[#faf6f0]/95 backdrop-blur-md border-b border-[#e8e2d8] px-6 sm:px-8 py-3.5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SkeletonBlock className="h-6 w-32 rounded-lg" />
-            <SkeletonBlock className="h-4 w-12 rounded-full" />
+        <header className="sticky top-0 z-30 bg-[#f8f5ee]/95 backdrop-blur-md border-b border-[#e8e2d8] px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <SkeletonBlock className="h-5 w-24 rounded-md !bg-zinc-800" />
+            <span className="text-zinc-300 font-mono text-xs">/</span>
+            <SkeletonBlock className="h-5 w-20 rounded-md" />
           </div>
-          <div className="flex items-center gap-3">
-            <SkeletonBlock className="h-9 w-48 sm:w-64 rounded-xl hidden sm:block" />
-            <SkeletonBlock className="h-9 w-28 rounded-xl !bg-zinc-800" />
-          </div>
+          <SkeletonBlock className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0" />
         </header>
 
         {/* Main Content View Skeleton */}

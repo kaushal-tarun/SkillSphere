@@ -424,7 +424,18 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* HEADER BAR */}
         <Header
+          user={user}
+          projectsCount={projectsList.length}
           activeNav={activeNav}
+          setActiveNav={(tab) => {
+            setSelectedProject(null);
+            if (tab === "profile") {
+              setViewingProfileUser(null);
+              setViewingProfileProjects([]);
+            }
+            setActiveNav(tab);
+          }}
+          selectedProjectName={selectedProject?.name}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}

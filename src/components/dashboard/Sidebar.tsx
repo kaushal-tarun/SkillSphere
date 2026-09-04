@@ -100,7 +100,6 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
     { id: "projects", label: "Projects", icon: Icons.projects, badge: projectsCount },
     { id: "friends", label: "Friends", icon: Icons.friends },
     { id: "community", label: "Community", icon: Icons.community },
-    { id: "profile", label: "Profile", icon: Icons.profile },
   ];
 
   return (
@@ -161,60 +160,11 @@ export function Sidebar({ activeNav, setActiveNav, user, projectsCount }: Sideba
             ))}
           </nav>
         </div>
-
-        {/* Sidebar Bottom Profile Snippet */}
-        <div className={`p-4 border-t border-[#e8e2d8] bg-white/80 ${isCollapsed ? "flex justify-center" : ""}`}>
-          {isCollapsed ? (
-            <button
-              onClick={() => setActiveNav("profile")}
-              className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden hover:scale-105 transition-transform cursor-pointer shadow-sm"
-              title={`${user.name} (@${user.username})`}
-            >
-              {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
-                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                getInitials(user.name)
-              )}
-            </button>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden">
-                  {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
-                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    getInitials(user.name)
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-zinc-900 truncate">{user.name}</div>
-                  <div className="text-[10px] font-mono text-zinc-500 truncate flex items-center gap-1">
-                    <span>@{user.username}</span>
-                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getBuilderTitle(projectsCount).badgeClass}`}>
-                      {getBuilderTitle(projectsCount).title}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setActiveNav("settings")}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 transition-colors cursor-pointer shrink-0"
-                title="Settings"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
       </aside>
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#faf6f0]/95 backdrop-blur-md border-t border-[#e8e2d8] px-2 py-1.5 flex items-center justify-around font-mono text-[10px] shadow-lg overflow-x-auto">
-        {[...navItems, { id: "settings", label: "Settings", icon: Icons.settings }].map((item) => (
+        {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveNav(item.id as NavTab)}
