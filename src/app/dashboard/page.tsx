@@ -399,20 +399,22 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white">
-      {/* 1. SIDEBAR NAVIGATION */}
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={(tab) => {
-          setSelectedProject(null);
-          if (tab === "profile") {
-            setViewingProfileUser(null);
-            setViewingProfileProjects([]);
-          }
-          setActiveNav(tab);
-        }}
-        user={user}
-        projectsCount={projectsList.length}
-      />
+      {/* 1. SIDEBAR NAVIGATION (Hidden when viewing profile) */}
+      {activeNav !== "profile" && (
+        <Sidebar
+          activeNav={activeNav}
+          setActiveNav={(tab) => {
+            setSelectedProject(null);
+            if (tab === "profile") {
+              setViewingProfileUser(null);
+              setViewingProfileProjects([]);
+            }
+            setActiveNav(tab);
+          }}
+          user={user}
+          projectsCount={projectsList.length}
+        />
+      )}
 
       {/* 2. MAIN CONTENT WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0">
