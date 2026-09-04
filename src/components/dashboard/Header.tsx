@@ -62,7 +62,24 @@ export function Header({
   const titleInfo = getBuilderTitle(projectsCount);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-end">
+    <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-between">
+      {/* Top Left: Back Button when viewing profile */}
+      {activeNav === "profile" ? (
+        <button
+          type="button"
+          onClick={() => setActiveNav("dashboard")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f4efe6] border border-[#e8e2d8] hover:border-zinc-400 text-zinc-800 text-xs font-mono font-bold transition-all shadow-2xs cursor-pointer group"
+          title="Back to Dashboard"
+        >
+          <svg className="w-3.5 h-3.5 text-zinc-600 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+      ) : (
+        <div />
+      )}
+
       {/* Right: Only the Avatar with Interactive Dropdown */}
       <div className="relative" ref={dropdownRef}>
           <button
@@ -104,42 +121,24 @@ export function Header({
 
               {/* Dropdown Menu Actions */}
               <div className="pt-1 space-y-0.5">
-                {/* Dashboard: only visible when viewing profile */}
-                {activeNav === "profile" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveNav("dashboard");
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-mono text-xs transition-colors cursor-pointer bg-[#f4efe6] hover:bg-[#e8e2d8] text-zinc-900 font-bold"
-                  >
-                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="3" width="7" height="7" strokeWidth="1.5" rx="1" />
-                      <rect x="14" y="3" width="7" height="7" strokeWidth="1.5" rx="1" />
-                      <rect x="14" y="14" width="7" height="7" strokeWidth="1.5" rx="1" />
-                      <rect x="3" y="14" width="7" height="7" strokeWidth="1.5" rx="1" />
-                    </svg>
-                    <span>Dashboard</span>
-                  </button>
-                )}
-
-                {/* Profile: only visible when not viewing profile */}
-                {activeNav !== "profile" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveNav("profile");
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer text-zinc-700 hover:bg-[#faf6f0] hover:text-zinc-900"
-                  >
-                    <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>Profile</span>
-                  </button>
-                )}
+                {/* Profile */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveNav("profile");
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                    activeNav === "profile"
+                      ? "bg-[#f4efe6] text-zinc-900 font-bold"
+                      : "text-zinc-700 hover:bg-[#faf6f0] hover:text-zinc-900"
+                  }`}
+                >
+                  <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Profile</span>
+                </button>
 
                 {/* Settings */}
                 <button
