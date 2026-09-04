@@ -32,19 +32,13 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to comment." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "User session not found" }, { status: 404 });
@@ -81,7 +75,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/comments - Delete a comment in Neon PostgreSQL
+// DELETE /api/comments - Delete a comment in Neon PostgreSQL with ownership check
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -89,6 +83,33 @@ export async function DELETE(request: Request) {
 
     if (!commentId) {
       return NextResponse.json({ error: "Comment ID is required" }, { status: 400 });
+    }
+
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "User session not found" }, { status: 404 });
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { post: true },
+    });
+
+    if (!comment) {
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    }
+
+    // Either the comment creator or the post author can delete
+    if (comment.userId !== currentUser.id && comment.post.userId !== currentUser.id) {
+      return NextResponse.json({ error: "Forbidden: You do not have permission to delete this comment" }, { status: 403 });
     }
 
     await prisma.comment.delete({

@@ -17,12 +17,6 @@ export async function GET(request: Request) {
       });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
-
     let likedPostIdsSet = new Set<string>();
     if (currentUser) {
       const userLikes = await prisma.like.findMany({
@@ -144,33 +138,16 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
-    let targetUser = null;
-
-    if (session?.user?.email) {
-      targetUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to post." }, { status: 401 });
     }
 
-    if (!targetUser && username) {
-      targetUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const targetUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!targetUser) {
-      const fallbackUsername = username ? username.toLowerCase().trim() : "developer";
-      targetUser = await prisma.user.upsert({
-        where: { username: fallbackUsername },
-        update: {},
-        create: {
-          name: username || "Student Developer",
-          username: fallbackUsername,
-          email: `${fallbackUsername}@skillsphere.dev`,
-          password: "hashed_placeholder",
-          university: "University Student",
-        },
-      });
+      return NextResponse.json({ error: "User account not found." }, { status: 404 });
     }
 
     // Process images (up to 2 images)
@@ -224,7 +201,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/posts - Delete a community post in Neon PostgreSQL
+// DELETE /api/posts - Delete a community post in Neon PostgreSQL with ownership check
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -232,6 +209,31 @@ export async function DELETE(request: Request) {
 
     if (!postId) {
       return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+    }
+
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "User account not found." }, { status: 404 });
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found." }, { status: 404 });
+    }
+
+    if (post.userId !== currentUser.id) {
+      return NextResponse.json({ error: "Forbidden: You do not have permission to delete this post." }, { status: 403 });
     }
 
     await prisma.post.delete({

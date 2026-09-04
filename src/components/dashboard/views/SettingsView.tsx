@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { signOut } from "next-auth/react";
 import { UserProfile } from "@/types/dashboard";
 
 interface SettingsViewProps {
@@ -586,9 +587,9 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                   <div className="text-[10px] text-zinc-600 font-sans">Log out of @{user.username} to log in as another user.</div>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     localStorage.removeItem("user");
-                    window.location.href = "/register";
+                    await signOut({ callbackUrl: "/login" });
                   }}
                   className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
                 >
@@ -602,10 +603,22 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                   <div className="text-[10px] text-rose-700 font-sans">Permanently delete your profile and published repositories.</div>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                      localStorage.removeItem("user");
-                      window.location.href = "/register";
+                      try {
+                        const res = await fetch("/api/profile", {
+                          method: "DELETE",
+                        });
+                        if (res.ok) {
+                          localStorage.removeItem("user");
+                          await signOut({ callbackUrl: "/register" });
+                        } else {
+                          const errData = await res.json().catch(() => ({}));
+                          alert(errData.error || "Failed to delete account. Please try again.");
+                        }
+                      } catch (err) {
+                        alert("Network error while deleting account.");
+                      }
                     }
                   }}
                   className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"

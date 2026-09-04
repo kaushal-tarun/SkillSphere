@@ -33,19 +33,6 @@ const providers: NextAuthOptions["providers"] = [
         console.warn("Prisma query failed, checking fallback state", error);
       }
 
-      // Fallback for development/demo user
-      if (!user && (cleanIdentifier === "advait_d" || cleanIdentifier === "advait@skillsphere.dev")) {
-        const isValidDemoPassword = credentials.password === "password123";
-        if (isValidDemoPassword) {
-          return {
-            id: "usr-demo-1",
-            name: "Advait Deshmukh",
-            email: "advait@skillsphere.dev",
-            username: "advait_d",
-            university: "IIT Bombay '26",
-          };
-        }
-      }
 
       if (!user || !user.password) {
         throw new Error("No user found with this username.");

@@ -109,22 +109,16 @@ export async function POST(request: Request) {
 
     // Rule 5: Must Be Logged In (401 Unauthorized)
     const session = await auth();
-    let targetUser = null;
-
-    if (session?.user?.email) {
-      targetUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to publish a project." }, { status: 401 });
     }
 
-    if (!targetUser && username) {
-      targetUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const targetUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!targetUser) {
-      return NextResponse.json({ error: "Unauthorized. Please log in to publish a project." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. User account not found." }, { status: 401 });
     }
 
     // Rule 1: Project Name Validation (Min 3, Max 100, Trim, No Spaces)
@@ -292,19 +286,13 @@ export async function DELETE(request: Request) {
 
     // Rule 5: Security — Must Be Logged In (401 Unauthorized)
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });

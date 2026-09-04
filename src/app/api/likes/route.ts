@@ -13,19 +13,13 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "User session not found" }, { status: 404 });

@@ -9,22 +9,25 @@ export async function GET(request: Request) {
     const username = searchParams.get("username");
 
     const session = await auth();
-    let targetUser = null;
+    let sessionUser = null;
 
-    if (username && username.trim()) {
-      targetUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
-
-    if (!targetUser && session?.user?.email) {
-      targetUser = await prisma.user.findFirst({
+    if (session?.user?.email) {
+      sessionUser = await prisma.user.findFirst({
         where: { email: session.user.email },
       });
     }
 
+    let targetUser = null;
+    if (username && username.trim()) {
+      targetUser = await prisma.user.findFirst({
+        where: { username: username.toLowerCase().trim() },
+      });
+    } else {
+      targetUser = sessionUser;
+    }
+
     if (!targetUser) {
-      return NextResponse.json({ friends: [], pendingRequests: [] }, { status: 200 });
+      return NextResponse.json({ friends: [], pendingRequests: [], sentRequests: [], registeredUsers: [] }, { status: 200 });
     }
 
     // Accepted Friendships
@@ -60,45 +63,53 @@ export async function GET(request: Request) {
       };
     });
 
-    // Pending incoming friend requests (where current user is receiver)
-    const incomingPending = await prisma.friendship.findMany({
-      where: {
-        receiverId: targetUser.id,
-        status: "PENDING",
-      },
-      include: {
-        sender: { include: { projects: true } },
-      },
-    });
+    const isOwner = Boolean(sessionUser && sessionUser.id === targetUser.id);
 
-    const pendingRequests = incomingPending.map((f) => {
-      const sender = f.sender;
-      const projCount = sender.projects ? sender.projects.length : 0;
-      const xp = projCount * 500;
+    // Pending incoming friend requests (only visible to owner)
+    let pendingRequests: any[] = [];
+    if (isOwner) {
+      const incomingPending = await prisma.friendship.findMany({
+        where: {
+          receiverId: targetUser.id,
+          status: "PENDING",
+        },
+        include: {
+          sender: { include: { projects: true } },
+        },
+      });
 
-      return {
-        friendshipId: f.id,
-        senderId: sender.id,
-        name: sender.name,
-        username: sender.username,
-        university: sender.university || "University Student",
-        xp,
-        avatar: sender.avatar || (sender.name || sender.username).slice(0, 2).toUpperCase(),
-      };
-    });
+      pendingRequests = incomingPending.map((f) => {
+        const sender = f.sender;
+        const projCount = sender.projects ? sender.projects.length : 0;
+        const xp = projCount * 500;
 
-    // Pending outgoing friend requests (where current user is sender)
-    const outgoingPending = await prisma.friendship.findMany({
-      where: {
-        senderId: targetUser.id,
-        status: "PENDING",
-      },
-      include: {
-        receiver: true,
-      },
-    });
+        return {
+          friendshipId: f.id,
+          senderId: sender.id,
+          name: sender.name,
+          username: sender.username,
+          university: sender.university || "University Student",
+          xp,
+          avatar: sender.avatar || (sender.name || sender.username).slice(0, 2).toUpperCase(),
+        };
+      });
+    }
 
-    const sentRequests = outgoingPending.map((f) => f.receiver.username.toLowerCase());
+    // Pending outgoing friend requests (only visible to owner)
+    let sentRequests: string[] = [];
+    if (isOwner) {
+      const outgoingPending = await prisma.friendship.findMany({
+        where: {
+          senderId: targetUser.id,
+          status: "PENDING",
+        },
+        include: {
+          receiver: true,
+        },
+      });
+
+      sentRequests = outgoingPending.map((f) => f.receiver.username.toLowerCase());
+    }
 
     // All registered users in Neon PostgreSQL with live DB avatars & project counts
     const registeredUsersDb = await prisma.user.findMany({
@@ -137,26 +148,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { targetUsername, username } = body;
+    const { targetUsername } = body;
 
     if (!targetUsername) {
       return NextResponse.json({ error: "Target username is required" }, { status: 400 });
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to send friend requests." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Current user session not found" }, { status: 404 });
@@ -197,22 +202,16 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { action, senderUsername, username } = body; // action: "ACCEPT" | "DECLINE"
+    const { action, senderUsername } = body; // action: "ACCEPT" | "DECLINE"
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "User session not found" }, { status: 404 });
@@ -249,26 +248,19 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const targetUsername = searchParams.get("targetUsername");
-    const username = searchParams.get("username");
 
     if (!targetUsername) {
       return NextResponse.json({ error: "Target username is required" }, { status: 400 });
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Current user session not found" }, { status: 404 });

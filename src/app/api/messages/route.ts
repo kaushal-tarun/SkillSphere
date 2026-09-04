@@ -7,26 +7,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const friendUsername = searchParams.get("friendUsername");
-    const username = searchParams.get("username");
 
     if (!friendUsername) {
       return NextResponse.json({ messages: [] }, { status: 200 });
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to view messages." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ messages: [] }, { status: 200 });
@@ -85,7 +78,7 @@ function containsAbusiveWords(text: string): boolean {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { friendUsername, text, username } = body;
+    const { friendUsername, text } = body;
 
     if (!friendUsername || !text || !text.trim()) {
       return NextResponse.json({ error: "Friend username and message text are required" }, { status: 400 });
@@ -96,19 +89,13 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to send messages." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "Current user session not found" }, { status: 404 });
@@ -145,7 +132,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE /api/messages - Delete / Unsend a message from Neon PostgreSQL
+// DELETE /api/messages - Delete / Unsend a message from Neon PostgreSQL with ownership check
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -153,6 +140,31 @@ export async function DELETE(request: Request) {
 
     if (!id) {
       return NextResponse.json({ error: "Message ID is required" }, { status: 400 });
+    }
+
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "User session not found" }, { status: 404 });
+    }
+
+    const message = await prisma.message.findUnique({
+      where: { id },
+    });
+
+    if (!message) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+    }
+
+    if (message.senderId !== currentUser.id) {
+      return NextResponse.json({ error: "Forbidden: You can only delete your own messages" }, { status: 403 });
     }
 
     await prisma.message.delete({

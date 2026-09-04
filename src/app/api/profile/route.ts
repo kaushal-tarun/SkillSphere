@@ -97,19 +97,13 @@ export async function PUT(request: Request) {
     }
 
     const session = await auth();
-    let currentUser = null;
-
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    if (!currentUser && username) {
-      currentUser = await prisma.user.findFirst({
-        where: { username: username.toLowerCase().trim() },
-      });
-    }
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
 
     if (!currentUser) {
       return NextResponse.json({ error: "User session not found" }, { status: 404 });
@@ -159,5 +153,33 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error("PUT /api/profile error:", error);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+  }
+}
+
+// DELETE /api/profile - Permanently delete active user account and all cascading data from PostgreSQL
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findFirst({
+      where: { email: session.user.email },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "User account not found." }, { status: 404 });
+    }
+
+    // Delete user from PostgreSQL (cascades to profile, projects, posts, comments, likes, messages, friendships)
+    await prisma.user.delete({
+      where: { id: currentUser.id },
+    });
+
+    return NextResponse.json({ success: true, message: "Account successfully deleted" }, { status: 200 });
+  } catch (error) {
+    console.error("DELETE /api/profile error:", error);
+    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
   }
 }
