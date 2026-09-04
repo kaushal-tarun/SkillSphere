@@ -62,12 +62,9 @@ export function Header({
   const titleInfo = getBuilderTitle(projectsCount);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-xs">
-      <div className={`w-full mx-auto px-4 sm:px-8 py-3 flex items-center justify-end ${
-        activeNav === "profile" ? "max-w-5xl" : ""
-      }`}>
-        {/* Right: Only the Avatar with Interactive Dropdown */}
-        <div className="relative" ref={dropdownRef}>
+    <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-end">
+      {/* Right: Only the Avatar with Interactive Dropdown */}
+      <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -184,7 +181,6 @@ export function Header({
             </div>
           )}
         </div>
-      </div>
-    </header>
+      </header>
     );
   }
