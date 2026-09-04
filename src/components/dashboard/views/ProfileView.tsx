@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
 import { getBuilderTitle } from "@/lib/titles";
+import { StatusBox } from "@/components/dashboard/status/StatusBox";
 
 interface ProfileViewProps {
   user: UserProfile;
@@ -251,23 +252,8 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
             </div>
           </div>
 
-          {/* 2. STATUS BOX (NEW) */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
-                <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Status</h3>
-              </div>
-              <span className="font-mono text-[11px] text-zinc-400">Developer Status</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between text-xs font-mono">
-              <div className="flex items-center gap-2 text-zinc-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="font-medium">Active & Building</span>
-              </div>
-              <span className="text-[10px] text-zinc-500">Available for projects</span>
-            </div>
-          </div>
+          {/* 2. ANIMATED STATUS BOX WITH 'SET STATUS' AND PIXEL ANIMATIONS */}
+          <StatusBox user={user} isOwnProfile={isOwnProfile} />
 
           {/* 3. PUBLISHED REPOSITORIES */}
           <div className="space-y-4">
