@@ -29,7 +29,7 @@ export function getBuilderTitle(projectsCount: number): BuilderTitleInfo {
     };
   }
   return {
-    title: "Grandmaster",
+    title: "Asian",
     badgeClass: "bg-amber-50 text-amber-900 border border-amber-300 font-extrabold",
   };
 }
