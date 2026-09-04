@@ -444,12 +444,15 @@ export function ProfileViewSkeleton() {
           </div>
 
           {/* Status Box Skeleton */}
-          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <SkeletonBlock className="h-4 w-20 rounded-md" />
-              <SkeletonBlock className="h-3 w-16 rounded-md" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <SkeletonBlock className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl shrink-0" />
+              <div className="space-y-1.5">
+                <SkeletonBlock className="h-3 w-16 rounded-md" />
+                <SkeletonBlock className="h-5 w-24 rounded-md" />
+              </div>
             </div>
-            <SkeletonBlock className="h-10 w-full rounded-xl" />
+            <SkeletonBlock className="h-8 w-24 rounded-xl" />
           </div>
 
           {/* Projects Showcase Skeleton */}
