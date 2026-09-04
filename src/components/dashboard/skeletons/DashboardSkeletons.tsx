@@ -409,60 +409,115 @@ export function FriendsChatSkeleton() {
 export function ProfileViewSkeleton() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300 w-full">
-      {/* Top Banner & Identity Card Skeleton */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e8e2d8] shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-5">
-            <SkeletonBlock className="w-20 h-20 rounded-3xl shrink-0" />
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <SkeletonBlock className="h-6 w-44 rounded-lg" />
-                <SkeletonBlock className="h-5 w-20 rounded-full" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column Skeleton */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+          {/* Top Banner & Identity Card Skeleton */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <SkeletonBlock className="w-14 h-14 rounded-2xl shrink-0" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5">
+                    <SkeletonBlock className="h-6 w-40 rounded-lg" />
+                    <SkeletonBlock className="h-5 w-16 rounded-full" />
+                  </div>
+                  <SkeletonBlock className="h-3.5 w-32 rounded-md" />
+                  <SkeletonBlock className="h-3 w-48 rounded-md" />
+                </div>
               </div>
-              <SkeletonBlock className="h-3.5 w-32 rounded-md" />
-              <SkeletonBlock className="h-3 w-48 rounded-md" />
+              <div className="flex items-center gap-2">
+                <SkeletonBlock className="h-8 w-24 rounded-xl" />
+                <SkeletonBlock className="h-8 w-20 rounded-xl" />
+              </div>
+            </div>
+
+            {/* Stats Grid Skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-zinc-100">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1.5">
+                  <SkeletonBlock className="h-2.5 w-14 rounded-md" />
+                  <SkeletonBlock className="h-5 w-20 rounded-lg" />
+                </div>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-2.5">
-            <SkeletonBlock className="h-9 w-28 rounded-xl" />
-            <SkeletonBlock className="h-9 w-32 rounded-xl !bg-zinc-800" />
-          </div>
-        </div>
 
-        {/* Bio Skeleton */}
-        <div className="space-y-1.5 pt-2 border-t border-zinc-100">
-          <SkeletonBlock className="h-3.5 w-full rounded-md" />
-          <SkeletonBlock className="h-3.5 w-4/5 rounded-md" />
-        </div>
-
-        {/* Stats Grid Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 rounded-2xl bg-[#f8f5ee] border border-[#e8e2d8] space-y-2">
+          {/* Status Box Skeleton */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <SkeletonBlock className="h-4 w-20 rounded-md" />
               <SkeletonBlock className="h-3 w-16 rounded-md" />
-              <SkeletonBlock className="h-6 w-20 rounded-lg" />
             </div>
-          ))}
-        </div>
-      </div>
+            <SkeletonBlock className="h-10 w-full rounded-xl" />
+          </div>
 
-      {/* Projects Showcase Skeleton */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2">
-          <SkeletonBlock className="h-5 w-36 rounded-md" />
-          <SkeletonBlock className="h-4 w-20 rounded-md" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-3.5">
-              <SkeletonBlock className="h-5 w-40 rounded-md" />
-              <SkeletonBlock className="h-3.5 w-full rounded-md" />
-              <div className="flex gap-2 pt-1">
-                <SkeletonBlock className="h-4 w-12 rounded-md" />
-                <SkeletonBlock className="h-4 w-12 rounded-md" />
-              </div>
+          {/* Projects Showcase Skeleton */}
+          <div className="space-y-4">
+            <SkeletonBlock className="h-5 w-36 rounded-md" />
+            <div className="space-y-3.5">
+              {[1, 2].map((i) => (
+                <div key={i} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <SkeletonBlock className="h-5 w-36 rounded-md" />
+                      <SkeletonBlock className="h-3.5 w-3/4 rounded-md" />
+                    </div>
+                    <SkeletonBlock className="h-7 w-16 rounded-xl shrink-0" />
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                    <div className="flex gap-1.5">
+                      <SkeletonBlock className="h-4 w-12 rounded-md" />
+                      <SkeletonBlock className="h-4 w-12 rounded-md" />
+                    </div>
+                    <SkeletonBlock className="h-3.5 w-16 rounded-md" />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Right Column Skeleton */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+          {/* Tech Stack Skeleton */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-4">
+            <SkeletonBlock className="h-4 w-28 rounded-md" />
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 2, 3, 4].map((i) => (
+                <SkeletonBlock key={i} className="h-6 w-16 rounded-lg" />
+              ))}
+            </div>
+          </div>
+
+          {/* Badges Skeleton */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-4">
+            <SkeletonBlock className="h-4 w-24 rounded-md" />
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1.5">
+                  <SkeletonBlock className="h-3.5 w-28 rounded-md" />
+                  <SkeletonBlock className="h-3 w-40 rounded-md" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity Timeline Skeleton */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-4">
+            <SkeletonBlock className="h-4 w-28 rounded-md" />
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <SkeletonBlock className="w-2 h-2 rounded-full mt-1.5 shrink-0" />
+                  <div className="space-y-1 flex-1">
+                    <SkeletonBlock className="h-3.5 w-24 rounded-md" />
+                    <SkeletonBlock className="h-3 w-36 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

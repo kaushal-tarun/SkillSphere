@@ -438,7 +438,7 @@ export default function DashboardPage() {
         />
 
         {/* DYNAMIC VIEW ROUTER */}
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+        <main className={`flex-1 w-full mx-auto px-4 sm:px-8 py-8 space-y-8 ${activeNav === "profile" ? "max-w-none" : "max-w-5xl"}`}>
           {selectedProject ? (
             <ProjectDetailsView
               project={selectedProject}

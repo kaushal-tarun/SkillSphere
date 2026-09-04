@@ -115,7 +115,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
   const realXp = projectsList.length * 500;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 animate-in fade-in duration-300 w-full">
       {/* NAVIGATION BANNER WHEN VIEWING ANOTHER DEVELOPER'S PROFILE */}
       {!isOwnProfile && (
         <div className="flex items-center justify-end font-mono text-xs text-zinc-500">
@@ -125,169 +125,151 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
         </div>
       )}
 
-      {/* PROFILE HERO HEADER */}
-      <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-lg flex items-center justify-center shrink-0 uppercase shadow-md overflow-hidden">
-              {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
-                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                getInitials(user.name)
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
-                  {user.name}
-                </h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${getBuilderTitle(projectsList.length).badgeClass}`}>
-                  {getBuilderTitle(projectsList.length).title}
-                </span>
-              </div>
-              <div className="text-xs font-mono text-zinc-500 flex flex-wrap items-center gap-2.5">
-                <span className="text-zinc-900 font-bold">@{user.username}</span>
-                <span>•</span>
-                <span>{user.role}</span>
-                <span>•</span>
-                <span>{user.university}</span>
-              </div>
-              <p className="text-xs text-zinc-600 max-w-xl pt-1 font-normal leading-relaxed">
-                {user.bio}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 self-start font-mono text-xs">
-            {!isOwnProfile && currentUser && currentUser.username.toLowerCase() !== user.username.toLowerCase() && (
-              <button
-                type="button"
-                onClick={handleAddFriend}
-                disabled={friendshipState !== "NONE"}
-                className={`px-3.5 py-1.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
-                  friendshipState === "FRIENDS"
-                    ? "bg-emerald-800 text-white border border-emerald-700 cursor-default"
-                    : friendshipState === "SENT"
-                    ? "bg-zinc-100 text-zinc-500 border border-[#e8e2d8] cursor-default"
-                    : friendshipState === "PENDING"
-                    ? "bg-amber-600 text-white"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                }`}
-              >
-                {friendshipState === "FRIENDS" && (
-                  <>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Friends</span>
-                  </>
-                )}
-                {friendshipState === "SENT" && (
-                  <>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <circle cx="12" cy="12" r="9" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <span>Request Sent</span>
-                  </>
-                )}
-                {friendshipState === "PENDING" && (
-                  <>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span>Accept Request</span>
-                  </>
-                )}
-                {friendshipState === "NONE" && (
-                  <>
-                    <span>+</span>
-                    <span>Add Friend</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            <button
-              onClick={handleCopyProfileLink}
-              className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold shadow-sm transition-all cursor-pointer"
-            >
-              {copiedLink ? "✓ Link Copied" : "Share Profile"}
-            </button>
-            <a
-              href={`https://github.com/${user.username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 transition-all font-bold"
-            >
-              GitHub ↗
-            </a>
-          </div>
-        </div>
-
-        {/* METRICS ROW */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs">
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-zinc-500 text-[10px]">Total XP</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{realXp.toLocaleString()} XP</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-zinc-500 text-[10px]">Projects</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{projectsList.length} Repos</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-zinc-500 text-[10px]">Member Since</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">{user.createdAt || "Feb 2026"}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2-COLUMN SECTION: SKILLS, ACHIEVEMENTS & PORTFOLIO */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* MAIN 2-COLUMN LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* LEFT COLUMN: SKILLS & VERIFIED BADGES */}
-        <div className="lg:col-span-1 space-y-6 font-mono text-xs">
-          {/* VERIFIED TECH SKILLS */}
-          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Tech Stack</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {dynamicTechSkills.length > 0 ? (
-                dynamicTechSkills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium text-[11px]"
-                  >
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <span className="text-zinc-500 text-xs italic">No tech stack tagged yet.</span>
-              )}
-            </div>
-          </div>
-
-          {/* BADGES & ACHIEVEMENTS */}
-          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Badges</h3>
-            <div className="space-y-3">
-              {realAchievements.map((ach) => (
-                <div key={ach.title} className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
-                  <div className="text-zinc-900 font-bold text-xs">{ach.title}</div>
-                  <div className="text-[10px] text-zinc-500 font-sans">{ach.detail}</div>
-                  <div className="text-[9px] text-zinc-400 font-mono text-right">{ach.date}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT 2 COLUMNS: PUBLISHED PROJECTS & TIMELINE */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* LEFT COLUMN: UNDER DASHBOARD LINE */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-6">
           
-          {/* PUBLISHED PROJECTS */}
+          {/* 1. FIRST INFO BOX (PROFILE HERO HEADER) */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-lg flex items-center justify-center shrink-0 uppercase shadow-md overflow-hidden">
+                  {user.avatar && (user.avatar.startsWith("data:") || user.avatar.startsWith("http") || user.avatar.startsWith("/")) ? (
+                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(user.name)
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+                      {user.name}
+                    </h1>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${getBuilderTitle(projectsList.length).badgeClass}`}>
+                      {getBuilderTitle(projectsList.length).title}
+                    </span>
+                  </div>
+                  <div className="text-xs font-mono text-zinc-500 flex flex-wrap items-center gap-2.5">
+                    <span className="text-zinc-900 font-bold">@{user.username}</span>
+                    <span>•</span>
+                    <span>{user.role}</span>
+                    <span>•</span>
+                    <span>{user.university}</span>
+                  </div>
+                  <p className="text-xs text-zinc-600 max-w-xl pt-1 font-normal leading-relaxed">
+                    {user.bio}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 self-start font-mono text-xs">
+                {!isOwnProfile && currentUser && currentUser.username.toLowerCase() !== user.username.toLowerCase() && (
+                  <button
+                    type="button"
+                    onClick={handleAddFriend}
+                    disabled={friendshipState !== "NONE"}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
+                      friendshipState === "FRIENDS"
+                        ? "bg-emerald-800 text-white border border-emerald-700 cursor-default"
+                        : friendshipState === "SENT"
+                        ? "bg-zinc-100 text-zinc-500 border border-[#e8e2d8] cursor-default"
+                        : friendshipState === "PENDING"
+                        ? "bg-amber-600 text-white"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                  >
+                    {friendshipState === "FRIENDS" && (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Friends</span>
+                      </>
+                    )}
+                    {friendshipState === "SENT" && (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <circle cx="12" cy="12" r="9" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span>Request Sent</span>
+                      </>
+                    )}
+                    {friendshipState === "PENDING" && (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span>Accept Request</span>
+                      </>
+                    )}
+                    {friendshipState === "NONE" && (
+                      <>
+                        <span>+</span>
+                        <span>Add Friend</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                <button
+                  onClick={handleCopyProfileLink}
+                  className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold shadow-sm transition-all cursor-pointer"
+                >
+                  {copiedLink ? "✓ Link Copied" : "Share Profile"}
+                </button>
+                <a
+                  href={`https://github.com/${user.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 transition-all font-bold"
+                >
+                  GitHub ↗
+                </a>
+              </div>
+            </div>
+
+            {/* METRICS ROW */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs">
+              <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                <div className="text-zinc-500 text-[10px]">Total XP</div>
+                <div className="text-base font-extrabold text-zinc-900 mt-0.5">{realXp.toLocaleString()} XP</div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                <div className="text-zinc-500 text-[10px]">Projects</div>
+                <div className="text-base font-extrabold text-zinc-900 mt-0.5">{projectsList.length} Repos</div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
+                <div className="text-zinc-500 text-[10px]">Member Since</div>
+                <div className="text-base font-extrabold text-zinc-900 mt-0.5">{user.createdAt || "Feb 2026"}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. STATUS BOX (NEW) */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
+                <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Status</h3>
+              </div>
+              <span className="font-mono text-[11px] text-zinc-400">Developer Status</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center gap-2 text-zinc-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="font-medium">Active & Building</span>
+              </div>
+              <span className="text-[10px] text-zinc-500">Available for projects</span>
+            </div>
+          </div>
+
+          {/* 3. PUBLISHED REPOSITORIES */}
           <div className="space-y-4">
             <h2 className="text-base font-bold text-zinc-900 tracking-tight">
               Published Repositories ({projectsList.length})
@@ -341,11 +323,48 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
             </div>
           </div>
 
-          {/* DEVELOPER TIMELINE */}
-          <div className="space-y-4 pt-4 border-t border-[#e8e2d8]">
-            <h2 className="text-base font-bold text-zinc-900 tracking-tight">Activity Timeline</h2>
+        </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4 font-mono text-xs">
+        {/* RIGHT COLUMN: UNDER AVATAR LINE */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-6 font-mono text-xs">
+          
+          {/* VERIFIED TECH SKILLS */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Tech Stack</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {dynamicTechSkills.length > 0 ? (
+                dynamicTechSkills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium text-[11px]"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="text-zinc-500 text-xs italic">No tech stack tagged yet.</span>
+              )}
+            </div>
+          </div>
+
+          {/* BADGES & ACHIEVEMENTS */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Verified Badges</h3>
+            <div className="space-y-3">
+              {realAchievements.map((ach) => (
+                <div key={ach.title} className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-1">
+                  <div className="text-zinc-900 font-bold text-xs">{ach.title}</div>
+                  <div className="text-[10px] text-zinc-500 font-sans">{ach.detail}</div>
+                  <div className="text-[9px] text-zinc-400 font-mono text-right">{ach.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* DEVELOPER TIMELINE */}
+          <div className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-zinc-900 tracking-tight">Activity Timeline</h3>
+            <div className="space-y-4">
               {realTimeline.map((evt, idx) => (
                 <div key={idx} className="flex gap-3 items-start">
                   <div className="w-2 h-2 rounded-full bg-zinc-900 mt-1.5 shrink-0" />
