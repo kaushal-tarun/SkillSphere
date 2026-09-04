@@ -21,7 +21,6 @@ export default function AuthPage() {
   const [regData, setRegData] = useState({
     username: "",
     name: "",
-    email: "",
     university: "",
     password: "",
     confirmPassword: "",
@@ -53,7 +52,6 @@ export default function AuthPage() {
     setSuccess("");
 
     const cleanUsername = regData.username.trim().toLowerCase().replace(/\s+/g, "_");
-    const cleanEmail = regData.email.trim().toLowerCase();
 
     if (!cleanUsername || !regData.password) {
       setError("Please enter a username and password.");
@@ -79,7 +77,6 @@ export default function AuthPage() {
         body: JSON.stringify({
           name: regData.name.trim() || cleanUsername,
           username: cleanUsername,
-          email: cleanEmail || undefined,
           university: regData.university.trim() || undefined,
           password: regData.password,
         }),
@@ -469,18 +466,6 @@ export default function AuthPage() {
                       onChange={handleRegChange}
                       placeholder="e.g. advait_d"
                       required
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={regData.email}
-                      onChange={handleRegChange}
-                      placeholder="e.g. advait@university.edu"
                       className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
                     />
                   </div>
