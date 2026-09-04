@@ -1,16 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function AuthPage() {
-  const [authMode, setAuthMode] = useState<"register" | "login">("register");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isLoginPage = pathname === "/login" || searchParams.get("mode") === "login";
+  const [authMode, setAuthMode] = useState<"register" | "login">(isLoginPage ? "login" : "register");
+
+  useEffect(() => {
+    if (pathname === "/login" || searchParams.get("mode") === "login") {
+      setAuthMode("login");
+    }
+  }, [pathname, searchParams]);
 
   // Registration Form State
   const [regData, setRegData] = useState({
     username: "",
     name: "",
+    email: "",
     university: "",
     password: "",
     confirmPassword: "",
@@ -41,7 +52,10 @@ export default function AuthPage() {
     setError("");
     setSuccess("");
 
-    if (!regData.username || !regData.password) {
+    const cleanUsername = regData.username.trim().toLowerCase().replace(/\s+/g, "_");
+    const cleanEmail = regData.email.trim().toLowerCase();
+
+    if (!cleanUsername || !regData.password) {
       setError("Please enter a username and password.");
       return;
     }
@@ -63,9 +77,10 @@ export default function AuthPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: regData.name || regData.username,
-          username: regData.username,
-          university: regData.university,
+          name: regData.name.trim() || cleanUsername,
+          username: cleanUsername,
+          email: cleanEmail || undefined,
+          university: regData.university.trim() || undefined,
           password: regData.password,
         }),
       });
@@ -76,7 +91,7 @@ export default function AuthPage() {
         setError(data.error || "Failed to create account.");
       } else {
         const signInRes = await signIn("credentials", {
-          identifier: regData.username,
+          identifier: cleanUsername,
           password: regData.password,
           redirect: false,
         });
@@ -295,13 +310,21 @@ export default function AuthPage() {
                 </div>
 
                 {error && (
-                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono">
-                    ⚠️ {error}
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{error}</span>
                   </div>
                 )}
                 {success && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono">
-                    ✓ {success}
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{success}</span>
                   </div>
                 )}
 
@@ -398,13 +421,21 @@ export default function AuthPage() {
                 </div>
 
                 {error && (
-                  <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-mono">
-                    ⚠️ {error}
+                  <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-mono flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{error}</span>
                   </div>
                 )}
                 {success && (
-                  <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-mono">
-                    ✓ {success}
+                  <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-mono flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{success}</span>
                   </div>
                 )}
 
@@ -438,6 +469,18 @@ export default function AuthPage() {
                       onChange={handleRegChange}
                       placeholder="e.g. advait_d"
                       required
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-mono text-zinc-300 mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={regData.email}
+                      onChange={handleRegChange}
+                      placeholder="e.g. advait@university.edu"
                       className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white font-sans"
                     />
                   </div>

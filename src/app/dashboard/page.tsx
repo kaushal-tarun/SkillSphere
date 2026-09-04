@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { UserProfile, ProjectItem, LeaderboardItem, ActivityItem } from "@/types/dashboard";
 import { Sidebar, NavTab } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
@@ -17,73 +19,102 @@ import { SettingsView } from "@/components/dashboard/views/SettingsView";
 import { ProjectDetailsView } from "@/components/dashboard/views/ProjectDetailsView";
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [activeNav, setActiveNav] = useState<NavTab>("dashboard");
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
 
   // Dynamic Logged-In User Session State
-  const [user, setUser] = useState<UserProfile>({
-    name: "Advait Deshmukh",
-    username: "advait_deshmukh",
-    email: "advait@gmail.com",
-    university: "IIT Bombay '26",
-    role: "Full-Stack Engineer & AI Developer",
-    location: "Mumbai, India",
-    bio: "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
-  });
-
-  useEffect(() => {
-    async function loadUserProfile() {
-      let currentUsername = user.username;
+  const [user, setUser] = useState<UserProfile>(() => {
+    if (typeof window !== "undefined") {
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
-          if (parsed.name) {
-            currentUsername = parsed.username || parsed.name.toLowerCase().replace(/\s+/g, "_");
-            const userObj = {
+          if (parsed && parsed.name) {
+            return {
               id: parsed.id || "",
               name: parsed.name,
-              username: currentUsername,
-              email: parsed.email || "user@skillsphere.dev",
+              username: parsed.username || parsed.name.toLowerCase().replace(/\s+/g, "_"),
+              email: parsed.email || "builder@skillsphere.dev",
               university: parsed.university || "University Student",
-              role: parsed.role || "Full-Stack Engineer & AI Developer",
+              role: parsed.role || "Full-Stack Engineer",
               location: parsed.location || "India",
               bio: parsed.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
               avatar: parsed.avatar || undefined,
+              xp: parsed.xp || 0,
+              level: parsed.level || 1,
             };
-            setUser(userObj);
           }
         } catch (e) {
-          console.error("Failed to parse user session", e);
+          console.error("Failed to parse cached user", e);
         }
       }
+    }
+    return {
+      name: "Campus Builder",
+      username: "builder",
+      email: "builder@skillsphere.dev",
+      university: "University Student",
+      role: "Full-Stack Engineer & AI Developer",
+      location: "India",
+      bio: "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+      xp: 0,
+      level: 1,
+    };
+  });
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+
+    async function loadUserProfile() {
       try {
-        const res = await fetch(`/api/profile?username=${encodeURIComponent(currentUsername)}`);
+        const res = await fetch("/api/profile");
         if (res.ok) {
           const data = await res.json();
           if (data.profile) {
-            setUser((prev) => {
-              const updated = {
-                ...prev,
-                name: data.profile.name || prev.name,
-                university: data.profile.university || prev.university,
-                role: data.profile.role || prev.role,
-                location: data.profile.location || prev.location,
-                bio: data.profile.bio || prev.bio,
-                avatar: data.profile.avatar || prev.avatar,
-              };
-              localStorage.setItem("user", JSON.stringify(updated));
-              return updated;
-            });
+            const liveUser: UserProfile = {
+              id: data.profile.id,
+              name: data.profile.name,
+              username: data.profile.username,
+              email: data.profile.email,
+              university: data.profile.university || "University Student",
+              role: data.profile.role || "Full-Stack Engineer & AI Developer",
+              location: data.profile.location || "India",
+              bio: data.profile.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+              avatar: data.profile.avatar || undefined,
+              xp: data.profile.xp ?? 0,
+              level: data.profile.level ?? 1,
+            };
+            setUser(liveUser);
+            localStorage.setItem("user", JSON.stringify(liveUser));
           }
+        } else if (session?.user) {
+          setUser((prev) => {
+            const fallback: UserProfile = {
+              ...prev,
+              name: session.user?.name || prev.name,
+              email: session.user?.email || prev.email,
+              username: (session.user as any).username || prev.username,
+              university: (session.user as any).university || prev.university,
+            };
+            localStorage.setItem("user", JSON.stringify(fallback));
+            return fallback;
+          });
         }
       } catch (e) {
         console.error("Failed to fetch profile from PostgreSQL", e);
       }
     }
-    loadUserProfile();
-  }, []);
+
+    if (status === "authenticated") {
+      loadUserProfile();
+    }
+  }, [status, session, router]);
 
   const getInitials = (name: string) => {
     if (!name) return "US";
