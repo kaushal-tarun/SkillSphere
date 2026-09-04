@@ -436,8 +436,8 @@ export function ProfileViewSkeleton() {
         </div>
 
         {/* Stats Grid Skeleton */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          {[1, 2, 3].map((i) => (
             <div key={i} className="p-4 rounded-2xl bg-[#f8f5ee] border border-[#e8e2d8] space-y-2">
               <SkeletonBlock className="h-3 w-16 rounded-md" />
               <SkeletonBlock className="h-6 w-20 rounded-lg" />

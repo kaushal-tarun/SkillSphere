@@ -233,15 +233,10 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
         </div>
 
         {/* METRICS ROW */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-zinc-100 font-mono text-xs">
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
             <div className="text-zinc-500 text-[10px]">Total XP</div>
             <div className="text-base font-extrabold text-zinc-900 mt-0.5">{realXp.toLocaleString()} XP</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-            <div className="text-zinc-500 text-[10px]">Campus Rank</div>
-            <div className="text-base font-extrabold text-zinc-900 mt-0.5">#{projectsList.length > 0 ? "1 Leader" : "Active"}</div>
           </div>
 
           <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
