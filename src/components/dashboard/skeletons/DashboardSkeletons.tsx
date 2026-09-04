@@ -41,7 +41,7 @@ export function DashboardStartupSkeleton() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar Skeleton */}
         <header className="sticky top-0 z-30 bg-[#f8f5ee]/80 backdrop-blur-xs px-4 sm:px-8 py-3 flex items-center justify-end">
-          <SkeletonBlock className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0" />
+          <SkeletonBlock className="w-8 h-8 rounded-xl shrink-0" />
         </header>
 
         {/* Main Content View Skeleton */}

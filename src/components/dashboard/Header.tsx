@@ -68,7 +68,7 @@ export function Header({
         <button
           type="button"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 uppercase overflow-hidden ring-2 ring-transparent hover:ring-zinc-400 focus:outline-none focus:ring-zinc-900 transition-all cursor-pointer shadow-2xs group"
+          className="relative w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono font-bold text-[11px] flex items-center justify-center shrink-0 uppercase overflow-hidden ring-2 ring-transparent hover:ring-zinc-400 focus:outline-none focus:ring-zinc-900 transition-all cursor-pointer shadow-2xs group"
           title={`${user.name} (@${user.username})`}
           aria-expanded={isDropdownOpen}
         >
