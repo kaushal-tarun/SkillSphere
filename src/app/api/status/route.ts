@@ -19,33 +19,33 @@ export async function GET(request: Request) {
       cleanUsername
     );
 
-    if (rows && rows.length > 0) {
-      return NextResponse.json({
-        status: rows[0].status,
-        updatedAt: rows[0].updatedAt,
-      });
+    if (rows && rows.length > 0 && rows[0].status) {
+      const validStatuses = ["busy", "tired", "competing", "focused"];
+      const s = rows[0].status.toLowerCase();
+      if (validStatuses.includes(s)) {
+        return NextResponse.json({
+          status: s,
+          updatedAt: rows[0].updatedAt,
+        });
+      }
     }
 
+    // Default: Not set
     return NextResponse.json({
-      status: "busy",
+      status: null,
       updatedAt: null,
     });
   } catch (error) {
     console.error("GET /api/status error:", error);
-    return NextResponse.json({ error: "Failed to fetch status" }, { status: 500 });
+    return NextResponse.json({ status: null, error: "Database offline fallback" }, { status: 200 });
   }
 }
 
-// POST /api/status - Save user's status in Neon PostgreSQL
+// POST /api/status - Save or clear user's status in Neon PostgreSQL
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { username, status } = body;
-
-    const validStatuses = ["busy", "tired", "competing", "focused"];
-    const targetStatus = validStatuses.includes(status?.toLowerCase())
-      ? status.toLowerCase()
-      : "busy";
 
     const session = await auth();
 
@@ -63,6 +63,25 @@ export async function POST(request: Request) {
 
     if (!targetUsername) {
       return NextResponse.json({ error: "User identity not found" }, { status: 400 });
+    }
+
+    const validStatuses = ["busy", "tired", "competing", "focused"];
+    const targetStatus = status && validStatuses.includes(status.toLowerCase())
+      ? status.toLowerCase()
+      : null;
+
+    if (!targetStatus) {
+      // Clear status: remove record from database
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "UserStatus" WHERE LOWER("username") = LOWER($1)`,
+        targetUsername
+      );
+
+      return NextResponse.json({
+        success: true,
+        status: null,
+        username: targetUsername,
+      });
     }
 
     const id = `status_${targetUsername}`;
@@ -84,6 +103,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("POST /api/status error:", error);
-    return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update status in database" }, { status: 500 });
   }
 }

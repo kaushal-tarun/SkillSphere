@@ -7,7 +7,7 @@ import {
 } from "./PixelStatusAnimations";
 
 export interface DeveloperStatusData {
-  type: StatusType;
+  type: StatusType | null;
   label: string;
   message?: string;
   updatedAt?: string;
@@ -50,12 +50,12 @@ export function SetStatusModal({
   onSave,
   onClear,
 }: SetStatusModalProps) {
-  const [selectedType, setSelectedType] = useState<StatusType>(currentStatus.type || "busy");
+  const [selectedType, setSelectedType] = useState<StatusType | null>(currentStatus.type || null);
 
   // Sync state whenever modal opens
   useEffect(() => {
     if (isOpen) {
-      setSelectedType(currentStatus.type || "busy");
+      setSelectedType(currentStatus.type || null);
     }
   }, [isOpen, currentStatus]);
 
@@ -72,13 +72,29 @@ export function SetStatusModal({
 
   if (!isOpen) return null;
 
-  const currentPreset = STATUS_PRESETS.find((p) => p.type === selectedType) || STATUS_PRESETS[0];
+  const currentPreset = STATUS_PRESETS.find((p) => p.type === selectedType);
 
   const handleSave = () => {
+    if (!selectedType || !currentPreset) {
+      onSave({
+        type: null,
+        label: "Not Set",
+      });
+    } else {
+      onSave({
+        type: selectedType,
+        label: currentPreset.label,
+      });
+    }
+    onClose();
+  };
+
+  const handleSetNotSet = () => {
     onSave({
-      type: selectedType,
-      label: currentPreset.label,
+      type: null,
+      label: "Not Set",
     });
+    if (onClear) onClear();
     onClose();
   };
 
@@ -128,7 +144,7 @@ export function SetStatusModal({
                   <StatusAnimationRenderer type={preset.type} size={58} />
                 </div>
 
-                {/* Only Clean Status Label */}
+                {/* Status Label */}
                 <span className="text-xs font-extrabold text-zinc-900 block">
                   {preset.label}
                 </span>
@@ -140,31 +156,32 @@ export function SetStatusModal({
         {/* Live Active Preview */}
         <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-white border border-[#e2dacd] flex items-center justify-center shrink-0 shadow-2xs p-1">
-            <StatusAnimationRenderer type={selectedType} size={52} />
+            {selectedType ? (
+              <StatusAnimationRenderer type={selectedType} size={52} />
+            ) : (
+              <span className="text-zinc-400 font-bold text-xs">—</span>
+            )}
           </div>
           <div>
             <span className="text-sm font-black text-zinc-900 block">
-              {currentPreset.label}
+              {currentPreset ? currentPreset.label : "Not Set"}
             </span>
-            <span className="text-[10px] text-zinc-400">Selected</span>
+            <span className="text-[10px] text-zinc-400">
+              {selectedType ? "Selected Status" : "No status active"}
+            </span>
           </div>
         </div>
 
         {/* Modal Action Buttons */}
         <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
           <div>
-            {onClear && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClear();
-                  onClose();
-                }}
-                className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold transition-colors cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleSetNotSet}
+              className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Set as Not Set
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
