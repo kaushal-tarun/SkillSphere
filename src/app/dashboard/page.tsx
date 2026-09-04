@@ -17,6 +17,10 @@ import { FriendsView } from "@/components/dashboard/views/FriendsView";
 import { CommunityView } from "@/components/dashboard/views/CommunityView";
 import { SettingsView } from "@/components/dashboard/views/SettingsView";
 import { ProjectDetailsView } from "@/components/dashboard/views/ProjectDetailsView";
+import {
+  DashboardStartupSkeleton,
+  ProfileViewSkeleton,
+} from "@/components/dashboard/skeletons/DashboardSkeletons";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -24,6 +28,8 @@ export default function DashboardPage() {
 
   const [activeNav, setActiveNav] = useState<NavTab>("dashboard");
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [isNavigatingProfile, setIsNavigatingProfile] = useState(false);
 
   // Dynamic Logged-In User Session State
   const [user, setUser] = useState<UserProfile>(() => {
@@ -195,6 +201,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadProjects() {
       if (!user.username) return;
+      setIsLoadingProjects(true);
       try {
         const res = await fetch(`/api/projects?username=${encodeURIComponent(user.username)}&scope=user`);
         if (res.ok) {
@@ -205,6 +212,8 @@ export default function DashboardPage() {
         }
       } catch (e) {
         console.error("Failed to load projects from PostgreSQL", e);
+      } finally {
+        setIsLoadingProjects(false);
       }
     }
     loadProjects();
@@ -302,6 +311,10 @@ export default function DashboardPage() {
       return;
     }
 
+    setIsNavigatingProfile(true);
+    setSelectedProject(null);
+    setActiveNav("profile");
+
     try {
       const profRes = await fetch(`/api/profile?username=${encodeURIComponent(cleanUsername)}`);
       let fetchedUser: UserProfile | null = null;
@@ -334,14 +347,17 @@ export default function DashboardPage() {
 
       setViewingProfileUser(fetchedUser);
       setViewingProfileProjects(fetchedProjects);
-      setSelectedProject(null);
-      setActiveNav("profile");
     } catch (e) {
       console.error("Failed to load user profile", e);
       setViewingProfileUser(null);
-      setActiveNav("profile");
+    } finally {
+      setIsNavigatingProfile(false);
     }
   };
+
+  if (status === "loading") {
+    return <DashboardStartupSkeleton />;
+  }
 
   if (activeNav === "settings") {
     return (
@@ -447,6 +463,7 @@ export default function DashboardPage() {
                   onSelectProject={(proj) => setSelectedProject(proj)}
                   onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
                   onLoadDemoProjects={() => setProjectsList(SAMPLE_PROJECTS)}
+                  isLoadingProjects={isLoadingProjects}
                 />
               )}
 
@@ -476,21 +493,26 @@ export default function DashboardPage() {
                   onOpenNewProjectModal={() => setIsNewProjectModalOpen(true)}
                   onSelectProject={(proj) => setSelectedProject(proj)}
                   onDeleteProject={handleDeleteProject}
+                  isLoadingProjects={isLoadingProjects}
                 />
               )}
 
               {activeNav === "profile" && (
-                <ProfileView
-                  user={viewingProfileUser || user}
-                  currentUser={user}
-                  projectsList={viewingProfileUser ? viewingProfileProjects : projectsList}
-                  onSelectProject={(proj) => setSelectedProject(proj)}
-                  isOwnProfile={!viewingProfileUser || viewingProfileUser.username.toLowerCase() === user.username.toLowerCase()}
-                  onBackToOwnProfile={() => {
-                    setViewingProfileUser(null);
-                    setViewingProfileProjects([]);
-                  }}
-                />
+                isNavigatingProfile ? (
+                  <ProfileViewSkeleton />
+                ) : (
+                  <ProfileView
+                    user={viewingProfileUser || user}
+                    currentUser={user}
+                    projectsList={viewingProfileUser ? viewingProfileProjects : projectsList}
+                    onSelectProject={(proj) => setSelectedProject(proj)}
+                    isOwnProfile={!viewingProfileUser || viewingProfileUser.username.toLowerCase() === user.username.toLowerCase()}
+                    onBackToOwnProfile={() => {
+                      setViewingProfileUser(null);
+                      setViewingProfileProjects([]);
+                    }}
+                  />
+                )
               )}
 
               {activeNav === "friends" && (

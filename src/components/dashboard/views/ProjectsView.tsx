@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { UserProfile, ProjectItem, CommunityProject } from "@/types/dashboard";
+import { ProjectsGridSkeleton } from "@/components/dashboard/skeletons/DashboardSkeletons";
 
 interface ProjectsViewProps {
   user: UserProfile;
@@ -17,6 +18,7 @@ interface ProjectsViewProps {
   onOpenNewProjectModal: () => void;
   onSelectProject?: (proj: ProjectItem) => void;
   onDeleteProject?: (id: string) => void;
+  isLoadingProjects?: boolean;
 }
 
 export function ProjectsView({
@@ -33,12 +35,17 @@ export function ProjectsView({
   onOpenNewProjectModal,
   onSelectProject,
   onDeleteProject,
+  isLoadingProjects = false,
 }: ProjectsViewProps) {
   const [isTechOpen, setIsTechOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<ProjectItem | null>(null);
   const [communityProjects, setCommunityProjects] = useState<CommunityProject[]>([]);
   const [loadingCommunity, setLoadingCommunity] = useState(false);
+
+  if (isLoadingProjects) {
+    return <ProjectsGridSkeleton />;
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -436,9 +443,34 @@ export function ProjectsView({
               </div>
             ))}
           </div>
+        ) : loadingCommunity ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-3 animate-pulse"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 w-36 rounded bg-[#ebe5da]" />
+                    <div className="h-2.5 w-24 rounded bg-[#ebe5da]" />
+                  </div>
+                  <div className="h-5 w-14 rounded-lg bg-[#ebe5da]" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-3 w-full rounded bg-[#ebe5da]" />
+                  <div className="h-3 w-4/5 rounded bg-[#ebe5da]" />
+                </div>
+                <div className="flex gap-1.5 pt-1">
+                  <div className="h-4 w-12 rounded bg-[#ebe5da]" />
+                  <div className="h-4 w-12 rounded bg-[#ebe5da]" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="p-8 text-center rounded-2xl bg-white border border-[#e8e2d8] text-xs font-mono text-zinc-500">
-            {loadingCommunity ? "Loading community repositories..." : "No community projects discovered yet. Be the first to publish one!"}
+            No community projects discovered yet. Be the first to publish one!
           </div>
         )}
       </div>

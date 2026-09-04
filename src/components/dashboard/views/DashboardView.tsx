@@ -3,6 +3,7 @@
 import React from "react";
 import { UserProfile, ProjectItem, LeaderboardItem, ActivityItem } from "@/types/dashboard";
 import { getBuilderTitle } from "@/lib/titles";
+import { DashboardViewSkeleton } from "@/components/dashboard/skeletons/DashboardSkeletons";
 
 interface DashboardViewProps {
   user: UserProfile;
@@ -18,6 +19,7 @@ interface DashboardViewProps {
   onSelectProject?: (proj: ProjectItem) => void;
   onOpenNewProjectModal?: () => void;
   onLoadDemoProjects?: () => void;
+  isLoadingProjects?: boolean;
 }
 
 export function DashboardView({
@@ -30,7 +32,12 @@ export function DashboardView({
   onNavigateToDiscover,
   onSelectProject,
   onOpenNewProjectModal,
+  isLoadingProjects = false,
 }: DashboardViewProps) {
+  if (isLoadingProjects) {
+    return <DashboardViewSkeleton />;
+  }
+
   const filteredProjects = projectsList.filter(
     (p) => projectFilter === "all" || p.status.toLowerCase() === projectFilter
   );

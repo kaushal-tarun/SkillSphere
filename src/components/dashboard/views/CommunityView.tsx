@@ -63,6 +63,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
   };
 
   const [posts, setPosts] = useState<PostItem[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
 
   // Load user's own published projects for Tag Project dropdown
   useEffect(() => {
@@ -86,6 +87,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
   // Load posts
   useEffect(() => {
     async function loadCommunityPosts() {
+      setIsLoadingPosts(true);
       try {
         const res = await fetch(`/api/posts?username=${encodeURIComponent(user.username)}`);
         if (res.ok) {
@@ -105,6 +107,8 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
         }
       } catch (e) {
         console.error("Failed to load community posts from PostgreSQL", e);
+      } finally {
+        setIsLoadingPosts(false);
       }
     }
     loadCommunityPosts();
@@ -623,21 +627,62 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
           <button
             type="submit"
             disabled={isPosting || !newPostText.trim()}
-            className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all cursor-pointer ${
+            className={`px-4 py-1.5 rounded-xl font-bold font-mono transition-all flex items-center gap-2 cursor-pointer ${
               newPostText.trim() && !isPosting
                 ? "bg-zinc-900 text-white shadow-sm hover:bg-black"
                 : "bg-zinc-100 text-zinc-400 border border-[#e8e2d8]"
             }`}
           >
-            {isPosting ? "Posting..." : "Post Update"}
+            {isPosting && (
+              <svg className="w-3.5 h-3.5 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            )}
+            <span>{isPosting ? "Posting..." : "Post Update"}</span>
           </button>
         </div>
       </form>
 
       {/* POSTS FEED */}
       <div className="space-y-4">
-        {filteredPosts.map((post) => {
-          const isCommentOpen = !!openCommentInput[post.id];
+        {isLoadingPosts ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-xs space-y-4 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#ebe5da]" />
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-28 rounded bg-[#ebe5da]" />
+                        <div className="h-3 w-20 rounded bg-[#ebe5da]" />
+                      </div>
+                      <div className="h-2.5 w-32 rounded bg-[#ebe5da]" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-20 rounded bg-[#ebe5da]" />
+                </div>
+                <div className="space-y-2 pt-1">
+                  <div className="h-3.5 w-full rounded bg-[#ebe5da]" />
+                  <div className="h-3.5 w-5/6 rounded bg-[#ebe5da]" />
+                  <div className="h-3.5 w-2/3 rounded bg-[#ebe5da]" />
+                </div>
+                <div className="flex items-center gap-6 pt-2 border-t border-zinc-100">
+                  <div className="h-5 w-16 rounded bg-[#ebe5da]" />
+                  <div className="h-5 w-20 rounded bg-[#ebe5da]" />
+                  <div className="h-5 w-16 rounded bg-[#ebe5da]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl bg-white border border-[#e8e2d8] text-xs font-mono text-zinc-500">
+            No posts found in this category yet. Be the first to share an update!
+          </div>
+        ) : (
+          filteredPosts.map((post) => {
+            const isCommentOpen = !!openCommentInput[post.id];
 
           return (
             <div
@@ -902,7 +947,7 @@ export function CommunityView({ user, onNavigateToProfile, onSelectProject, onNa
               )}
             </div>
           );
-        })}
+        }))}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { UserProfile, ProjectItem } from "@/types/dashboard";
+import { DiscoverShowcaseSkeleton } from "@/components/dashboard/skeletons/DashboardSkeletons";
 
 interface DiscoverViewProps {
   user: UserProfile;
@@ -27,9 +28,11 @@ export function DiscoverView({
   const [starredProjects, setStarredProjects] = useState<Record<string, boolean>>({});
 
   const [discoverProjects, setDiscoverProjects] = useState<(ProjectItem & { campus?: string; creatorHandle?: string })[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
   React.useEffect(() => {
     async function fetchDiscoverProjects() {
+      setIsLoadingProjects(true);
       try {
         const res = await fetch("/api/projects?scope=all");
         if (res.ok) {
@@ -40,10 +43,16 @@ export function DiscoverView({
         }
       } catch (e) {
         console.error("Failed to load discover projects from PostgreSQL", e);
+      } finally {
+        setIsLoadingProjects(false);
       }
     }
     fetchDiscoverProjects();
   }, []);
+
+  if (isLoadingProjects) {
+    return <DiscoverShowcaseSkeleton />;
+  }
 
   const toggleStar = async (id: string) => {
     setStarredProjects((prev) => ({ ...prev, [id]: !prev[id] }));

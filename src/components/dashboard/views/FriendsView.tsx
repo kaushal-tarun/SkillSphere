@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { UserProfile, FriendItem, ChatMessage } from "@/types/dashboard";
 import { getBuilderTitle } from "@/lib/titles";
+import { FriendsChatSkeleton } from "@/components/dashboard/skeletons/DashboardSkeletons";
 
 interface FriendsViewProps {
   user: UserProfile;
@@ -21,6 +22,7 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
 
   // Added friends state - connects to Neon PostgreSQL API
   const [addedFriends, setAddedFriends] = useState<FriendItem[]>([]);
+  const [isLoadingFriends, setIsLoadingFriends] = useState(true);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
   const [registeredUsersDbList, setRegisteredUsersDbList] = useState<FriendItem[]>([]);
@@ -50,6 +52,8 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
       }
     } catch (e) {
       console.error("Failed to load added friends from PostgreSQL", e);
+    } finally {
+      setIsLoadingFriends(false);
     }
   };
 
@@ -343,6 +347,10 @@ export function FriendsView({ user, projectsCount = 0, searchQuery: externalSear
         );
       })
     : [];
+
+  if (isLoadingFriends) {
+    return <FriendsChatSkeleton />;
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
