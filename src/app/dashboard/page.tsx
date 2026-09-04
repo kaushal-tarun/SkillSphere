@@ -95,6 +95,7 @@ export default function DashboardPage() {
               avatar: data.profile.avatar || undefined,
               xp: data.profile.xp ?? 0,
               level: data.profile.level ?? 1,
+              status: data.profile.status ?? null,
             };
             setUser(liveUser);
             localStorage.setItem("user", JSON.stringify(liveUser));

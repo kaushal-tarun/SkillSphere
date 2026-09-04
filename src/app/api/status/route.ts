@@ -76,6 +76,10 @@ export async function POST(request: Request) {
         `DELETE FROM "UserStatus" WHERE LOWER("username") = LOWER($1)`,
         targetUsername
       );
+      await prisma.$executeRawUnsafe(
+        `UPDATE "Profile" SET "status" = NULL WHERE "userId" IN (SELECT "id" FROM "User" WHERE LOWER("username") = LOWER($1))`,
+        targetUsername
+      );
 
       return NextResponse.json({
         success: true,
@@ -94,6 +98,12 @@ export async function POST(request: Request) {
       id,
       targetUsername,
       targetStatus
+    );
+
+    await prisma.$executeRawUnsafe(
+      `UPDATE "Profile" SET "status" = $1 WHERE "userId" IN (SELECT "id" FROM "User" WHERE LOWER("username") = LOWER($2))`,
+      targetStatus,
+      targetUsername
     );
 
     return NextResponse.json({

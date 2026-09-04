@@ -25,15 +25,29 @@ const DEFAULT_LABELS: Record<StatusType, string> = {
 
 export function StatusBox({ user, isOwnProfile = true }: StatusBoxProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [statusData, setStatusData] = useState<DeveloperStatusData>({
-    type: null,
-    label: "Not Set",
+  const [statusData, setStatusData] = useState<DeveloperStatusData>(() => {
+    if (user.status && DEFAULT_LABELS[user.status as StatusType]) {
+      return {
+        type: user.status as StatusType,
+        label: DEFAULT_LABELS[user.status as StatusType],
+      };
+    }
+    return {
+      type: null,
+      label: "Not Set",
+    };
   });
 
   const storageKey = `skillsphere_dev_status_${user.username.toLowerCase()}`;
 
   // 1. Load initial status (local cache for instant render + Neon DB for source of truth)
   useEffect(() => {
+    if (user.status && DEFAULT_LABELS[user.status as StatusType]) {
+      setStatusData({
+        type: user.status as StatusType,
+        label: DEFAULT_LABELS[user.status as StatusType],
+      });
+    }
     // A. Check local cache first to avoid any flicker
     try {
       const saved = localStorage.getItem(storageKey);

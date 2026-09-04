@@ -40,6 +40,17 @@ export async function GET(request: Request) {
       }).catch(() => {});
     }
 
+    let userStatus: string | null = null;
+    try {
+      const statusRows = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT "status" FROM "UserStatus" WHERE LOWER("username") = LOWER($1) LIMIT 1`,
+        targetUser.username
+      );
+      if (statusRows && statusRows.length > 0 && statusRows[0].status) {
+        userStatus = statusRows[0].status;
+      }
+    } catch {}
+
     return NextResponse.json({
       profile: {
         id: targetUser.id,
@@ -55,6 +66,7 @@ export async function GET(request: Request) {
         level,
         projectsCount,
         verified: targetUser.verified,
+        status: userStatus,
         createdAt: new Date(targetUser.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
       },
     }, { status: 200 });
@@ -83,7 +95,7 @@ function containsAbusiveWords(text: string): boolean {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, bio, university, role, location, avatar } = body;
+    const { name, username, bio, university, role, location, avatar, status } = body;
 
     if (
       containsAbusiveWords(name) ||
@@ -137,6 +149,52 @@ export async function PUT(request: Request) {
       },
     });
 
+    let activeStatus: string | null = null;
+    if (status !== undefined) {
+      const validStatuses = ["busy", "tired", "competing", "focused"];
+      const cleanStatus = status && validStatuses.includes(status.toLowerCase()) ? status.toLowerCase() : null;
+      activeStatus = cleanStatus;
+      try {
+        if (cleanStatus) {
+          await prisma.$executeRawUnsafe(
+            `INSERT INTO "UserStatus" ("id", "username", "status", "updatedAt")
+             VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+             ON CONFLICT ("username")
+             DO UPDATE SET "status" = EXCLUDED."status", "updatedAt" = CURRENT_TIMESTAMP`,
+            `status_${currentUser.username.toLowerCase()}`,
+            currentUser.username.toLowerCase(),
+            cleanStatus
+          );
+          await prisma.$executeRawUnsafe(
+            `UPDATE "Profile" SET "status" = $1 WHERE "userId" = $2`,
+            cleanStatus,
+            currentUser.id
+          );
+        } else {
+          await prisma.$executeRawUnsafe(
+            `DELETE FROM "UserStatus" WHERE LOWER("username") = LOWER($1)`,
+            currentUser.username.toLowerCase()
+          );
+          await prisma.$executeRawUnsafe(
+            `UPDATE "Profile" SET "status" = NULL WHERE "userId" = $2`,
+            currentUser.id
+          );
+        }
+      } catch (e) {
+        console.error("Status update error in profile PUT", e);
+      }
+    } else {
+      try {
+        const statusRows = await prisma.$queryRawUnsafe<any[]>(
+          `SELECT "status" FROM "UserStatus" WHERE LOWER("username") = LOWER($1) LIMIT 1`,
+          currentUser.username
+        );
+        if (statusRows && statusRows.length > 0 && statusRows[0].status) {
+          activeStatus = statusRows[0].status;
+        }
+      } catch {}
+    }
+
     return NextResponse.json({
       success: true,
       profile: {
@@ -148,6 +206,7 @@ export async function PUT(request: Request) {
         role: updatedProfile.role || updatedUser.role || "Developer",
         location: updatedProfile.location || updatedUser.location || "India",
         bio: updatedProfile.bio || "",
+        status: activeStatus,
       },
     }, { status: 200 });
   } catch (error) {

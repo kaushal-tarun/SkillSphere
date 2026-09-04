@@ -12,6 +12,7 @@ export interface UserProfile {
   level?: number;
   createdAt?: string;
   projectsCount?: number;
+  status?: string | null;
 }
 
 export interface ProjectItem {
