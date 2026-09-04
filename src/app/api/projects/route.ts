@@ -64,6 +64,7 @@ export async function GET(request: Request) {
       daysActive: Math.max(1, Math.floor((Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24))),
       tech: p.tech,
       githubUrl: p.githubUrl || undefined,
+      github: p.githubUrl || "",
       creatorName: p.user?.name || "Student Builder",
       creatorHandle: p.user?.username || "builder",
       creatorAvatar: p.user?.avatar || undefined,

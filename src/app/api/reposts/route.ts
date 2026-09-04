@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-// POST /api/reposts - Toggle repost count on a post in Neon PostgreSQL
+// POST /api/reposts - Toggle repost count on a post in Neon PostgreSQL (Authenticated)
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
     const body = await request.json();
     const { postId, action } = body; // action: "INCREMENT" | "DECREMENT"
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfile, ProjectItem, CommunityProject } from "@/types/dashboard";
 
 interface ProjectsViewProps {
@@ -37,6 +37,47 @@ export function ProjectsView({
   const [isTechOpen, setIsTechOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<ProjectItem | null>(null);
+  const [communityProjects, setCommunityProjects] = useState<CommunityProject[]>([]);
+  const [loadingCommunity, setLoadingCommunity] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchCommunityProjects() {
+      setLoadingCommunity(true);
+      try {
+        const res = await fetch("/api/projects?scope=all");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.projects && Array.isArray(data.projects)) {
+            const mapped: CommunityProject[] = data.projects.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              creatorName: p.creatorName || "Student Builder",
+              creatorHandle: p.creatorHandle || "builder",
+              university: p.university || "University",
+              description: p.description || "",
+              tech: Array.isArray(p.tech) ? p.tech : [],
+              likes: p.likes ?? 0,
+              views: p.views ?? 0,
+              updatedAt: p.updatedAt || "Recently",
+              github: p.github || p.githubUrl || "",
+            }));
+            if (isMounted) {
+              setCommunityProjects(mapped);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load community projects", err);
+      } finally {
+        if (isMounted) setLoadingCommunity(false);
+      }
+    }
+    fetchCommunityProjects();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const techOptions = [
     { value: "all", label: "All Tech Stack" },
@@ -51,8 +92,6 @@ export function ProjectsView({
     { value: "stars", label: "Most Stars" },
     { value: "commits", label: "Most Commits" },
   ];
-
-  const communityProjects: CommunityProject[] = [];
 
   const filteredProjects = projectsList.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -272,48 +311,75 @@ export function ProjectsView({
       </div>
 
       {/* 2. FEATURED PROJECT SECTION */}
-      <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5 relative overflow-hidden group">
-        <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
-          <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold">
-            FEATURED CASE STUDY
-          </span>
-          <span>Spotlight Repository</span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-          <div className="lg:col-span-2 space-y-3">
-            <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">
-              SkillSphere Platform Engine v1.0
-            </h2>
-            <p className="text-xs text-zinc-600 leading-relaxed font-normal line-clamp-2">
-              A high-contrast developer networking platform built for university builders to verify proof-of-work, compete in 1v1 project battles, and showcase side projects to founders.
-            </p>
-            
-            <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
-              {["Next.js 16", "TypeScript", "Prisma", "PostgreSQL"].map((t) => (
-                <span key={t} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
-                  {t}
-                </span>
-              ))}
-            </div>
+      {projectsList.length > 0 ? (
+        <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-5 relative overflow-hidden group">
+          <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
+            <span className="px-2.5 py-0.5 rounded bg-zinc-900 text-white font-bold">
+              FEATURED PROJECT
+            </span>
+            <span>Spotlight Repository</span>
           </div>
 
-          <div className="lg:col-span-1 flex flex-col justify-between bg-[#f4efe6] p-4 rounded-xl border border-[#e2dacd] space-y-3">
-            <div className="font-mono text-xs space-y-1">
-              <div className="text-zinc-500 text-[10px]">Built By</div>
-              <div className="text-zinc-900 font-bold">{user.name}</div>
-              <div className="text-zinc-500 text-[10px]">{user.university}</div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+            <div className="lg:col-span-2 space-y-3">
+              <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">
+                {projectsList[0].name}
+              </h2>
+              <p className="text-xs text-zinc-600 leading-relaxed font-normal line-clamp-2">
+                {projectsList[0].description}
+              </p>
+              
+              <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
+                {projectsList[0].tech.map((t) => (
+                  <span key={t} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
+                    {t}
+                  </span>
+                ))}
+              </div>
             </div>
 
+            <div className="lg:col-span-1 flex flex-col justify-between bg-[#f4efe6] p-4 rounded-xl border border-[#e2dacd] space-y-3">
+              <div className="font-mono text-xs space-y-1">
+                <div className="text-zinc-500 text-[10px]">Built By</div>
+                <div className="text-zinc-900 font-bold">{user.name}</div>
+                <div className="text-zinc-500 text-[10px]">{user.university}</div>
+              </div>
+
+              <button
+                onClick={() => onSelectProject && onSelectProject(projectsList[0])}
+                className="w-full py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono text-center shadow-sm transition-all cursor-pointer"
+              >
+                View Case Study ➔
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-4 relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
+            <span className="px-2.5 py-0.5 rounded bg-zinc-200 text-zinc-800 font-bold">
+              PORTFOLIO SPOTLIGHT
+            </span>
+            <span>0 Projects Published</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1 max-w-xl">
+              <h2 className="text-lg font-bold text-zinc-900 tracking-tight">
+                Publish your first repository to unlock portfolio spotlight
+              </h2>
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                Showcase your side projects, verify proof-of-work, and climb campus leaderboards. Earn 500 XP for every repository shipped.
+              </p>
+            </div>
             <button
-              onClick={() => onSelectProject && projectsList[0] && onSelectProject(projectsList[0])}
-              className="w-full py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono text-center shadow-sm transition-all cursor-pointer"
+              onClick={onOpenNewProjectModal}
+              className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs font-mono shadow-sm transition-all cursor-pointer shrink-0"
             >
-              View Case Study ➔
+              + Publish Project
             </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 3. COMMUNITY PROJECTS SECTION */}
       <div className="space-y-4 pt-4 border-t border-[#e8e2d8]">
@@ -322,46 +388,54 @@ export function ProjectsView({
           <span className="text-xs font-mono text-zinc-500">Popular Student Repositories</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {communityProjects.map((comm) => (
-            <div
-              key={comm.id}
-              className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 transition-all space-y-3 flex flex-col justify-between"
-            >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-900">{comm.name}</h3>
-                    <div className="text-[10px] font-mono text-zinc-500">
-                      by {comm.creatorName} • {comm.university}
+        {communityProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {communityProjects.map((comm) => (
+              <div
+                key={comm.id}
+                className="p-5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm hover:border-zinc-400 transition-all space-y-3 flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-zinc-900">{comm.name}</h3>
+                      <div className="text-[10px] font-mono text-zinc-500">
+                        by {comm.creatorName} • {comm.university}
+                      </div>
                     </div>
+
+                    {comm.github && (
+                      <a
+                        href={comm.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 text-[10px] font-mono font-bold hover:bg-zinc-900 hover:text-white transition-all cursor-pointer"
+                      >
+                        GitHub ↗
+                      </a>
+                    )}
                   </div>
 
-                  <a
-                    href={comm.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2.5 py-1 rounded-lg bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 text-[10px] font-mono font-bold hover:bg-zinc-900 hover:text-white transition-all cursor-pointer"
-                  >
-                    GitHub ↗
-                  </a>
+                  <p className="text-xs text-zinc-600 line-clamp-2 font-normal">
+                    {comm.description}
+                  </p>
                 </div>
 
-                <p className="text-xs text-zinc-600 line-clamp-2 font-normal">
-                  {comm.description}
-                </p>
+                <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
+                  {comm.tech.map((t, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-              <div className="flex flex-wrap gap-1.5 font-mono text-[10px] pt-1">
-                {comm.tech.map((t, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 font-medium">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 text-center rounded-2xl bg-white border border-[#e8e2d8] text-xs font-mono text-zinc-500">
+            {loadingCommunity ? "Loading community repositories..." : "No community projects discovered yet. Be the first to publish one!"}
+          </div>
+        )}
       </div>
 
       {/* DELETE PROJECT CONFIRMATION WARNING MODAL */}
@@ -369,8 +443,10 @@ export function ProjectsView({
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white border border-[#e8e2d8] rounded-2xl p-6 shadow-xl space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 border-b border-zinc-100 pb-3">
-              <div className="w-9 h-9 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold text-lg shrink-0">
-                ⚠️
+              <div className="w-9 h-9 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
               </div>
               <div>
                 <h3 className="text-base font-bold text-zinc-900 tracking-tight">Delete Project?</h3>
