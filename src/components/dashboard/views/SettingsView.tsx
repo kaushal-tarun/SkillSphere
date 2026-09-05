@@ -85,8 +85,23 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   });
 
   // Appearance State
-  const [themeMode, setThemeMode] = useState<"light" | "slate" | "system">("light");
+  const [themeMode, setThemeMode] = useState<"warm" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("skillsphere_theme");
+      if (saved === "dark") return "dark";
+      if (saved === "warm" || saved === "light") return "warm";
+    }
+    return "warm";
+  });
   const [codeTheme, setCodeTheme] = useState<"github" | "monokai" | "onedark">("github");
+
+  const handleSelectTheme = (mode: "warm" | "dark") => {
+    setThemeMode(mode);
+    try {
+      localStorage.setItem("skillsphere_theme", mode);
+    } catch {}
+    triggerSuccessToast();
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -531,16 +546,28 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
               <div className="space-y-4">
                 <div>
                   <div className="text-zinc-900 font-bold mb-2">Color Mode</div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => setThemeMode("light")}
+                      type="button"
+                      onClick={() => handleSelectTheme("warm")}
                       className={`px-4 py-2 rounded-xl border font-bold transition-all cursor-pointer ${
-                        themeMode === "light"
+                        themeMode === "warm"
                           ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
-                          : "bg-white text-zinc-800 border-[#e8e2d8]"
+                          : "bg-white text-zinc-800 border-[#e8e2d8] hover:border-zinc-400"
                       }`}
                     >
-                      Light Warm Skin (#faf6f0)
+                      Warm Skin
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTheme("dark")}
+                      className={`px-4 py-2 rounded-xl border font-bold transition-all cursor-pointer ${
+                        themeMode === "dark"
+                          ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
+                          : "bg-white text-zinc-800 border-[#e8e2d8] hover:border-zinc-400"
+                      }`}
+                    >
+                      Dark
                     </button>
                   </div>
                 </div>
