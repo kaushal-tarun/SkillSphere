@@ -61,6 +61,7 @@ export async function GET(request: Request) {
         role: targetUser.profile?.role || targetUser.role || "Full-Stack Engineer & AI Developer",
         location: targetUser.profile?.location || targetUser.location || "India",
         bio: targetUser.profile?.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
+        portfolioUrl: targetUser.profile?.portfolioUrl || undefined,
         avatar: targetUser.avatar || undefined,
         xp: totalXp,
         level,

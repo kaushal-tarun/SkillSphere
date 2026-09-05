@@ -166,7 +166,7 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 self-start font-mono text-xs">
+              <div className="flex flex-wrap items-start gap-2 self-start font-mono text-xs">
                 {!isOwnProfile && currentUser && currentUser.username.toLowerCase() !== user.username.toLowerCase() && (
                   <button
                     type="button"
@@ -222,14 +222,33 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
                 >
                   {copiedLink ? "✓ Link Copied" : "Share Profile"}
                 </button>
-                <a
-                  href={`https://github.com/${user.username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 transition-all font-bold"
-                >
-                  GitHub ↗
-                </a>
+
+                <div className="flex flex-col gap-1.5">
+                  <a
+                    href={`https://github.com/${user.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
+                  >
+                    <span>GitHub</span>
+                    <span>↗</span>
+                  </a>
+                  <a
+                    href={
+                      user.portfolioUrl
+                        ? user.portfolioUrl.startsWith("http")
+                          ? user.portfolioUrl
+                          : `https://${user.portfolioUrl}`
+                        : `https://${user.username}.dev`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
+                  >
+                    <span>Portfolio</span>
+                    <span>↗</span>
+                  </a>
+                </div>
               </div>
             </div>
 

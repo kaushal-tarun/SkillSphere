@@ -96,6 +96,7 @@ export default function DashboardPage() {
               xp: data.profile.xp ?? 0,
               level: data.profile.level ?? 1,
               status: data.profile.status ?? null,
+              portfolioUrl: data.profile.portfolioUrl || undefined,
             };
             setUser(liveUser);
             localStorage.setItem("user", JSON.stringify(liveUser));

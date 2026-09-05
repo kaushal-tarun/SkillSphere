@@ -13,6 +13,7 @@ export interface UserProfile {
   createdAt?: string;
   projectsCount?: number;
   status?: string | null;
+  portfolioUrl?: string;
 }
 
 export interface ProjectItem {
