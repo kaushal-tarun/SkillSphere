@@ -411,7 +411,7 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
             <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-6 font-mono text-xs">
               <div className="border-b border-zinc-100 pb-3">
                 <h2 className="text-base font-bold text-zinc-900 tracking-tight">Account Overview</h2>
-                <p className="text-zinc-500 text-[11px]">Primary login details and account export options.</p>
+                <p className="text-zinc-500 text-[11px]">Primary login details and database verification.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -426,19 +426,6 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                   <div className="text-zinc-900 font-bold font-mono truncate">{user.id}</div>
                   <div className="text-[9px] text-zinc-500">PostgreSQL Verified</div>
                 </div>
-              </div>
-
-              <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-                <div>
-                  <div className="text-zinc-900 font-bold">Export Account Data</div>
-                  <div className="text-[10px] text-zinc-500 font-sans">Download a JSON copy of all your published projects.</div>
-                </div>
-                <button
-                  onClick={() => alert("JSON data export initiated.")}
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-[#e8e2d8] text-zinc-800 hover:bg-zinc-100 font-bold transition-all cursor-pointer"
-                >
-                  Download JSON
-                </button>
               </div>
             </div>
           )}
