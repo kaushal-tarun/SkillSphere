@@ -242,33 +242,35 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
         </div>
       )}
 
-      {/* DISTINCT LEFT-ALIGNED FLEX LAYOUT */}
-      <div className="flex flex-col md:flex-row gap-8 sm:gap-10 items-start">
+      {/* 2-COLUMN GRID MATCHING PROFILE VIEW STRUCTURE */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
         
-        {/* LEFT SUB-NAVIGATION CARD */}
-        <div className="p-3 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm w-full md:w-56 shrink-0 space-y-1 font-mono text-xs">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveSection(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left cursor-pointer ${
-                activeSection === item.id
-                  ? item.id === "danger"
-                    ? "bg-rose-100 text-rose-800 border border-rose-200 font-bold"
-                    : "bg-zinc-900 text-white font-extrabold shadow-sm"
-                  : item.id === "danger"
-                  ? "text-rose-600 hover:bg-rose-50"
-                  : "text-zinc-700 hover:text-zinc-900 hover:bg-[#f4efe6]"
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
+        {/* LEFT COLUMN: SUB-NAVIGATION UNDER DASHBOARD LINE */}
+        <div className="lg:col-span-4 xl:col-span-3">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm w-full space-y-1 font-mono text-xs sticky top-20">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left cursor-pointer ${
+                  activeSection === item.id
+                    ? item.id === "danger"
+                      ? "bg-rose-100 text-rose-800 border border-rose-200 font-bold"
+                      : "bg-zinc-900 text-white font-extrabold shadow-sm"
+                    : item.id === "danger"
+                    ? "text-rose-600 hover:bg-rose-50"
+                    : "text-zinc-700 hover:text-zinc-900 hover:bg-[#f4efe6]"
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT CONTENT PANEL (FLEX-1 FILLS REMAINING SPACE) */}
-        <div className="flex-1 w-full min-w-0">
+        {/* RIGHT COLUMN: SETTINGS CONTENT PANEL UNDER AVATAR LINE */}
+        <div className="lg:col-span-8 xl:col-span-9 w-full min-w-0 space-y-6">
           
           {/* SECTION 1: PROFILE SETTINGS */}
           {activeSection === "profile" && (

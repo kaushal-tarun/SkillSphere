@@ -364,7 +364,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-[#f8f5ee] font-sans antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white flex flex-col">
         {/* Dedicated Standalone Settings Top Navigation Bar */}
-        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#e8e2d8] px-6 sm:px-12 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-40 bg-[#f8f5ee]/80 backdrop-blur-md border-b border-[#e8e2d8] px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setActiveNav("dashboard")}
@@ -391,7 +391,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Dedicated Standalone Settings Content Area */}
-        <main className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-12 py-8">
+        <main className="flex-1 w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
           <SettingsView user={user} setUser={setUser} />
         </main>
       </div>
