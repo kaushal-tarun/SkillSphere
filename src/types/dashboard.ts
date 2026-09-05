@@ -14,6 +14,7 @@ export interface UserProfile {
   projectsCount?: number;
   status?: string | null;
   portfolioUrl?: string;
+  githubUrl?: string;
 }
 
 export interface ProjectItem {

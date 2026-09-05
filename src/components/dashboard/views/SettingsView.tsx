@@ -108,46 +108,95 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
         } catch {}
       }
       return {
-        github: savedGh && !isAutoFilledGh ? savedGh : "",
-        portfolio: savedPf || "",
+        github: savedGh && !isAutoFilledGh ? savedGh : (user.githubUrl || ""),
+        portfolio: savedPf || (user.portfolioUrl || ""),
       };
     }
     return {
-      github: "",
-      portfolio: "",
+      github: user.githubUrl || "",
+      portfolio: user.portfolioUrl || "",
     };
   });
 
-  const handleSaveConnectedAccounts = (e: React.FormEvent) => {
+  const handleSaveConnectedAccounts = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanGh = connectedLinks.github.trim();
+    const cleanPf = connectedLinks.portfolio.trim();
+
     try {
-      if (connectedLinks.github.trim()) {
-        localStorage.setItem("skillsphere_connected_github", connectedLinks.github.trim());
+      if (cleanGh) {
+        localStorage.setItem("skillsphere_connected_github", cleanGh);
       } else {
         localStorage.removeItem("skillsphere_connected_github");
       }
 
-      if (connectedLinks.portfolio.trim()) {
-        localStorage.setItem("skillsphere_connected_portfolio", connectedLinks.portfolio.trim());
+      if (cleanPf) {
+        localStorage.setItem("skillsphere_connected_portfolio", cleanPf);
       } else {
         localStorage.removeItem("skillsphere_connected_portfolio");
       }
+
+      setUser((prev) => {
+        const updated = {
+          ...prev,
+          githubUrl: cleanGh || undefined,
+          portfolioUrl: cleanPf || undefined,
+        };
+        try {
+          localStorage.setItem("user", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      // Persist to Neon Postgres DB
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          githubUrl: cleanGh,
+          portfolioUrl: cleanPf,
+        }),
+      });
     } catch {}
     triggerSuccessToast();
   };
 
-  const handleDisconnectGithub = () => {
+  const handleDisconnectGithub = async () => {
     setConnectedLinks((prev) => ({ ...prev, github: "" }));
     try {
       localStorage.removeItem("skillsphere_connected_github");
+      setUser((prev) => {
+        const updated = { ...prev, githubUrl: undefined };
+        try {
+          localStorage.setItem("user", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ githubUrl: "" }),
+      });
     } catch {}
     triggerSuccessToast();
   };
 
-  const handleDisconnectPortfolio = () => {
+  const handleDisconnectPortfolio = async () => {
     setConnectedLinks((prev) => ({ ...prev, portfolio: "" }));
     try {
       localStorage.removeItem("skillsphere_connected_portfolio");
+      setUser((prev) => {
+        const updated = { ...prev, portfolioUrl: undefined };
+        try {
+          localStorage.setItem("user", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ portfolioUrl: "" }),
+      });
     } catch {}
     triggerSuccessToast();
   };

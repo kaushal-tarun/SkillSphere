@@ -62,6 +62,7 @@ export async function GET(request: Request) {
         location: targetUser.profile?.location || targetUser.location || "India",
         bio: targetUser.profile?.bio || "Building high-impact developer tools, distributed systems, and AI-powered web applications.",
         portfolioUrl: targetUser.profile?.portfolioUrl || undefined,
+        githubUrl: targetUser.profile?.githubUrl || undefined,
         avatar: targetUser.avatar || undefined,
         xp: totalXp,
         level,
@@ -96,7 +97,7 @@ function containsAbusiveWords(text: string): boolean {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, bio, university, role, location, avatar, status } = body;
+    const { name, username, bio, university, role, location, avatar, status, githubUrl, portfolioUrl } = body;
 
     if (
       containsAbusiveWords(name) ||
@@ -140,6 +141,8 @@ export async function PUT(request: Request) {
         university: university !== undefined ? university.trim() : undefined,
         role: role !== undefined ? role.trim() : undefined,
         location: location !== undefined ? location.trim() : undefined,
+        githubUrl: githubUrl !== undefined ? (githubUrl ? githubUrl.trim() : null) : undefined,
+        portfolioUrl: portfolioUrl !== undefined ? (portfolioUrl ? portfolioUrl.trim() : null) : undefined,
       },
       create: {
         userId: currentUser.id,
@@ -147,6 +150,8 @@ export async function PUT(request: Request) {
         university: university !== undefined ? university.trim() : "University Student",
         role: role !== undefined ? role.trim() : "Developer",
         location: location !== undefined ? location.trim() : "India",
+        githubUrl: githubUrl !== undefined ? (githubUrl ? githubUrl.trim() : null) : null,
+        portfolioUrl: portfolioUrl !== undefined ? (portfolioUrl ? portfolioUrl.trim() : null) : null,
       },
     });
 

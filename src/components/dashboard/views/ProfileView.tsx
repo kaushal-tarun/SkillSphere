@@ -12,9 +12,18 @@ interface ProfileViewProps {
   onSelectProject?: (proj: ProjectItem) => void;
   isOwnProfile?: boolean;
   onBackToOwnProfile?: () => void;
+  onNavigateToSettings?: () => void;
 }
 
-export function ProfileView({ user, currentUser, projectsList, onSelectProject, isOwnProfile = true, onBackToOwnProfile }: ProfileViewProps) {
+export function ProfileView({
+  user,
+  currentUser,
+  projectsList,
+  onSelectProject,
+  isOwnProfile = true,
+  onBackToOwnProfile,
+  onNavigateToSettings,
+}: ProfileViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [friendshipState, setFriendshipState] = useState<"NONE" | "SENT" | "FRIENDS" | "PENDING">("NONE");
 
@@ -114,6 +123,19 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
   };
 
   const realXp = projectsList.length * 500;
+
+  // Effective connected links from user profile or localStorage fallback
+  const resolvedGithub = user.githubUrl || (isOwnProfile && typeof window !== "undefined" ? localStorage.getItem("skillsphere_connected_github") || "" : "");
+  const resolvedPortfolio = user.portfolioUrl || (isOwnProfile && typeof window !== "undefined" ? localStorage.getItem("skillsphere_connected_portfolio") || "" : "");
+
+  const formatExternalUrl = (url?: string | null) => {
+    if (!url || !url.trim()) return "";
+    const trimmed = url.trim();
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    return `https://${trimmed}`;
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 w-full">
@@ -224,30 +246,49 @@ export function ProfileView({ user, currentUser, projectsList, onSelectProject, 
                 </button>
 
                 <div className="flex flex-col gap-1.5">
-                  <a
-                    href={`https://github.com/${user.username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
-                  >
-                    <span>GitHub</span>
-                    <span>↗</span>
-                  </a>
-                  <a
-                    href={
-                      user.portfolioUrl
-                        ? user.portfolioUrl.startsWith("http")
-                          ? user.portfolioUrl
-                          : `https://${user.portfolioUrl}`
-                        : `https://${user.username}.dev`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
-                  >
-                    <span>Portfolio</span>
-                    <span>↗</span>
-                  </a>
+                  {resolvedGithub ? (
+                    <a
+                      href={formatExternalUrl(resolvedGithub)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
+                    >
+                      <span>GitHub</span>
+                      <span>↗</span>
+                    </a>
+                  ) : isOwnProfile ? (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateToSettings?.()}
+                      title="GitHub not connected yet. Click to connect in Settings."
+                      className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6]/60 border border-dashed border-[#d8cfc0] text-zinc-500 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all font-bold text-center flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>GitHub</span>
+                      <span>↗</span>
+                    </button>
+                  ) : null}
+
+                  {resolvedPortfolio ? (
+                    <a
+                      href={formatExternalUrl(resolvedPortfolio)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6] border border-[#e2dacd] text-zinc-800 hover:bg-zinc-900 hover:text-white transition-all font-bold text-center flex items-center justify-center gap-1"
+                    >
+                      <span>Portfolio</span>
+                      <span>↗</span>
+                    </a>
+                  ) : isOwnProfile ? (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateToSettings?.()}
+                      title="Portfolio not connected yet. Click to connect in Settings."
+                      className="px-3.5 py-1.5 rounded-xl bg-[#f4efe6]/60 border border-dashed border-[#d8cfc0] text-zinc-500 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all font-bold text-center flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Portfolio</span>
+                      <span>↗</span>
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>

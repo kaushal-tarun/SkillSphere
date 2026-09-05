@@ -51,6 +51,8 @@ export default function DashboardPage() {
               avatar: parsed.avatar || undefined,
               xp: parsed.xp || 0,
               level: parsed.level || 1,
+              portfolioUrl: parsed.portfolioUrl || undefined,
+              githubUrl: parsed.githubUrl || undefined,
             };
           }
         } catch (e) {
@@ -97,6 +99,7 @@ export default function DashboardPage() {
               level: data.profile.level ?? 1,
               status: data.profile.status ?? null,
               portfolioUrl: data.profile.portfolioUrl || undefined,
+              githubUrl: data.profile.githubUrl || undefined,
             };
             setUser(liveUser);
             localStorage.setItem("user", JSON.stringify(liveUser));
@@ -520,6 +523,7 @@ export default function DashboardPage() {
                       setViewingProfileUser(null);
                       setViewingProfileProjects([]);
                     }}
+                    onNavigateToSettings={() => setActiveNav("settings")}
                   />
                 )
               )}
