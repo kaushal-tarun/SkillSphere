@@ -100,22 +100,54 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
     if (typeof window !== "undefined") {
       const savedGh = localStorage.getItem("skillsphere_connected_github");
       const savedPf = localStorage.getItem("skillsphere_connected_portfolio");
+      // Prevent stale or automatic defaulting to `https://github.com/${user.username}`
+      const isAutoFilledGh = savedGh === `https://github.com/${user.username}`;
+      if (isAutoFilledGh) {
+        try {
+          localStorage.removeItem("skillsphere_connected_github");
+        } catch {}
+      }
       return {
-        github: savedGh !== null ? savedGh : `https://github.com/${user.username}`,
-        portfolio: savedPf !== null ? savedPf : (user.portfolioUrl || ""),
+        github: savedGh && !isAutoFilledGh ? savedGh : "",
+        portfolio: savedPf || "",
       };
     }
     return {
-      github: `https://github.com/${user.username}`,
-      portfolio: user.portfolioUrl || "",
+      github: "",
+      portfolio: "",
     };
   });
 
   const handleSaveConnectedAccounts = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      localStorage.setItem("skillsphere_connected_github", connectedLinks.github);
-      localStorage.setItem("skillsphere_connected_portfolio", connectedLinks.portfolio);
+      if (connectedLinks.github.trim()) {
+        localStorage.setItem("skillsphere_connected_github", connectedLinks.github.trim());
+      } else {
+        localStorage.removeItem("skillsphere_connected_github");
+      }
+
+      if (connectedLinks.portfolio.trim()) {
+        localStorage.setItem("skillsphere_connected_portfolio", connectedLinks.portfolio.trim());
+      } else {
+        localStorage.removeItem("skillsphere_connected_portfolio");
+      }
+    } catch {}
+    triggerSuccessToast();
+  };
+
+  const handleDisconnectGithub = () => {
+    setConnectedLinks((prev) => ({ ...prev, github: "" }));
+    try {
+      localStorage.removeItem("skillsphere_connected_github");
+    } catch {}
+    triggerSuccessToast();
+  };
+
+  const handleDisconnectPortfolio = () => {
+    setConnectedLinks((prev) => ({ ...prev, portfolio: "" }));
+    try {
+      localStorage.removeItem("skillsphere_connected_portfolio");
     } catch {}
     triggerSuccessToast();
   };
@@ -633,11 +665,22 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                         <div className="text-[10px] text-zinc-500 font-sans">Connect your public GitHub developer repository account</div>
                       </div>
                     </div>
-                    {connectedLinks.github.trim() ? (
-                      <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Connected</span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Not Set</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {connectedLinks.github.trim() ? (
+                        <>
+                          <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Connected</span>
+                          <button
+                            type="button"
+                            onClick={handleDisconnectGithub}
+                            className="text-[10px] text-red-600 hover:text-red-700 font-bold underline cursor-pointer"
+                          >
+                            Disconnect
+                          </button>
+                        </>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Not Connected</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
@@ -664,11 +707,22 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
                         <div className="text-[10px] text-zinc-500 font-sans">Link your personal portfolio, domain, or custom website</div>
                       </div>
                     </div>
-                    {connectedLinks.portfolio.trim() ? (
-                      <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Linked</span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Optional</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {connectedLinks.portfolio.trim() ? (
+                        <>
+                          <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Connected</span>
+                          <button
+                            type="button"
+                            onClick={handleDisconnectPortfolio}
+                            className="text-[10px] text-red-600 hover:text-red-700 font-bold underline cursor-pointer"
+                          >
+                            Disconnect
+                          </button>
+                        </>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Not Connected</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
