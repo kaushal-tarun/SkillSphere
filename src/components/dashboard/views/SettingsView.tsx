@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { UserProfile } from "@/types/dashboard";
 
@@ -95,10 +95,33 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   });
   const [codeTheme, setCodeTheme] = useState<"github" | "monokai" | "onedark">("github");
 
+  // Sync theme with DOM on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("skillsphere_theme");
+      if (saved === "dark") {
+        setThemeMode("dark");
+        document.documentElement.classList.add("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        setThemeMode("warm");
+        document.documentElement.classList.remove("dark");
+        document.documentElement.setAttribute("data-theme", "warm");
+      }
+    } catch {}
+  }, []);
+
   const handleSelectTheme = (mode: "warm" | "dark") => {
     setThemeMode(mode);
     try {
       localStorage.setItem("skillsphere_theme", mode);
+      if (mode === "dark") {
+        document.documentElement.classList.add("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.setAttribute("data-theme", "warm");
+      }
     } catch {}
     triggerSuccessToast();
   };

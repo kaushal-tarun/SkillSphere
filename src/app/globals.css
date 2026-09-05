@@ -326,6 +326,186 @@ body {
   will-change: transform;
 }
 
+/* ==========================================================================
+   SKILLSPHERE DUAL THEME ENGINE (WARM SKIN & DARK)
+   ========================================================================== */
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html.dark body,
+html[data-theme="dark"] body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark .bg-\[\#f8f5ee\],
+html.dark .bg-\[\#faf6f0\],
+html[data-theme="dark"] .bg-\[\#f8f5ee\],
+html[data-theme="dark"] .bg-\[\#faf6f0\] {
+  background-color: #09090b !important;
+}
+
+/* Headers & Navigation */
+html.dark header,
+html[data-theme="dark"] header {
+  background-color: rgba(18, 18, 21, 0.85) !important;
+  border-color: #27272a !important;
+}
+
+/* Sidebar */
+html.dark aside,
+html[data-theme="dark"] aside {
+  background-color: #0c0c0e !important;
+  border-color: #27272a !important;
+}
+
+/* Primary Cards */
+html.dark .bg-white,
+html[data-theme="dark"] .bg-white {
+  background-color: #121215 !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+/* Secondary Panels, Tags, Inputs, Metric Cards */
+html.dark .bg-\[\#f4efe6\],
+html.dark .bg-\[\#faf7f2\],
+html.dark .bg-\[\#fbf9f5\],
+html.dark .bg-\[\#ebe5da\],
+html.dark .bg-\[\#e8e2d8\],
+html[data-theme="dark"] .bg-\[\#f4efe6\],
+html[data-theme="dark"] .bg-\[\#faf7f2\],
+html[data-theme="dark"] .bg-\[\#fbf9f5\],
+html[data-theme="dark"] .bg-\[\#ebe5da\],
+html[data-theme="dark"] .bg-\[\#e8e2d8\] {
+  background-color: #18181c !important;
+  border-color: #27272a !important;
+  color: #e4e4e7 !important;
+}
+
+/* Borders */
+html.dark .border-\[\#e8e2d8\],
+html.dark .border-\[\#e2dacd\],
+html.dark .border-\[\#ded5c7\],
+html.dark .border-\[\#d5cbbe\],
+html.dark .border-zinc-100,
+html.dark .border-zinc-200,
+html[data-theme="dark"] .border-\[\#e8e2d8\],
+html[data-theme="dark"] .border-\[\#e2dacd\],
+html[data-theme="dark"] .border-\[\#ded5c7\],
+html[data-theme="dark"] .border-\[\#d5cbbe\],
+html[data-theme="dark"] .border-zinc-100,
+html[data-theme="dark"] .border-zinc-200 {
+  border-color: #27272a !important;
+}
+
+/* Typography Overrides */
+html.dark .text-zinc-900,
+html.dark .text-zinc-800,
+html[data-theme="dark"] .text-zinc-900,
+html[data-theme="dark"] .text-zinc-800 {
+  color: #f4f4f5 !important;
+}
+
+html.dark .text-zinc-700,
+html.dark .text-zinc-600,
+html[data-theme="dark"] .text-zinc-700,
+html[data-theme="dark"] .text-zinc-600 {
+  color: #a1a1aa !important;
+}
+
+html.dark .text-zinc-500,
+html.dark .text-zinc-400,
+html[data-theme="dark"] .text-zinc-500,
+html[data-theme="dark"] .text-zinc-400 {
+  color: #71717a !important;
+}
+
+/* Form Controls */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select,
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #18181c !important;
+  color: #f4f4f5 !important;
+  border-color: #27272a !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+html.dark textarea:focus,
+html.dark select:focus,
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] select:focus {
+  border-color: #71717a !important;
+}
+
+/* High-Contrast Action Buttons */
+html.dark button.bg-zinc-900,
+html.dark a.bg-zinc-900,
+html[data-theme="dark"] button.bg-zinc-900,
+html[data-theme="dark"] a.bg-zinc-900 {
+  background-color: #f4f4f5 !important;
+  color: #09090b !important;
+  border-color: #f4f4f5 !important;
+}
+
+html.dark button.bg-zinc-900:hover,
+html.dark a.bg-zinc-900:hover,
+html[data-theme="dark"] button.bg-zinc-900:hover,
+html[data-theme="dark"] a.bg-zinc-900:hover,
+html.dark button.hover\:bg-black:hover,
+html.dark a.hover\:bg-black:hover,
+html[data-theme="dark"] button.hover\:bg-black:hover,
+html[data-theme="dark"] a.hover\:bg-black:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Hover States */
+html.dark .hover\:bg-\[\#f4efe6\]:hover,
+html.dark .hover\:bg-\[\#e8e2d8\]:hover,
+html.dark .hover\:bg-zinc-100:hover,
+html[data-theme="dark"] .hover\:bg-\[\#f4efe6\]:hover,
+html[data-theme="dark"] .hover\:bg-\[\#e8e2d8\]:hover,
+html[data-theme="dark"] .hover\:bg-zinc-100:hover {
+  background-color: #27272a !important;
+}
+
+html.dark .hover\:border-zinc-400:hover,
+html[data-theme="dark"] .hover\:border-zinc-400:hover {
+  border-color: #52525b !important;
+}
+
+html.dark .hover\:text-zinc-900:hover,
+html[data-theme="dark"] .hover\:text-zinc-900:hover {
+  color: #ffffff !important;
+}
+
+/* Invert Logo in Dark Mode */
+html.dark img[src*="SSblacky.png"],
+html[data-theme="dark"] img[src*="SSblacky.png"] {
+  filter: invert(1) brightness(1.2);
+}
+
+/* Modal Backdrops */
+html.dark .fixed.inset-0.bg-black\/40,
+html[data-theme="dark"] .fixed.inset-0.bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Mobile Bottom Navigation */
+html.dark .md\:hidden.fixed.bottom-0,
+html[data-theme="dark"] .md\:hidden.fixed.bottom-0 {
+  background-color: rgba(12, 12, 14, 0.95) !important;
+  border-color: #27272a !important;
+}
+
 
 
 
