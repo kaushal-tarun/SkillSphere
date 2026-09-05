@@ -95,6 +95,31 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
   });
   const [codeTheme, setCodeTheme] = useState<"github" | "monokai" | "onedark">("github");
 
+  // Connected Accounts State
+  const [connectedLinks, setConnectedLinks] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedGh = localStorage.getItem("skillsphere_connected_github");
+      const savedPf = localStorage.getItem("skillsphere_connected_portfolio");
+      return {
+        github: savedGh !== null ? savedGh : `https://github.com/${user.username}`,
+        portfolio: savedPf !== null ? savedPf : (user.portfolioUrl || ""),
+      };
+    }
+    return {
+      github: `https://github.com/${user.username}`,
+      portfolio: user.portfolioUrl || "",
+    };
+  });
+
+  const handleSaveConnectedAccounts = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      localStorage.setItem("skillsphere_connected_github", connectedLinks.github);
+      localStorage.setItem("skillsphere_connected_portfolio", connectedLinks.portfolio);
+    } catch {}
+    triggerSuccessToast();
+  };
+
   // Sync theme with DOM on mount
   useEffect(() => {
     try {
@@ -589,27 +614,85 @@ export function SettingsView({ user, setUser, onBackToDashboard }: SettingsViewP
 
           {/* SECTION 7: CONNECTED ACCOUNTS */}
           {activeSection === "connected" && (
-            <div className="p-6 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-6 font-mono text-xs">
+            <form onSubmit={handleSaveConnectedAccounts} className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e8e2d8] shadow-sm space-y-6 font-mono text-xs">
               <div className="border-b border-zinc-100 pb-3">
                 <h2 className="text-base font-bold text-zinc-900 tracking-tight">Connected Accounts</h2>
-                <p className="text-zinc-500 text-[11px]">OAuth providers linked to your account.</p>
+                <p className="text-zinc-500 text-[11px]">Connect and manage your GitHub and personal portfolio links.</p>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center">
-                      GH
+              <div className="space-y-4">
+                {/* 1. GitHub Account Card with Input */}
+                <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                        GH
+                      </div>
+                      <div>
+                        <div className="font-bold text-zinc-900">GitHub Account</div>
+                        <div className="text-[10px] text-zinc-500 font-sans">Connect your public GitHub developer repository account</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-bold text-zinc-900">GitHub</div>
-                      <div className="text-[10px] text-zinc-500">github.com/{user.username}</div>
-                    </div>
+                    {connectedLinks.github.trim() ? (
+                      <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Connected</span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Not Set</span>
+                    )}
                   </div>
-                  <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Connected</span>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="block text-[11px] text-zinc-600 font-bold">GitHub Profile Link</label>
+                    <input
+                      type="url"
+                      placeholder="https://github.com/username"
+                      value={connectedLinks.github}
+                      onChange={(e) => setConnectedLinks({ ...connectedLinks, github: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e2dacd] text-zinc-900 focus:outline-none focus:border-zinc-900 font-sans text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Portfolio Website Card with Input */}
+                <div className="p-4 rounded-xl bg-[#f4efe6] border border-[#e2dacd] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                        PF
+                      </div>
+                      <div>
+                        <div className="font-bold text-zinc-900">Portfolio Website</div>
+                        <div className="text-[10px] text-zinc-500 font-sans">Link your personal portfolio, domain, or custom website</div>
+                      </div>
+                    </div>
+                    {connectedLinks.portfolio.trim() ? (
+                      <span className="px-2.5 py-1 rounded bg-zinc-900 text-white font-bold text-[10px]">Linked</span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded bg-[#e8e2d8] text-zinc-600 font-bold text-[10px]">Optional</span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="block text-[11px] text-zinc-600 font-bold">Portfolio Link</label>
+                    <input
+                      type="url"
+                      placeholder="https://yourportfolio.dev"
+                      value={connectedLinks.portfolio}
+                      onChange={(e) => setConnectedLinks({ ...connectedLinks, portfolio: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e2dacd] text-zinc-900 focus:outline-none focus:border-zinc-900 font-sans text-xs"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div className="pt-2 border-t border-zinc-100 flex items-center justify-end">
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                >
+                  Save Connected Accounts
+                </button>
+              </div>
+            </form>
           )}
 
           {/* SECTION 8: DANGER ZONE & SIGN OUT */}
