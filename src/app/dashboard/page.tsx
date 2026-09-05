@@ -53,6 +53,7 @@ export default function DashboardPage() {
               level: parsed.level || 1,
               portfolioUrl: parsed.portfolioUrl || undefined,
               githubUrl: parsed.githubUrl || undefined,
+              createdAt: parsed.createdAt || undefined,
             };
           }
         } catch (e) {
@@ -100,6 +101,7 @@ export default function DashboardPage() {
               status: data.profile.status ?? null,
               portfolioUrl: data.profile.portfolioUrl || undefined,
               githubUrl: data.profile.githubUrl || undefined,
+              createdAt: data.profile.createdAt || undefined,
             };
             setUser(liveUser);
             localStorage.setItem("user", JSON.stringify(liveUser));
@@ -112,6 +114,7 @@ export default function DashboardPage() {
               email: session.user?.email || prev.email,
               username: (session.user as any).username || prev.username,
               university: (session.user as any).university || prev.university,
+              createdAt: prev.createdAt,
             };
             localStorage.setItem("user", JSON.stringify(fallback));
             return fallback;

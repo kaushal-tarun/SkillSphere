@@ -137,6 +137,21 @@ export function ProfileView({
     return `https://${trimmed}`;
   };
 
+  const formatMemberSince = (dateStr?: string) => {
+    if (dateStr && dateStr.trim()) {
+      const trimmed = dateStr.trim();
+      if (/^[A-Za-z]{3}\s+\d{4}$/.test(trimmed)) {
+        return trimmed;
+      }
+      const d = new Date(trimmed);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      }
+      return trimmed;
+    }
+    return "Aug 2026";
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300 w-full">
       {/* NAVIGATION BANNER WHEN VIEWING ANOTHER DEVELOPER'S PROFILE */}
@@ -307,7 +322,7 @@ export function ProfileView({
 
               <div className="p-3 rounded-xl bg-[#f4efe6] border border-[#e2dacd]">
                 <div className="text-zinc-500 text-[10px]">Member Since</div>
-                <div className="text-base font-extrabold text-zinc-900 mt-0.5">{user.createdAt || "Feb 2026"}</div>
+                <div className="text-base font-extrabold text-zinc-900 mt-0.5">{formatMemberSince(user.createdAt)}</div>
               </div>
             </div>
           </div>
